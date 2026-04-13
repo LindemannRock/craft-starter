@@ -13,7 +13,7 @@ export async function promptServdCredentials() {
 		'Servd credentials',
 	);
 
-	return p.group(
+	const credentials = await p.group(
 		{
 			slug: () =>
 				p.text({
@@ -33,4 +33,38 @@ export async function promptServdCredentials() {
 		},
 		{ onCancel: () => cancel() },
 	);
+
+	const useCustomDomains = await p.confirm({
+		message: 'Custom asset domains?',
+		initialValue: false,
+	});
+	if (p.isCancel(useCustomDomains)) cancel();
+
+	if (useCustomDomains) {
+		const domains = await p.group(
+			{
+				cdnUrl: () =>
+					p.text({
+						message: 'CDN URL pattern',
+						placeholder: 'https://media.example.com/{{environment}}/{{subfolder}}/{{filePath}}',
+						validate: (v) => {
+							if (!v) return 'CDN URL pattern is required';
+						},
+					}),
+				imageTransformUrl: () =>
+					p.text({
+						message: 'Image transform URL pattern',
+						placeholder: 'https://images.example.com/{{environment}}/{{subfolder}}/{{filePath}}{{params}}',
+						validate: (v) => {
+							if (!v) return 'Image transform URL pattern is required';
+						},
+					}),
+			},
+			{ onCancel: () => cancel() },
+		);
+		credentials.cdnUrl = domains.cdnUrl;
+		credentials.imageTransformUrl = domains.imageTransformUrl;
+	}
+
+	return credentials;
 }

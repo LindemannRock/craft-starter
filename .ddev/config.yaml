@@ -11,7 +11,7 @@ database:
     version: "8.0"
 webimage_extra_packages: [build-essential, libvips-dev]
 use_dns_when_possible: true
-timezone: Asia/Dubai
+timezone: Asia/Riyadh
 composer_version: "2"
 nodejs_version: "22"
 corepack_enable: false

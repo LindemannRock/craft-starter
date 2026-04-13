@@ -22,8 +22,8 @@ export function showConfigurationSummary({ project, bilingual, useRedis, selecte
 		['System email', project.systemEmail],
 		['Bilingual', bilingual ? 'Yes (EN/AR)' : 'No (EN only)'],
 		['Cache', useRedis ? 'Redis' : 'File (default)'],
-		['LR Plugins', selectedLr.length ? selectedLr.map((pl) => pl.label).join(', ') : 'None'],
-		['Plugins', selectedTp.length ? selectedTp.map((pl) => pl.label).join(', ') : 'None'],
+		['LR Plugins', selectedLr.length ? selectedLr.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
+		['Plugins', selectedTp.length ? selectedTp.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],
 	];
 

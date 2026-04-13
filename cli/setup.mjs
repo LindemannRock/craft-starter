@@ -53,6 +53,27 @@ async function collectFeatures(state) {
 async function collectPlugins(state) {
 	state.selectedLr = await promptLrPlugins();
 	state.selectedTp = await promptThirdPartyPlugins();
+
+	// Auto-add dependencies for selected plugins
+	const hasFormieAddon = state.selectedLr.some((pl) => pl.handle.startsWith('formie-'));
+	const hasFormie = state.selectedTp.some((pl) => pl.handle === 'formie');
+	if (hasFormieAddon && !hasFormie) {
+		const formiePlugin = THIRD_PARTY_PLUGINS.find((pl) => pl.handle === 'formie');
+		if (formiePlugin) {
+			state.selectedTp.push({ ...formiePlugin, autoAdded: 'Formie addon(s)' });
+			p.log.info('Formie auto-added — required by selected Formie addon(s)');
+		}
+	}
+
+	const hasFormieSms = state.selectedLr.some((pl) => pl.handle === 'formie-sms');
+	const hasSmsManager = state.selectedLr.some((pl) => pl.handle === 'sms-manager');
+	if (hasFormieSms && !hasSmsManager) {
+		const smsPlugin = LR_PLUGINS.find((pl) => pl.handle === 'sms-manager');
+		if (smsPlugin) {
+			state.selectedLr.push({ ...smsPlugin, autoAdded: 'Formie SMS' });
+			p.log.info('SMS Manager auto-added — required by Formie SMS');
+		}
+	}
 }
 
 async function collectHosting(state) {
@@ -167,8 +188,19 @@ async function main() {
 	s.stop('DDEV config updated');
 
 	s.start('Generating .env');
-	generateEnvFile({ project, bilingual, servdCredentials, postmarkToken, smtpCredentials, useRedis, selectedLr, selectedTp });
+	generateEnvFile({ project, bilingual, servdCredentials, postmarkToken, smtpCredentials, useRedis, selectedLr, selectedTp, selectedHosting });
 	s.stop('.env generated');
+
+	if (selectedHosting.value === 'craft-cloud') {
+		s.start('Generating craft-cloud.yaml');
+		fs.writeFileSync(`${ROOT}/craft-cloud.yaml`, [
+			'php-version: \'8.3\'',
+			'node-version: \'22\'',
+			'npm-script: build',
+			'',
+		].join('\n'));
+		s.stop('craft-cloud.yaml generated');
+	}
 
 	s.start('Writing plugin configs');
 	const allSelected = [...selectedLr, ...selectedTp];

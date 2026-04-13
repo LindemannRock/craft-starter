@@ -29,7 +29,7 @@ These must be set for any non-local environment. Missing values will crash Craft
 | `CRAFT_ALLOW_UPDATES` | `true` | `false` | `false` |
 | `CRAFT_DISALLOW_ROBOTS` | `true` | `true` | `false` |
 | `CRAFT_IS_SYSTEM_LIVE` | `true` | `true` | `true` |
-| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true` | `false` (Servd) | `false` (Servd) |
+| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true` | `false` (Servd/Cloud) | `false` (Servd/Cloud) |
 | `CRAFT_TIMEZONE` | `UTC` or other | same | same |
 | `PRIMARY_SITE_URL` | `https://{project}.ddev.site` | staging URL | production URL |
 
@@ -78,10 +78,37 @@ If deploying to [Servd](https://servd.host), set these in the Servd project dash
 ```
 SERVD_PROJECT_SLUG=your-project-slug
 SERVD_SECURITY_KEY=your-security-key
+SERVD_BASE_URL=https://your-project-slug.files.svdcdn.com
 SERVD_ASSETS_ENVIRONMENT=staging   # or production
+CRAFT_RUN_QUEUE_AUTOMATICALLY=false
 ```
 
-Servd will inject these automatically on deploy.
+If you configured custom asset domains during `make create`:
+
+```
+SERVD_CDN_URL_PATTERN='https://media.example.com/{{environment}}/{{subfolder}}/{{filePath}}'
+SERVD_IMAGE_TRANSFORM_URL_PATTERN='https://images.example.com/{{environment}}/{{subfolder}}/{{filePath}}{{params}}'
+```
+
+## Craft Cloud
+
+If deploying to [Craft Cloud](https://craftcms.com/cloud), the CLI generates a `craft-cloud.yaml` in the project root during `make create`. Commit it to your repo.
+
+Cloud auto-configures database, cache, queue, and session — you don't need to set `CRAFT_DB_*`, `REDIS_*`, or `CRAFT_RUN_QUEUE_AUTOMATICALLY` in the Cloud dashboard. Set these instead:
+
+```
+CRAFT_ENVIRONMENT=production
+CRAFT_DEV_MODE=false
+CRAFT_ALLOW_ADMIN_CHANGES=false
+CRAFT_ALLOW_UPDATES=false
+CRAFT_DISALLOW_ROBOTS=false
+CRAFT_IS_SYSTEM_LIVE=true
+PRIMARY_SITE_URL=https://example.com
+SYSTEM_EMAIL=no-reply@example.com
+SYSTEM_SENDER_NAME="Your Site"
+```
+
+The `npm run build` step runs automatically during Cloud deployments (configured in `craft-cloud.yaml`).
 
 ## LindemannRock plugins
 

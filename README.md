@@ -177,8 +177,8 @@ craft-starter/
 
 | Provider | What gets installed |
 |----------|---------------------|
-| **Servd** | `servd/craft-asset-storage` + Servd credentials prompt + email transport fallback |
-| **Craft Cloud** | `craftcms/cloud` |
+| **Servd** | `servd/craft-asset-storage` + credentials prompt + optional custom asset domains + email transport fallback |
+| **Craft Cloud** | `craftcms/cloud` + `craft-cloud.yaml` generated (PHP 8.3, Node 22, `npm run build`) |
 | **None / self-hosted** | No hosting plugin added |
 
 ### Always included (core)

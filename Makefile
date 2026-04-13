@@ -45,6 +45,19 @@ help: ## Show this help
 # adding a new alias requires no changes here — just add `$(call alias_hint)`
 # to the recipe.
 # -----------------------------------------------------------------------------
+# require_project — wraps a command with .env + DDEV checks.
+# Always exits 0 so Make never prints "*** Error".
+# Usage: @$(call require_project, ddev exec php craft up)
+define require_project
+if [ ! -f .env ]; then \
+  echo "No .env file found. Run 'make create' first."; \
+elif ! ddev describe >/dev/null 2>&1; then \
+  echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
+else \
+  $(1); \
+fi
+endef
+
 define alias_hint
 @if echo " $(MAKECMDGOALS) " | grep -q " $@ "; then \
   alias=$$(grep -E "^$@[[:space:]]*:.*## @[a-zA-Z0-9_-]+" $(firstword $(MAKEFILE_LIST)) | sed -nE 's/.*## @([a-zA-Z0-9_-]+).*/\1/p' | head -1); \
@@ -61,15 +74,15 @@ create: ## Interactive setup (prompts → install Craft + plugins end-to-end)
 install: ## Install or re-sync the project (idempotent — safe to run anytime)
 	@if [ ! -f .env ]; then \
 		echo "No .env file found. Run 'make create' for interactive setup."; \
-		exit 1; \
+	else \
+		$(MAKE) --no-print-directory _install; \
 	fi
+
+_install:
 	ddev start
 	ddev composer install
 	ddev exec -- npm install $(NPM_INSTALL_FLAGS)
-	@# Only run `craft install` if Craft isn't installed yet. We detect this
-	@# by asking project-config for the stored system.schemaVersion, which
-	@# returns a `5.x.x.x` string on installed Craft and nothing on fresh.
-	@# Avoids the "Craft is already installed" error on re-runs.
+	@# Only run `craft install` if Craft isn't installed yet.
 	@if ddev exec php craft project-config/get system.schemaVersion 2>/dev/null | grep -qE '^[0-9]+\.'; then \
 		echo "Craft already installed — skipping first-run install"; \
 	else \
@@ -80,26 +93,26 @@ install: ## Install or re-sync the project (idempotent — safe to run anytime)
 	@echo "Install/sync complete"
 
 start: ## ddev start + Vite dev server
-	ddev start
-	ddev exec npm run dev
+	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
+	else ddev start && ddev exec npm run dev; fi
 
 keys: ## Generate Craft security key + app ID into .env
-	ddev exec php craft setup/keys
+	@$(call require_project, ddev exec php craft setup/keys)
 
 npm-install: ## Run `npm install` inside DDEV
-	ddev start
-	ddev exec -- npm install $(NPM_INSTALL_FLAGS)
+	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
+	else ddev start && ddev exec -- npm install $(NPM_INSTALL_FLAGS); fi
 
 ##@ Development
 
 dev: ## Start Vite dev server (HMR)
-	ddev exec npm run dev
+	@$(call require_project, ddev exec npm run dev)
 
 prod: ## Production build
-	ddev exec npm run build
+	@$(call require_project, ddev exec npm run build)
 
 format: ## @fmt Format everything with Prettier
-	ddev exec npx prettier -w .
+	@$(call require_project, ddev exec npx prettier -w .)
 	$(call alias_hint)
 
 kill-vite: ## @kv Kill stuck Vite processes
@@ -108,15 +121,15 @@ kill-vite: ## @kv Kill stuck Vite processes
 	$(call alias_hint)
 
 launch: ## @l Launch the site in your browser
-	ddev launch
+	@$(call require_project, ddev launch)
 	$(call alias_hint)
 
 tableplus: ## @tp Launch TablePlus
-	ddev tableplus
+	@$(call require_project, ddev tableplus)
 	$(call alias_hint)
 
 mailpit: ## @mp Launch Mailpit
-	ddev mailpit
+	@$(call require_project, ddev mailpit)
 	$(call alias_hint)
 
 # Short aliases — parsed into the alias column of `make help` via the
@@ -131,59 +144,70 @@ kv: kill-vite
 ##@ Device testing (Tailscale)
 
 share: ## Share over your Tailnet (test device needs Tailscale)
-	ddev tailscale-share
+	@$(call require_project, ddev tailscale-share)
 
 funnel: ## Share publicly via Tailscale Funnel (no Tailscale on test device)
-	ddev tailscale-funnel
+	@$(call require_project, ddev tailscale-funnel)
 
 ##@ Maintenance
 
 up: ## Apply project config + run pending migrations
-	ddev exec php craft up --interactive=0
+	@$(call require_project, ddev exec php craft up --interactive=0)
 
 update: ## Run `craft update all` (updates Craft + plugins via Craft's updater)
-	ddev exec php craft update all
+	@$(call require_project, ddev exec php craft update all)
 
 update-composer: ## Update Composer packages to latest matching versions
-	ddev composer update
+	@$(call require_project, ddev composer update)
 
 update-npm: ## Update NPM packages (interactive — shows what's available)
-	ddev exec npm-check --update
+	@$(call require_project, ddev exec npm-check --update)
 
 clean: ## Remove vendor & node_modules then reinstall
-	rm -rf vendor/
-	rm -rf node_modules/
-	ddev composer clear-cache
-	ddev exec npm cache clean --force
-	ddev composer install
-	ddev exec -- npm install $(NPM_INSTALL_FLAGS)
+	@if [ ! -f .env ]; then \
+		echo "No .env file found. Run 'make create' for interactive setup."; \
+	else \
+		rm -rf vendor/ node_modules/; \
+		ddev composer clear-cache; \
+		ddev exec npm cache clean --force; \
+		ddev composer install; \
+		ddev exec -- npm install $(NPM_INSTALL_FLAGS); \
+	fi
 
 clean-logs: ## Remove storage/logs/*.log
 	rm -rf storage/logs/*.log
 
 pull-db: ## Pull database from Servd (Servd hosting only)
-	ddev exec php craft servd-asset-storage/local/pull-database --emptyDatabase
+	@$(call require_project, ddev exec php craft servd-asset-storage/local/pull-database --emptyDatabase)
 
 export-db: ## Export the local database (default: db.sql.gz, or file=path)
-	@target="$${file:-db.sql.gz}"; \
-	echo "Exporting database to $$target..."; \
-	ddev export-db --file="$$target"; \
-	echo "Done."
+	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
+	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
+	else \
+		target="$${file:-db.sql.gz}"; \
+		echo "Exporting database to $$target..."; \
+		ddev export-db --file="$$target"; \
+		echo "Done."; \
+	fi
 
 import-db: ## Import a SQL dump (default: db.sql.gz, or file=path)
-	@target="$${file:-db.sql.gz}"; \
-	if [ ! -f "$$target" ]; then \
-		echo "File not found: $$target"; \
-		echo "Usage: make import-db                    (imports ./db.sql.gz)"; \
-		echo "       make import-db file=path/to/dump.sql.gz"; \
-		exit 1; \
-	fi; \
-	echo "Importing database from $$target..."; \
-	ddev import-db --file="$$target"; \
-	echo "Done."
+	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
+	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
+	else \
+		target="$${file:-db.sql.gz}"; \
+		if [ ! -f "$$target" ]; then \
+			echo "File not found: $$target"; \
+			echo "Usage: make import-db                    (imports ./db.sql.gz)"; \
+			echo "       make import-db file=path/to/dump.sql.gz"; \
+		else \
+			echo "Importing database from $$target..."; \
+			ddev import-db --file="$$target"; \
+			echo "Done."; \
+		fi; \
+	fi
 
 reindex-search: ## Rebuild the search index
-	ddev exec php craft resave/entries --update-search-index
+	@$(call require_project, ddev exec php craft resave/entries --update-search-index)
 
 ##@ Destructive (asks for confirmation)
 
@@ -205,7 +229,9 @@ nuke: ## Destroy DDEV + vendor + node_modules + dist + config/project + .env
 	@find vendor node_modules web/dist config/project -name '.DS_Store' -delete 2>/dev/null || true
 	@# First-pass removal
 	@rm -rf vendor node_modules web/dist config/project 2>/dev/null || true
-	@rm -f .env composer.lock package-lock.json 2>/dev/null || true
+	@rm -f .env composer.lock package-lock.json craft-cloud.yaml 2>/dev/null || true
+	@# Remove plugin configs generated by make create (source templates live in cli/templates/plugins/)
+	@for f in cli/templates/plugins/*.php; do rm -f "config/$$(basename $$f)" 2>/dev/null; done
 	@# Second-pass retry — catches race conditions with Finder/Spotlight/Mutagen
 	@if [ -e vendor ] || [ -e node_modules ] || [ -e web/dist ] || [ -e config/project ]; then \
 		sleep 1; \

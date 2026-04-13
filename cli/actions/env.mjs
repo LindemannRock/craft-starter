@@ -35,6 +35,7 @@ export function generateEnvFile({
 	useRedis,
 	selectedLr = [],
 	selectedTp = [],
+	selectedHosting = {},
 }) {
 	// Start from a clean copy of the source template, stripping the internal header
 	let content = fs.readFileSync(ENV_SOURCE, 'utf-8').replace(HEADER_BLOCK_REGEX, '');
@@ -78,6 +79,11 @@ export function generateEnvFile({
 	if (servdCredentials) {
 		updates.SERVD_PROJECT_SLUG = servdCredentials.slug;
 		updates.SERVD_SECURITY_KEY = servdCredentials.key;
+		updates.SERVD_BASE_URL = `https://${servdCredentials.slug}.files.svdcdn.com`;
+		if (servdCredentials.cdnUrl) {
+			updates.SERVD_CDN_URL_PATTERN = `'${servdCredentials.cdnUrl}'`;
+			updates.SERVD_IMAGE_TRANSFORM_URL_PATTERN = `'${servdCredentials.imageTransformUrl}'`;
+		}
 	}
 
 	// Postmark token
@@ -99,24 +105,14 @@ export function generateEnvFile({
 		content = setEnvKey(content, key, value);
 	}
 
-	// IP salts for LR plugins — written into their own section under the
-	// template's "LindemannRock plugin salts" header so they aren't appended
-	// at the end of the file.
-	const saltLines = [];
-	for (const pl of [...selectedLr, ...selectedTp]) {
-		if (pl.ipSaltEnv) {
-			saltLines.push(`${pl.ipSaltEnv}=${quoted(generateIpSalt())}`);
-		}
-	}
+	// All selected plugins (LR + third-party) — used for salt generation and section cleanup
+	const allPlugins = [...selectedLr, ...selectedTp];
 
-	if (saltLines.length > 0) {
-		content = content.replace(
-			/(# LindemannRock plugin salts[^\n]*\n# -+\n)/,
-			`$1${saltLines.join('\n')}\n`,
-		);
-	} else {
-		// No IP-salt plugins selected — strip the header section entirely
-		content = content.replace(/\n# -{3,}\n# LindemannRock plugin salts[^\n]*\n# -{3,}\n/, '\n');
+	// Generate IP salts for selected LR plugins that need them
+	for (const pl of allPlugins) {
+		if (pl.ipSaltEnv) {
+			content = setEnvKey(content, pl.ipSaltEnv, quoted(generateIpSalt()));
+		}
 	}
 
 	// Remove bilingual and Redis sections when not needed
@@ -125,6 +121,40 @@ export function generateEnvFile({
 	}
 	if (!useRedis) {
 		content = removeSection(content, '# Redis Cache');
+	}
+
+	// Remove plugin env sections when the plugin isn't selected.
+	// Each section header in env.example must match the string passed here.
+	const pluginEnvSections = [
+		{ handle: 'campaign-manager', section: '# Campaign Manager' },
+		{ handle: 'redirect-manager', section: '# Redirect Manager' },
+		{ handle: 'search-manager', section: '# Search Manager' },
+		{ handle: 'shortlink-manager', section: '# Shortlink Manager' },
+		{ handle: 'smartlink-manager', section: '# Smartlink Manager' },
+		{ handle: 'translation-manager', section: '# Translation Manager' },
+		{ handle: 'cloudflare', section: '# Cloudflare' },
+		{ handle: 'cloudflare', section: '# Cloudflare Turnstile' },
+	];
+	for (const { handle, section } of pluginEnvSections) {
+		if (!allPlugins.some((pl) => pl.handle === handle)) {
+			content = removeSection(content, section);
+		}
+	}
+	if (!postmarkToken) {
+		content = removeSection(content, '# Email - Postmark');
+	}
+	if (!smtpCredentials) {
+		content = removeSection(content, '# Email - SMTP');
+	}
+
+	// Hosting-specific cleanup
+	const hostingValue = selectedHosting.value || 'none';
+	if (hostingValue !== 'servd') {
+		content = removeSection(content, '# Servd Asset Storage');
+	}
+	if (hostingValue === 'craft-cloud') {
+		// Cloud runs its own queue workers
+		content = setEnvKey(content, 'CRAFT_RUN_QUEUE_AUTOMATICALLY', 'false');
 	}
 
 	// Collapse multiple blank lines left behind by removals
