@@ -46,8 +46,13 @@ async function getPackageDetails(name) {
 	}
 }
 
-function extractHandle(extra) {
-	return extra?.['craft-plugin']?.handle || null;
+function extractHandle(extra, packageName) {
+	// Different plugins declare the handle in different places
+	if (extra?.['craft-plugin']?.handle) return extra['craft-plugin'].handle;
+	if (extra?.['craft']?.handle) return extra['craft'].handle;
+	if (extra?.handle) return extra.handle;
+	// Fallback: derive from package name (vendor/craft-foo-bar → foo-bar)
+	return packageName.split('/').pop().replace(/^craft-/i, '');
 }
 
 p.intro(pc.bgCyan(pc.black(' Add Plugin to Registry ')));
@@ -101,7 +106,7 @@ if (!details) {
 }
 
 const latestVersion = details.version.replace(/^v/, '');
-const handle = extractHandle(details.extra) || '';
+const handle = extractHandle(details.extra, packageName) || '';
 const parts = latestVersion.split('.');
 const suggestedConstraint = `^${parts[0]}.${parts[1]}`;
 
