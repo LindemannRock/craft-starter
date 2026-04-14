@@ -97,6 +97,7 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 | `make update`           | Run `craft update all` (Craft + plugins via Craft updater) |
 | `make update-composer`  | Update Composer packages to latest matching versions       |
 | `make update-npm`       | Update NPM packages (interactive via `npm-check`)          |
+| `make update-cli`       | Update CLI packages in `cli/` (interactive)                |
 | `make check-plugins`    | Check plugin registry versions against Packagist           |
 | `make update-plugins`   | Interactively update plugin registry versions              |
 | `make add-plugin`       | Add a new plugin to the registry (searches Packagist)      |
