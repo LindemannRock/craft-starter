@@ -1,0 +1,14 @@
+# Apple Silicon (M1/M2/M3) override for DDEV.
+#
+# The `critical` package chain (critical → penthouse → puppeteer 2.1.1) bundles
+# an x86-only Chromium. On ARM Macs that binary won't run, so we install the
+# native `chromium` Debian package and point Puppeteer at it instead.
+#
+# DDEV auto-merges this file with config.yaml on ARM hosts.
+
+webimage_extra_packages: [chromium]
+
+web_environment:
+  - CPPFLAGS=-DPNG_ARM_NEON_OPT=0
+  - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+  - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
