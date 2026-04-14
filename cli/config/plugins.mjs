@@ -286,6 +286,14 @@ export const THIRD_PARTY_PLUGINS = [
 		hint: 'Purge Cloudflare cache from Craft',
 		config: null,
 	},
+	{
+		value: 'studioespresso/craft-scout',
+		handle: 'scout',
+		version: '^5.0',
+		label: 'Scout',
+		hint: 'Craft Scout provides a simple solution for adding ',
+		config: 'scout.php',
+	},
 ];
 
 // -----------------------------------------------------------------------------

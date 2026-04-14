@@ -136,8 +136,8 @@ if (p.isCancel(label)) process.exit(0);
 
 const hint = await p.text({
 	message: 'Short description (shown in CLI)',
-	placeholder: details.description?.slice(0, 50) || '',
-	defaultValue: details.description?.slice(0, 50) || '',
+	placeholder: details.description || '',
+	defaultValue: details.description || '',
 });
 if (p.isCancel(hint)) process.exit(0);
 

@@ -11,10 +11,12 @@ import * as p from '@clack/prompts';
 import { LR_PLUGINS, THIRD_PARTY_PLUGINS, HOSTING_OPTIONS } from '../config/plugins.mjs';
 import { cancel } from '../utils/cancel.mjs';
 
+const byLabel = (a, b) => a.label.localeCompare(b.label);
+
 export async function promptLrPlugins() {
-	const selected = await p.multiselect({
+	const selected = await p.autocompleteMultiselect({
 		message: 'LindemannRock plugins',
-		options: LR_PLUGINS.map((pl) => ({
+		options: [...LR_PLUGINS].sort(byLabel).map((pl) => ({
 			value: pl.value,
 			label: pl.label,
 			hint: pl.hint,
@@ -26,9 +28,9 @@ export async function promptLrPlugins() {
 }
 
 export async function promptThirdPartyPlugins() {
-	const selected = await p.multiselect({
+	const selected = await p.autocompleteMultiselect({
 		message: 'Third-party plugins',
-		options: THIRD_PARTY_PLUGINS.map((pl) => ({
+		options: [...THIRD_PARTY_PLUGINS].sort(byLabel).map((pl) => ({
 			value: pl.value,
 			label: pl.label,
 			hint: pl.hint,
