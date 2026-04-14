@@ -18,7 +18,8 @@
  *
  * Called from cli/actions/projectConfig.mjs via `ddev exec php`.
  *
- * @author LindemannRock
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 define('CRAFT_BASE_PATH', dirname(__DIR__, 2));

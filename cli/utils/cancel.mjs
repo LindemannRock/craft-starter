@@ -1,3 +1,8 @@
+/**
+ * @copyright 2026 LindemannRock
+ * @license MIT
+ */
+
 import * as p from '@clack/prompts';
 
 /**

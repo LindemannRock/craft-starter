@@ -4,6 +4,9 @@
  * Servd doesn't support Sendmail, so if the user picks Servd hosting without
  * Postmark, they need to choose an alternative email transport. This prompt
  * offers Postmark (auto-adds the plugin), Servd SMTP, or skip.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';
@@ -18,6 +21,7 @@ import { THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
  *   postmarkPlugin?: object,
  *   smtp?: { host: string, port: string, username: string, password: string, useAuth: boolean },
  * }>}
+ *
  */
 export async function promptServdEmail() {
 	p.log.info('Servd does not support Sendmail.\n' +

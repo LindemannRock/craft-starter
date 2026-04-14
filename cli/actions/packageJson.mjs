@@ -1,5 +1,8 @@
 /**
  * Updates package.json with the project name and description.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';

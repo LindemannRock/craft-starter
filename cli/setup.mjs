@@ -8,6 +8,9 @@
  *
  * All logic lives in ./prompts, ./actions, ./config, and ./utils — this file
  * just wires them together in order.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

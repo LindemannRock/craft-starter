@@ -3,6 +3,9 @@
  *
  * Resets require/require-dev to the core set on every run so stale entries
  * from previous selections don't bleed through.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';

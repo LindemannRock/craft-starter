@@ -10,6 +10,9 @@
  *   2. Docker installed
  *   3. Docker daemon running
  *   4. DDEV installed
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import { execSync } from 'child_process';
@@ -78,6 +81,7 @@ export function checkPrerequisites() {
 /**
  * Check if a command exists on the user's PATH.
  * Uses `command -v` which is POSIX-compliant (works on macOS and Linux).
+ *
  */
 function commandExists(cmd) {
 	try {
@@ -91,6 +95,7 @@ function commandExists(cmd) {
 /**
  * Check if the Docker daemon is actually running (not just installed).
  * `docker info` fails silently if the daemon is down, even when the CLI exists.
+ *
  */
 function dockerDaemonRunning() {
 	try {

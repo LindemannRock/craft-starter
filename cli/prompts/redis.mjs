@@ -8,6 +8,9 @@
  * - Craft's cache component uses Redis
  *
  * When disabled, Craft falls back to its default file-based cache.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

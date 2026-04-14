@@ -1,6 +1,13 @@
 {
-	"name": "lr-create",
+	"name": "@lindemannrock/craft-starter-cli",
 	"version": "1.0.0",
+	"description": "Interactive CLI for LindemannRock Craft CMS Starter",
+	"author": {
+		"name": "Bilal Harry Lindemann",
+		"email": "hello@lindemannrock.com",
+		"url": "https://lindemannrock.com"
+	},
+	"license": "MIT",
 	"private": true,
 	"type": "module",
 	"dependencies": {

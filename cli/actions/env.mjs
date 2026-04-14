@@ -8,6 +8,9 @@
  * Craft-owned settings (devMode, timezone, CP trigger, etc.) use the CRAFT_*
  * env var convention — Craft auto-reads these without needing code in
  * general.php. See cli/templates/env.example for the full list.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';
@@ -25,6 +28,7 @@ const HEADER_BLOCK_REGEX = /^# -{3,}[\s\S]*?# -{3,}\n\n?/;
 /**
  * Create a fresh .env from the template and populate it with user values.
  * Call this ONCE from the orchestrator — all env updates go here.
+ *
  */
 export function generateEnvFile({
 	project,
@@ -187,6 +191,7 @@ export function generateEnvFile({
 /**
  * Remove a commented section from .env content — matches `# Section Name`
  * and all following `KEY=value` lines until the next blank line or new comment.
+ *
  */
 function removeSection(content, header) {
 	const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -199,6 +204,7 @@ function removeSection(content, header) {
  * Replace (or append) a single key in .env content.
  * Matches the key at the start of a line and rewrites the entire value.
  * If the key doesn't exist, appends it to the end of the file.
+ *
  */
 export function setEnvKey(content, key, value) {
 	const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -213,6 +219,7 @@ export function setEnvKey(content, key, value) {
 
 /**
  * Wrap a value in double quotes for .env files (use for values with spaces or special chars).
+ *
  */
 export function quoted(value) {
 	return `"${String(value).replace(/"/g, '\\"')}"`;

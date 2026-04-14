@@ -3,6 +3,9 @@
  *
  * Returns a list of step descriptors that the orchestrator runs with a spinner.
  * Each step is either a shell `cmd` or an async `fn`.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';
@@ -17,6 +20,7 @@ import { shellEscape } from '../utils/validate.mjs';
 
 /**
  * Returns true if Craft is already installed (has a schemaVersion in project config).
+ *
  */
 function isCraftInstalled() {
 	try {

@@ -1,5 +1,8 @@
 /**
  * Multi-site actions: scaffold translation directories and clean unused ones.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';
@@ -13,6 +16,7 @@ const TEMPLATE_FILE = path.join(CLI_DIR, 'templates', 'translations', 'site.php'
  * Create translation directories for each site.
  * Uses the template from cli/templates/translations/ as a base.
  * The filename matches the translation category (default: 'site').
+ *
  */
 export function scaffoldTranslations(sites, category = 'site') {
 	const filename = `${category}.php`;
@@ -38,6 +42,7 @@ export function scaffoldTranslations(sites, category = 'site') {
 
 /**
  * Remove translation directories that don't match any selected site handle.
+ *
  */
 export function cleanUnusedTranslations(sites) {
 	const activeHandles = new Set(sites.map((s) => s.handle));

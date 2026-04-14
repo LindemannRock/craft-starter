@@ -4,6 +4,9 @@
  *
  * Timezone and language use @inquirer/search for autocomplete since
  * @clack/prompts doesn't have a native searchable select.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

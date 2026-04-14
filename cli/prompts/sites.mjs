@@ -2,6 +2,9 @@
  * Multi-site prompts.
  * Asks how many sites, then collects handle, language, URL prefix, name, and
  * switcher label for each. Returns an array of site objects.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';
@@ -12,6 +15,7 @@ import { cancel } from '../utils/cancel.mjs';
 /**
  * Derive a short handle from a locale code.
  * 'en-US' → 'en', 'ar' → 'ar', 'zh-TW' → 'zh-tw'
+ *
  */
 function defaultHandle(language) {
 	return language.toLowerCase().split('-')[0];
@@ -20,6 +24,7 @@ function defaultHandle(language) {
 /**
  * Derive a short switcher label from a locale code.
  * Uses Intl.DisplayNames to get the native-script name, then takes the first word.
+ *
  */
 function defaultLabel(language) {
 	try {

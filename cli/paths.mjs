@@ -1,3 +1,7 @@
+/**
+ * @copyright 2026 LindemannRock
+ * @license MIT
+ */
 import path from 'path';
 import { fileURLToPath } from 'url';
 

@@ -9,6 +9,9 @@
  *
  * Source: src/img/favicon.svg (or .png)
  * Output: src/brand/favicons/
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import sharp from 'sharp';
@@ -38,6 +41,7 @@ const SIZES = {
 
 /**
  * Read .env and extract site handles + names.
+ *
  */
 function discoverSites() {
 	if (!env) {

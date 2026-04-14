@@ -1,5 +1,8 @@
 /**
  * Presentation helpers for the CLI — intro, configuration summary, outro.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

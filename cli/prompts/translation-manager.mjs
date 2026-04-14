@@ -1,6 +1,9 @@
 /**
  * Translation Manager prompts.
  * Asks for the translation category name used in Twig templates.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

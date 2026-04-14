@@ -1,6 +1,9 @@
 /**
  * Language / locale catalog for Craft CMS.
  * Used by the language prompt with autocomplete.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 // Common languages shown when the search input is empty (press Enter = English)

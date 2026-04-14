@@ -1,6 +1,9 @@
 /**
  * Postmark-specific credentials prompt.
  * Only shown when Postmark is selected as a plugin.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

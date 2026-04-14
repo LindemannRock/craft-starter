@@ -10,6 +10,9 @@
  * Instead we shell out to a small PHP script that boots Craft and uses
  * `Craft::$app->projectConfig->set()` which handles the split-file layout
  * correctly and persists both YAML + database in one step.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import { run } from '../utils/run.mjs';
@@ -23,6 +26,7 @@ import { run } from '../utils/run.mjs';
  *
  * The PHP script reads POSTMARK_TOKEN / SMTP_HOSTNAME from .env itself — no
  * arguments needed.
+ *
  */
 export async function configureEmailTransport() {
 	await run('ddev exec php cli/scripts/configure-project.php');

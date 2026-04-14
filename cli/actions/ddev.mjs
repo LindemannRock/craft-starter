@@ -1,5 +1,8 @@
 /**
  * Updates .ddev/config.yaml with the project name and timezone.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import fs from 'fs';

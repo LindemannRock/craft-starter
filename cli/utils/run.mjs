@@ -4,6 +4,9 @@
  * Captures stdout/stderr and only prints them on failure, so the clack spinner
  * stays clean during normal runs. Throws on failure so the caller can stop
  * spinners and clean up before exiting.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import { spawn } from 'child_process';

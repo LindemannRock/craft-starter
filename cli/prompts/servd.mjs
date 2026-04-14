@@ -1,6 +1,9 @@
 /**
  * Servd-specific credentials prompt.
  * Only shown when Servd is selected as the hosting provider.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';

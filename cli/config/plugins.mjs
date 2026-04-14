@@ -8,6 +8,9 @@
  *
  * To add a new plugin: add an entry here and (if it needs config) drop a PHP
  * file in cli/templates/plugins/{name}.php
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 // -----------------------------------------------------------------------------

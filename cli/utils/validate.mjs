@@ -1,5 +1,8 @@
 /**
  * Shared input validators and sanitizers used across prompt and action modules.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 // Matches the standard Craft/RFC-ish email pattern: local@domain.tld with
@@ -13,6 +16,7 @@ export function isValidEmail(value) {
 /**
  * Wraps a value in single quotes with internal single-quote escaping,
  * making it safe to interpolate into a shell command string.
+ *
  */
 export function shellEscape(value) {
 	return "'" + String(value).replace(/'/g, "'\\''") + "'";

@@ -2,6 +2,9 @@
  * Plugin and hosting prompts.
  * Returns the resolved plugin objects (not just the composer package names)
  * so downstream actions can access handles, versions, and config files.
+ *
+ * @copyright 2026 LindemannRock
+ * @license MIT
  */
 
 import * as p from '@clack/prompts';
