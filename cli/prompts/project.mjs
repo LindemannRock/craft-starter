@@ -101,9 +101,10 @@ export async function promptProject() {
 				p.text({
 					message: 'Admin email (CP login)',
 					placeholder: 'hello@lindemannrock.com',
+					defaultValue: 'hello@lindemannrock.com',
 					validate: (v) => {
-						if (!v) return 'Email is required';
-						if (!isValidEmail(v)) return 'Enter a valid email address (e.g. you@example.com)';
+						const val = v || 'hello@lindemannrock.com';
+						if (!isValidEmail(val)) return 'Enter a valid email address';
 					},
 				}),
 			adminPassword: () =>
@@ -117,9 +118,10 @@ export async function promptProject() {
 				p.text({
 					message: 'System email (from address for outgoing mail)',
 					placeholder: 'info@example.com',
+					defaultValue: 'info@example.com',
 					validate: (v) => {
-						if (!v) return 'System email is required';
-						if (!isValidEmail(v)) return 'Enter a valid email address (e.g. info@example.com)';
+						const val = v || 'info@example.com';
+						if (!isValidEmail(val)) return 'Enter a valid email address';
 					},
 				}),
 			noReplyEmail: () =>

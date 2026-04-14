@@ -315,7 +315,7 @@ async function main() {
 				s.stop(pc.green('\u2713') + ' ' + step.msg);
 			}
 		} catch (err) {
-			s.stop(pc.red('\u2717') + ' ' + step.msg);
+			s.error(step.msg);
 			p.log.error(err.message);
 			p.cancel('Installation failed. Fix the error above and re-run: make install');
 			process.exit(1);
