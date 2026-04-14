@@ -1,7 +1,23 @@
 {
-	"intelephense.environment.phpVersion": "8.3",
-	"editor.formatOnSave": true,
-	"prettier.configPath": "./.prettierrc.json",
-	"prettier.bracketSameLine": true,
-	"prettier.documentSelectors": ["**/*.{jsx,html,twig,css,scss}"]
+    "intelephense.environment.phpVersion": "8.3",
+    "terminal.integrated.env.osx": {},
+    "editor.formatOnSave": true,
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "CRITICAL RULES — FOLLOW BEFORE GENERATING:\n1. Documentation changes are NEVER feat. Use type docs. ALWAYS.\n2. Generate exactly ONE commit message per staging. Never multiple.\n3. If staged changes mix unrelated code changes, output only: 'Split into separate commits:' with suggested groupings.\n\nGenerate commit messages following Conventional Commits. Used by release-please — the type MUST be accurate. Never use emojis.\n\nFORMAT:\n<type>(<scope>): <imperative description>\n\n<body with technical details>\n\nTYPES:\n- feat: New functionality users can use\n- fix: Fixes broken, insecure, or incorrect behavior\n- refactor: Internal code changes, no behavior change\n- style: Formatting, whitespace only\n- chore: Dependencies, CI, tooling, config\n- docs: Documentation only\n- test: Adding or updating tests\n\nDECISION TREE:\n1. Does it fix broken, insecure, or incorrect behavior? → fix\n2. Does it add entirely new functionality that didn't exist before? → feat\n3. Does it change code without changing behavior? → refactor\n4. Is it only formatting? → style\n5. Is it dependencies/CI/tooling? → chore\n6. Is it only docs? → docs\n\nRULES:\n1. Subject max 72 chars, imperative mood ('add' not 'added').\n2. Scope = most specific affected area. Omit only if change spans the whole plugin.\n3. Body: list specific functions, classes, files. Be precise.\n4. If a feat includes necessary refactoring, use feat (most impactful type wins).\n5. For breaking changes, use ! suffix: feat!(...) or fix!(...)."
+          }
+    ],
+    "prettier.configPath": "./.prettierrc.json",
+    "prettier.bracketSameLine": true,
+    "prettier.documentSelectors": [
+        "**/*.{jsx,html,twig,astro,css,scss}"
+    ],
+    "prettier.experimentalTernaries": true,
+    "postman.settings.dotenv-detection-notification-visibility": false,
+    "files.watcherExclude": {
+        "**/packages-dev/**": true
+    },
+    "search.exclude": {
+        "**/packages-dev/**": true
+    }
 }
