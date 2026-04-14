@@ -188,6 +188,9 @@ check-plugins: ## Check plugin registry versions against Packagist
 update-plugins: ## Update plugin registry versions (confirms major bumps)
 	@node cli/scripts/check-plugin-versions.mjs --update
 
+add-plugin: ## Add a new plugin to the registry (searches Packagist)
+	@node cli/scripts/add-plugin.mjs
+
 clean: ## Remove vendor & node_modules then reinstall
 	@if [ ! -f .env ]; then \
 		echo "No .env file found. Run 'make create' for interactive setup."; \
