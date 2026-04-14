@@ -10,10 +10,17 @@
 	"license": "MIT",
 	"private": true,
 	"type": "module",
+	"scripts": {
+		"update": "npm-check --update"
+	},
+	"devDependencies": {
+		"npm-check": "^6.0.1"
+	},
 	"dependencies": {
 		"@clack/prompts": "^1.2.0",
 		"@inquirer/search": "^4.1.7",
 		"js-yaml": "^4.1.1",
-		"picocolors": "^1.1.1"
+		"picocolors": "^1.1.1",
+		"sharp": "^0.34.2"
 	}
 }

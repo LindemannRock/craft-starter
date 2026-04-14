@@ -128,7 +128,7 @@ prod: ## Production build
 	@$(call require_project, ddev exec npm run build)
 
 favicons: ## Generate site favicons from src/img/favicon.svg
-	@$(call require_project, ddev exec node cli/scripts/generate-favicons.mjs)
+	@$(call require_project, ddev exec bash -c 'cd cli && node scripts/generate-favicons.mjs')
 
 format: ## @fmt Format everything with Prettier
 	@$(call require_project, ddev exec npx prettier -w .)
@@ -181,6 +181,9 @@ update-composer: ## Update Composer packages to latest matching versions
 
 update-npm: ## Update NPM packages (interactive — shows what's available)
 	@$(call require_project, ddev exec npm-check --update)
+
+update-cli: ## Update CLI packages in cli/ (interactive)
+	@cd cli && npm run update
 
 check-plugins: ## Check plugin registry versions against Packagist
 	@node cli/scripts/check-plugin-versions.mjs
