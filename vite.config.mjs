@@ -15,10 +15,13 @@ export default defineConfig(async ({ command, mode }) => {
 	// Enabled via `make critical`; `make prod` leaves it off for fast builds.
 	let criticalPlugin = null;
 	if (env.GENERATE_CRITICAL_CSS === 'true') {
+		if (!env.PRIMARY_SITE_URL) {
+			throw new Error('[vite] GENERATE_CRITICAL_CSS=true but PRIMARY_SITE_URL is not set in .env');
+		}
 		try {
 			const { default: critical } = await import('rollup-plugin-critical');
 			criticalPlugin = critical({
-				criticalUrl: env.PRIMARY_SITE_URL || 'https://starter.ddev.site/',
+				criticalUrl: env.PRIMARY_SITE_URL,
 				criticalBase: path.resolve(process.cwd(), 'web/dist/criticalcss') + '/',
 				criticalPages: [
 					{ uri: '/', template: 'entry/home/default' },
