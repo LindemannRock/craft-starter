@@ -2,7 +2,7 @@
 	clean clean-logs update update-craft update-composer update-npm update-cli \
 	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-fetch \
 	up npm-install kill-vite \
-	pull-db export-db import-db reindex-search \
+	db db-pull db-export db-import reindex-search \
 	launch tableplus mailpit keys format share funnel \
 	l tp mp fmt kv
 
@@ -241,10 +241,15 @@ clean: ## Remove vendor & node_modules then reinstall
 clean-logs: ## Remove storage/logs/*.log
 	rm -rf storage/logs/*.log
 
-pull-db: ## Pull database from Servd (Servd hosting only)
+db: ## Interactive database picker (pull / export / import)
+	@node cli/scripts/db.mjs
+
+# Hidden (no `##` description) — still callable, invoked by the picker above.
+# Override the default file with `make db-export file=path/to/dump.sql.gz`.
+db-pull:
 	@$(call require_project, ddev exec php craft servd-asset-storage/local/pull-database --emptyDatabase)
 
-export-db: ## Export the local database (default: db.sql.gz, or file=path)
+db-export:
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
 	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
 	else \
@@ -254,15 +259,13 @@ export-db: ## Export the local database (default: db.sql.gz, or file=path)
 		echo "Done."; \
 	fi
 
-import-db: ## Import a SQL dump (default: db.sql.gz, or file=path)
+db-import:
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
 	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
 	else \
 		target="$${file:-db.sql.gz}"; \
 		if [ ! -f "$$target" ]; then \
 			echo "File not found: $$target"; \
-			echo "Usage: make import-db                    (imports ./db.sql.gz)"; \
-			echo "       make import-db file=path/to/dump.sql.gz"; \
 		else \
 			echo "Importing database from $$target..."; \
 			ddev import-db --file="$$target"; \

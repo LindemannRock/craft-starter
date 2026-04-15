@@ -27,9 +27,9 @@ const TARGETS = [
 ];
 
 function runShell(command, args) {
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		const child = spawn(command, args, { stdio: 'inherit' });
-		child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`${command} ${args.join(' ')} exited ${code}`))));
+		child.on('exit', (code) => resolve(code ?? 0));
 	});
 }
 
@@ -37,11 +37,10 @@ async function runTarget(target, { interactive = true } = {}) {
 	if (target === 'craft' && interactive) {
 		// Delegate to Craft's native interactive update flow
 		p.log.step('ddev exec php craft update');
-		await runShell('ddev', ['exec', 'php', 'craft', 'update']);
-		return;
+		return runShell('ddev', ['exec', 'php', 'craft', 'update']);
 	}
 	p.log.step(`make update-${target}`);
-	await runShell('make', [`update-${target}`]);
+	return runShell('make', [`update-${target}`]);
 }
 
 async function main() {
@@ -55,16 +54,18 @@ async function main() {
 
 	const isAll = choice === 'all';
 	const order = isAll ? ['craft', 'composer', 'npm', 'cli'] : [choice];
+	let failed = false;
 	for (const t of order) {
-		try {
-			await runTarget(t, { interactive: !isAll });
-		} catch (err) {
-			p.log.error(err.message);
-			process.exit(1);
+		const code = await runTarget(t, { interactive: !isAll });
+		if (code !== 0) {
+			failed = true;
+			if (isAll) p.log.warn(`update-${t} failed — continuing with the rest`);
+			else break;
 		}
 	}
 
-	p.outro(pc.green('Done.'));
+	p.outro(failed ? pc.red('One or more updates failed — see output above.') : pc.green('Done.'));
+	process.exit(0);
 }
 
 main().catch((err) => {

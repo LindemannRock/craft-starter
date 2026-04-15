@@ -33,9 +33,9 @@ const RESOURCES = [
 ];
 
 function runShell(command, args) {
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		const child = spawn(command, args, { stdio: 'inherit' });
-		child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`${command} ${args.join(' ')} exited ${code}`))));
+		child.on('exit', (code) => resolve(code ?? 0));
 	});
 }
 
@@ -63,14 +63,12 @@ async function main() {
 	if (p.isCancel(action)) cancel();
 
 	const target = `registry-${resource.value}-${action}`;
-	try {
-		p.log.step(`make ${target}`);
-		await runShell('make', [target]);
-	} catch (err) {
-		p.log.error(err.message);
-		process.exit(1);
+	p.log.step(`make ${target}`);
+	const code = await runShell('make', [target]);
+	if (code !== 0) {
+		p.outro(pc.red('Command failed — see output above.'));
+		process.exit(0);
 	}
-
 	p.outro(pc.green('Done.'));
 }
 
