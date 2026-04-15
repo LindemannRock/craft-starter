@@ -28,6 +28,7 @@ import { promptServdEmail } from './prompts/servd-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
 import { promptTranslationCategory } from './prompts/translation-manager.mjs';
 import { promptRedis } from './prompts/redis.mjs';
+import { promptCritical } from './prompts/critical.mjs';
 import { updateComposer } from './actions/composer.mjs';
 import { updatePackageJson } from './actions/packageJson.mjs';
 import { updateDdevConfig } from './actions/ddev.mjs';
@@ -52,6 +53,7 @@ async function collectProject(state) {
 async function collectSitesAndFeatures(state) {
 	state.sites = await promptSites(state.project?.description || state.project?.name);
 	state.useRedis = await promptRedis();
+	state.useCritical = await promptCritical();
 }
 
 async function collectPlugins(state) {
@@ -189,7 +191,7 @@ async function main() {
 		}
 	}
 
-	const { project, sites, useRedis, selectedLr, selectedTp, selectedHosting,
+	const { project, sites, useRedis, useCritical, selectedLr, selectedTp, selectedHosting,
 		servdCredentials, postmarkToken, smtpCredentials, translationCategory } = state;
 
 	// -- Apply file changes --------------------------------------------------
@@ -200,7 +202,7 @@ async function main() {
 	s.stop('composer.json updated');
 
 	s.start('Updating package.json');
-	updatePackageJson(project);
+	updatePackageJson(project, { useCritical });
 	s.stop('package.json updated');
 
 	s.start('Updating DDEV config');
@@ -208,7 +210,7 @@ async function main() {
 	s.stop('DDEV config updated');
 
 	s.start('Generating .env');
-	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedis, selectedLr, selectedTp, selectedHosting });
+	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedis, useCritical, selectedLr, selectedTp, selectedHosting });
 	s.stop('.env generated');
 
 	if (selectedHosting.value === 'craft-cloud') {
@@ -322,7 +324,7 @@ async function main() {
 		}
 	}
 
-	outro({ project });
+	outro({ project, useCritical });
 }
 
 main().catch((err) => {

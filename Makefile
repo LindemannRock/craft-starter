@@ -1,4 +1,4 @@
-.PHONY: help create install start dev prod favicons reset nuke \
+.PHONY: help create install start dev prod critical favicons reset nuke \
 	clean clean-logs update update-composer update-npm up npm-install kill-vite \
 	pull-db export-db import-db reindex-search \
 	launch tableplus mailpit keys format share funnel \
@@ -124,8 +124,19 @@ npm-install: ## Run `npm install` inside DDEV
 dev: ## Start Vite dev server (HMR)
 	@$(call require_project, ddev exec npm run dev)
 
-prod: ## Production build
-	@$(call require_project, ddev exec npm run build)
+prod: ## Production build (fast — skips critical CSS)
+	@$(call require_project, ddev exec env GENERATE_CRITICAL_CSS=false npm run build)
+	@# Hint: if the project opted into critical CSS but files aren't built yet, suggest `make critical`
+	@if grep -q '^GENERATE_CRITICAL_CSS=true' .env 2>/dev/null && [ ! -d web/dist/criticalcss ]; then \
+	  printf '\n  \033[2mtip: this project uses critical CSS — run\033[0m \033[36mmake critical\033[0m \033[2mbefore shipping\033[0m\n'; \
+	fi
+
+critical: ## Production build with critical CSS (slow — spawns Chromium per page)
+	@if ! grep -q '^GENERATE_CRITICAL_CSS=' .env 2>/dev/null; then \
+	  echo "Critical CSS not enabled in this project. Set GENERATE_CRITICAL_CSS=true in .env and re-run."; \
+	  exit 1; \
+	fi
+	@$(call require_project, ddev exec env GENERATE_CRITICAL_CSS=true npm run build)
 
 favicons: ## Generate site favicons from src/img/favicon.svg
 	@$(call require_project, ddev exec bash -c 'cd cli && node scripts/generate-favicons.mjs')

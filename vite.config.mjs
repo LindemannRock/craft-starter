@@ -4,13 +4,32 @@ import manifestSRI from 'vite-plugin-manifest-sri';
 import ViteRestart from 'vite-plugin-restart';
 import viteCompression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
-import critical from 'rollup-plugin-critical';
 import copy from 'rollup-plugin-copy';
 import * as path from 'path';
 import * as fs from 'fs';
 
-export default defineConfig(({ command, mode }) => {
-	const env = loadEnv(mode, process.cwd());
+export default defineConfig(async ({ command, mode }) => {
+	const env = loadEnv(mode, process.cwd(), '');
+
+	// Critical CSS is opt-in (slow — spawns Chromium per page).
+	// Enabled via `make critical`; `make prod` leaves it off for fast builds.
+	let criticalPlugin = null;
+	if (env.GENERATE_CRITICAL_CSS === 'true') {
+		try {
+			const { default: critical } = await import('rollup-plugin-critical');
+			criticalPlugin = critical({
+				criticalUrl: env.PRIMARY_SITE_URL || 'https://starter.ddev.site/',
+				criticalBase: path.resolve(process.cwd(), 'web/dist/criticalcss') + '/',
+				criticalPages: [
+					{ uri: '/', template: 'entry/home/default' },
+					{ uri: '/about', template: 'entry/pages/default' },
+				],
+				criticalConfig: {},
+			});
+		} catch {
+			console.warn('[vite] rollup-plugin-critical not installed — skipping critical CSS generation');
+		}
+	}
 
 	const outputDir = path.resolve(process.cwd(), 'web/dist');
 	const sharedAssetsDir = path.resolve(process.cwd(), 'web/dist/assets');
@@ -47,17 +66,23 @@ export default defineConfig(({ command, mode }) => {
 						return 'assets/js/[name]-[hash].js';
 					},
 					assetFileNames: (assetInfo) => {
-						if (assetInfo.name?.endsWith('.css')) {
-							const name = assetInfo.name;
+						const name = assetInfo.names?.[0] ?? '';
+						if (name.endsWith('.css')) {
 							const entryPoint = name.split('/').pop()?.replace('.css', '') || 'style';
 							return `assets/css/${entryPoint}-[hash][extname]`;
 						}
 						return 'assets/[name]-[hash][extname]';
 					},
-					manualChunks: {
-						vendor: ['alpinejs', '@alpinejs/collapse'],
-						swiper: ['swiper'],
-						mmenu: ['mmenu-js'],
+					manualChunks(id) {
+						if (id.includes('node_modules/alpinejs') || id.includes('node_modules/@alpinejs/collapse')) {
+							return 'vendor';
+						}
+						if (id.includes('node_modules/swiper')) {
+							return 'swiper';
+						}
+						if (id.includes('node_modules/mmenu-js')) {
+							return 'mmenu';
+						}
 					},
 				},
 			},
@@ -110,15 +135,7 @@ export default defineConfig(({ command, mode }) => {
 				copyOnce: true,
 				flatten: false,
 			}),
-			critical({
-				criticalUrl: env.PRIMARY_SITE_URL || 'https://starter.ddev.site/',
-				criticalBase: `${outputDir}/criticalcss/`,
-				criticalPages: [
-					{ uri: '', template: 'entry/home/default' },
-					{ uri: 'about', template: 'entry/pages/default' },
-				],
-				criticalConfig: {},
-			}),
+			criticalPlugin,
 			ViteRestart({
 				restart: ['./templates/**/*', './src/**/*', './translations/**/*', './config/*'],
 			}),

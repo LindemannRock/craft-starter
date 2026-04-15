@@ -13,7 +13,7 @@ export function intro() {
 	p.intro(pc.bgCyan(pc.black(' LindemannRock — Craft CMS Starter ')));
 }
 
-export function showConfigurationSummary({ project, sites, useRedis, selectedLr, selectedTp, selectedHosting }) {
+export function showConfigurationSummary({ project, sites, useRedis, useCritical, selectedLr, selectedTp, selectedHosting }) {
 	const rows = [
 		['Project', project.name],
 		['Site name', project.description],
@@ -25,6 +25,7 @@ export function showConfigurationSummary({ project, sites, useRedis, selectedLr,
 		['System email', project.systemEmail],
 		['Sites', sites.map((s) => `${s.handle} (${s.language})`).join(', ')],
 		['Cache', useRedis ? 'Redis' : 'File (default)'],
+		['Critical CSS', useCritical ? 'Yes (run make critical)' : 'No'],
 		['LR Plugins', selectedLr.length ? selectedLr.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
 		['Plugins', selectedTp.length ? selectedTp.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],
@@ -96,9 +97,13 @@ function wrapValue(value, maxWidth, indent) {
 	return lines.join(`\n${indent}`);
 }
 
-export function outro({ project }) {
+export function outro({ project, useCritical }) {
 	const siteUrl = `https://${project.name}.ddev.site`;
 	const cpUrl = `${siteUrl}/${project.cpTrigger || 'cms'}`;
+
+	const criticalLine = useCritical
+		? `  ${pc.bold('make critical')}  Production build + critical CSS (slow)\n`
+		: '';
 
 	console.log('');
 	p.outro(
@@ -108,7 +113,8 @@ export function outro({ project }) {
 		`  ${pc.bold('Login')}    ${project.adminEmail}\n\n` +
 		`  ${pc.dim('Common commands:')}\n` +
 		`  ${pc.bold('make dev')}       Start Vite dev server (HMR)\n` +
-		`  ${pc.bold('make prod')}      Production build\n` +
+		`  ${pc.bold('make prod')}      Production build (fast)\n` +
+		criticalLine +
 		`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
 		`  ${pc.bold('make reset')}     Wipe DB + .env, re-run setup\n` +
 		`  ${pc.bold('make help')}      See all available commands\n`

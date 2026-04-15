@@ -37,6 +37,7 @@ export function generateEnvFile({
 	postmarkToken,
 	smtpCredentials,
 	useRedis,
+	useCritical = false,
 	selectedLr = [],
 	selectedTp = [],
 	selectedHosting = {},
@@ -144,6 +145,10 @@ export function generateEnvFile({
 	);
 	if (!useRedis) {
 		content = removeSection(content, '# Redis Cache');
+	}
+
+	if (!useCritical) {
+		content = removeSection(content, '# Critical CSS');
 	}
 
 	// Remove plugin env sections when the plugin isn't selected.
