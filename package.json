@@ -1,7 +1,7 @@
 {
-	"name": "@lindemannrock/craft-starter",
+	"name": "test",
 	"version": "1.0.0",
-	"description": "LindemannRock Craft CMS Starter",
+	"description": "Testing",
 	"type": "module",
 	"author": {
 		"name": "Bilal Harry Lindemann",
@@ -47,7 +47,7 @@
 		"tailwindcss": "^4.1.11",
 		"terser": "^5.43.1",
 		"typescript": "^6.0.2",
-		"vite": "^7.3.1",
+		"vite": "^7.3.2",
 		"vite-plugin-compression": "^0.5.1",
 		"vite-plugin-manifest-sri": "^0.2.0",
 		"vite-plugin-restart": "^2.0.0"
