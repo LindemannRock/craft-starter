@@ -304,9 +304,9 @@ nuke: ## Destroy DDEV + vendor + node_modules + dist + config/project + .env
 	@# Remove DDEV generated artifacts
 	@rm -rf .ddev/addon-metadata/redis .ddev/docker-compose.redis.yaml .ddev/redis 2>/dev/null || true
 	@rm -rf .ddev/traefik/certs .ddev/traefik/config 2>/dev/null || true
-	@# Reset DDEV config to starter defaults
-	@sed -i '' 's/^name: .*/name: craft-starter/' .ddev/config.yaml 2>/dev/null || true
-	@sed -i '' 's/^timezone: .*/timezone: Asia\/Dubai/' .ddev/config.yaml 2>/dev/null || true
+	@# Restore DDEV config from git (covers name, timezone, webimage_extra_packages,
+	@# and config.m1.yaml which the CLI may have deleted when critical was declined)
+	@git checkout .ddev/config.yaml .ddev/config.m1.yaml 2>/dev/null || true
 	@# Remove scaffolded translations (template lives in cli/templates/translations/)
 	@find translations -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
 	@# Remove CLI temp files

@@ -32,6 +32,7 @@ import { promptCritical } from './prompts/critical.mjs';
 import { updateComposer } from './actions/composer.mjs';
 import { updatePackageJson } from './actions/packageJson.mjs';
 import { updateDdevConfig } from './actions/ddev.mjs';
+import { applyCriticalCssChoice } from './actions/critical.mjs';
 import { generateEnvFile } from './actions/env.mjs';
 import { writePluginConfigs, cleanUnusedPluginConfigs } from './actions/plugins.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from './actions/sites.mjs';
@@ -206,8 +207,12 @@ async function main() {
 	s.stop('package.json updated');
 
 	s.start('Updating DDEV config');
-	updateDdevConfig(project);
+	updateDdevConfig(project, { useCritical });
 	s.stop('DDEV config updated');
+
+	s.start('Applying critical-CSS choice');
+	applyCriticalCssChoice(useCritical);
+	s.stop('Critical-CSS choice applied');
 
 	s.start('Generating .env');
 	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedis, useCritical, selectedLr, selectedTp, selectedHosting });
