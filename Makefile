@@ -210,7 +210,7 @@ update-npm:
 update-cli:
 	@cd cli && npm run update
 
-registry: ## Manage the starter's registries (plugins today; themes etc. later)
+registry: ## Maintain the plugin list offered by make create (check / update / add / fetch)
 	@node cli/scripts/registry.mjs
 
 # Hidden (no `##` description) — still callable, invoked by the picker above.
