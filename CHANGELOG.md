@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.3](https://github.com/LindemannRock/craft-starter/compare/v5.1.2...v5.1.3) (2026-04-16)
+
+
+### Bug Fixes
+
+* **config:** improve Redis cache configuration handling ([d4ebeaf](https://github.com/LindemannRock/craft-starter/commit/d4ebeaf89a0604bde885362b93ff656c138e5585))
+
 ## [5.1.2](https://github.com/LindemannRock/craft-starter/compare/v5.1.1...v5.1.2) (2026-04-16)
 
 
