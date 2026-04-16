@@ -162,7 +162,11 @@ craft-starter/
 │       ├── env.example    The .env template
 │       ├── plugins/       Per-plugin config.php templates
 │       ├── translations/  Translation scaffold (copied per site/locale)
-│       └── rebrand/       CP rebrand assets (login logo + site icon)
+│       ├── rebrand/       CP rebrand assets (login logo + site icon)
+│       └── critical/      Canonical critical-CSS variants (enabled/disabled
+│                          partials + Apple Silicon config.m1.yaml) — used for
+│                          round-trip correctness if a project commits a
+│                          declined state and later flips back
 ├── config/
 │   ├── app.php            Only the `cache` component override
 │   ├── general.php        Project-wide constants (no env-overridable settings — use CRAFT_* in .env)
@@ -274,7 +278,7 @@ The installer tailors the project to your selections so you don't end up with de
 
 - **Opted in** → `rollup-plugin-critical` kept in `package.json`, ~20 Chromium apt packages added to `.ddev/config.yaml`, `.ddev/config.m1.yaml` present (native Chromium on Apple Silicon), full `critical-css.twig` partial with Nginx SSI + cookie logic, `GENERATE_CRITICAL_CSS=true` in `.env`, `make critical` works
 - **Declined** → all of the above stripped. `make prod` is the fast path; `make critical` refuses with a clear re-enable message
-- **Flip-flopping** (re-running `make create` and changing your mind) is idempotent in both directions
+- **Flip-flopping** (re-running `make create` and changing your mind) is idempotent in both directions. The canonical "full" + "disabled" variants live under `cli/templates/critical/`, so opt-in works even if a project previously committed a declined state
 
 ### Sites (multi-site)
 
