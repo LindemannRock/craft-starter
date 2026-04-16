@@ -76,14 +76,20 @@ export function generateEnvFile({
 	// dynamically appended later (after the template blocks are removed).
 	// Values are written directly into the appended blocks instead.
 
-	// Servd credentials
+	// Servd credentials — TODO-marked when user picked "scaffold placeholders"
 	if (servdCredentials) {
-		updates.SERVD_PROJECT_SLUG = servdCredentials.slug;
-		updates.SERVD_SECURITY_KEY = servdCredentials.key;
-		updates.SERVD_BASE_URL = `https://${servdCredentials.slug}.files.svdcdn.com`;
-		if (servdCredentials.cdnUrl) {
-			updates.SERVD_CDN_URL_PATTERN = `'${servdCredentials.cdnUrl}'`;
-			updates.SERVD_IMAGE_TRANSFORM_URL_PATTERN = `'${servdCredentials.imageTransformUrl}'`;
+		if (servdCredentials.placeholder) {
+			updates.SERVD_PROJECT_SLUG = '# TODO: from Servd dashboard → Project Settings → Assets';
+			updates.SERVD_SECURITY_KEY = '# TODO: from Servd dashboard → Project Settings → Assets';
+			updates.SERVD_BASE_URL = '# TODO: https://{slug}.files.svdcdn.com once slug is set';
+		} else {
+			updates.SERVD_PROJECT_SLUG = servdCredentials.slug;
+			updates.SERVD_SECURITY_KEY = servdCredentials.key;
+			updates.SERVD_BASE_URL = `https://${servdCredentials.slug}.files.svdcdn.com`;
+			if (servdCredentials.cdnUrl) {
+				updates.SERVD_CDN_URL_PATTERN = `'${servdCredentials.cdnUrl}'`;
+				updates.SERVD_IMAGE_TRANSFORM_URL_PATTERN = `'${servdCredentials.imageTransformUrl}'`;
+			}
 		}
 	}
 

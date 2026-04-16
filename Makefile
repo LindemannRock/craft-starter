@@ -2,7 +2,7 @@
 	clean clean-logs update update-craft update-composer update-npm update-cli \
 	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-fetch \
 	up npm-install kill-vite \
-	db db-pull db-export db-import reindex-search \
+	db db-pull db-export db-import verify reindex-search \
 	launch tableplus mailpit keys format share funnel \
 	l tp mp fmt kv
 
@@ -193,6 +193,9 @@ funnel: ## Share publicly via Tailscale Funnel (no Tailscale on test device)
 
 up: ## Apply project config + run pending migrations
 	@$(call require_project, ddev exec php craft up --interactive=0)
+
+verify: ## Scan .env for unfilled placeholders (run before deploy)
+	@node cli/scripts/verify.mjs
 
 update: ## Interactive update picker (Craft / Composer / NPM / CLI / All)
 	@node cli/scripts/update.mjs

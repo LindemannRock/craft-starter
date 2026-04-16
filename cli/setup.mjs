@@ -329,7 +329,8 @@ async function main() {
 		}
 	}
 
-	outro({ project, useCritical });
+	const hasPlaceholders = Boolean(servdCredentials?.placeholder);
+	outro({ project, useCritical, hasPlaceholders });
 }
 
 main().catch((err) => {

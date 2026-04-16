@@ -97,12 +97,16 @@ function wrapValue(value, maxWidth, indent) {
 	return lines.join(`\n${indent}`);
 }
 
-export function outro({ project, useCritical }) {
+export function outro({ project, useCritical, hasPlaceholders }) {
 	const siteUrl = `https://${project.name}.ddev.site`;
 	const cpUrl = `${siteUrl}/${project.cpTrigger || 'cms'}`;
 
 	const criticalLine = useCritical
 		? `  ${pc.bold('make critical')}  Production build + critical CSS (slow)\n`
+		: '';
+
+	const verifyLine = hasPlaceholders
+		? `  ${pc.bold('make verify')}    ${pc.yellow('Check .env for unfilled placeholders before deploy')}\n`
 		: '';
 
 	console.log('');
@@ -115,6 +119,7 @@ export function outro({ project, useCritical }) {
 		`  ${pc.bold('make dev')}       Start Vite dev server (HMR)\n` +
 		`  ${pc.bold('make prod')}      Production build (fast)\n` +
 		criticalLine +
+		verifyLine +
 		`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
 		`  ${pc.bold('make reset')}     Wipe DB + .env, re-run setup\n` +
 		`  ${pc.bold('make help')}      See all available commands\n`
