@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.1.0](https://github.com/LindemannRock/craft-starter/compare/v5.0.1...v5.1.0) (2026-04-16)
+
+
+### Features
+
+* **cli:** add verification for unfilled .env placeholders ([bb80839](https://github.com/LindemannRock/craft-starter/commit/bb80839d8b5d594e01f26106bb5eb8c9c9189848))
+* **setup:** integrate .gitignore updates for downstream projects ([656e8e9](https://github.com/LindemannRock/craft-starter/commit/656e8e9536c2ab652cc7c6abde9efbe57249216e))
+
+
+### Bug Fixes
+
+* **ci:** drop PAT requirement for release-please — use built-in GITHUB_TOKEN ([161d940](https://github.com/LindemannRock/craft-starter/commit/161d940f5afea21bb2af12fc6455f1a648bdd730))
+* **env.mjs:** handle user-entered values in site block insertion ([b88b1f6](https://github.com/LindemannRock/craft-starter/commit/b88b1f6e6ec4fe40234a282fe392851fc7380d42))
+* **Makefile, plugins.mjs, setup.mjs:** improve error handling and config updates ([21a42a4](https://github.com/LindemannRock/craft-starter/commit/21a42a40a1eab655286a9e589f4d3d1642a2b042))
+* **Makefile:** swallow exit code for friendly output in verify target ([2989940](https://github.com/LindemannRock/craft-starter/commit/2989940a1fb4a58c0b3d46b1da90b64b3953145c))
+* **setup:** improve project detection and user guidance ([f715f62](https://github.com/LindemannRock/craft-starter/commit/f715f62152e005388f84952c86802d39ef6e03db))
+
 ## [5.0.1](https://github.com/LindemannRock/craft-starter/compare/v5.0.0...v5.0.1) (2026-04-16)
 
 
