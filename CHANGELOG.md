@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/LindemannRock/craft-starter/compare/v5.1.0...v5.1.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **setup:** enhance project reset confirmation and process handling ([f1f9d8a](https://github.com/LindemannRock/craft-starter/commit/f1f9d8af29937fe96b6ae2a9da6fff10c69b0f92))
+
 ## [5.1.0](https://github.com/LindemannRock/craft-starter/compare/v5.0.1...v5.1.0) (2026-04-16)
 
 
