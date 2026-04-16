@@ -135,26 +135,48 @@ async function main() {
 	// to the right tool based on intent.
 	if (fs.existsSync(`${ROOT}/.env`)) {
 		p.log.warn('A project already exists in this directory (.env found).');
-		p.log.info(
-			'For safe resync, use ' + pc.bold('make install') + ' — idempotent, preserves your .env / composer.json / lock files.\n' +
-			'To wipe and re-scaffold, use ' + pc.bold('make reset') + '.'
-		);
 		const action = await p.select({
 			message: 'What would you like to do?',
 			options: [
-				{ value: 'install', label: 'Run ' + pc.cyan('make install'), hint: 'safe resync — preserves user edits' },
-				{ value: 'reset',   label: 'Run ' + pc.cyan('make reset'),   hint: 'wipe DB + .env, start over' },
+				{ value: 'install', label: 'Resync ' + pc.dim('(make install)'),      hint: 'idempotent — preserves .env / composer.json / lock files' },
+				{ value: 'reset',   label: 'Start over ' + pc.dim('(make reset)'),    hint: 'wipe DB + .env + config/project, keep vendor/node_modules' },
 				{ value: 'cancel',  label: pc.red('Cancel') },
 			],
 		});
 		if (p.isCancel(action) || action === 'cancel') cancel();
+
 		if (action === 'install') {
-			p.log.info('Run ' + pc.bold('make install') + ' to resync the project.');
-			process.exit(0);
+			const { spawn } = await import('child_process');
+			const child = spawn('make', ['install'], { stdio: 'inherit', cwd: ROOT });
+			await new Promise((resolve) => child.on('exit', resolve));
+			process.exit(child.exitCode ?? 0);
 		}
+
 		if (action === 'reset') {
-			p.log.info('Run ' + pc.bold('make reset') + ' to wipe and start over.');
-			process.exit(0);
+			// Explicit confirm — list exactly what's destroyed so there's no surprise
+			p.log.warn('This will permanently:\n' +
+				'  • delete the DDEV project + database\n' +
+				'  • delete .env (admin credentials, site URLs, all custom values)\n' +
+				'  • delete config/project/ (Craft project config)\n' +
+				'  • delete craft-cloud.yaml (if present)\n' +
+				'Kept: vendor/, node_modules/, composer.lock, package-lock.json');
+			const confirmed = await p.confirm({
+				message: 'Proceed with reset?',
+				initialValue: false,
+			});
+			if (p.isCancel(confirmed) || !confirmed) cancel('Cancelled.');
+
+			const { execSync } = await import('child_process');
+			const s = p.spinner();
+			s.start('Resetting project');
+			try { execSync('ddev delete -Oy', { cwd: ROOT, stdio: 'ignore' }); } catch { /* DDEV may not be running */ }
+			fs.rmSync(`${ROOT}/.env`, { force: true });
+			fs.rmSync(`${ROOT}/config/project`, { recursive: true, force: true });
+			fs.rmSync(`${ROOT}/craft-cloud.yaml`, { force: true });
+			s.stop('Reset complete');
+
+			p.log.info('Starting fresh scaffold...');
+			// Fall through to the normal create flow below
 		}
 	}
 
