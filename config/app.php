@@ -17,10 +17,14 @@ return [
     '*' => [
         'id' => App::env('CRAFT_APP_ID') ?: 'CraftCMS',
         'components' => [
-            // Cache — uses Redis when the yii2-redis package is installed,
-            // otherwise falls back to Craft's default file-based cache.
+            // Cache — uses Redis when enabled via env var AND the yii2-redis
+            // package is installed; otherwise falls back to Craft's default
+            // file-based cache. The env-var check is the source of truth so
+            // stale vendor/ (e.g. leftover yii2-redis from a previous install)
+            // doesn't accidentally activate Redis after the user opted out.
             'cache' => function () {
-                if (!class_exists(\yii\redis\Cache::class)) {
+                $redisHost = App::env('REDIS_HOST');
+                if (!$redisHost || !class_exists(\yii\redis\Cache::class)) {
                     return Craft::createObject(App::cacheConfig());
                 }
 
@@ -30,7 +34,7 @@ return [
                     'defaultDuration' => 3600,
                     'redis' => [
                         'class' => \yii\redis\Connection::class,
-                        'hostname' => App::env('REDIS_HOST') ?: 'redis',
+                        'hostname' => $redisHost,
                         'port' => App::env('REDIS_PORT') ?: 6379,
                         'password' => App::env('REDIS_PASSWORD') ?: null,
                     ],
