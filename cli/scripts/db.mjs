@@ -52,6 +52,15 @@ function runShell(command, args) {
 	});
 }
 
+// Keep export/import paths inside the project so the user can't accidentally
+// (or maliciously) write dumps outside the working tree via `../` traversal.
+function validatePath(v) {
+	if (!v) return;
+	if (v.startsWith('/')) return 'Absolute paths not allowed — use a path relative to the project root';
+	if (v.includes('..')) return 'Paths with `..` not allowed — must stay within the project';
+	if (/[\r\n\0]/.test(v)) return 'No control characters';
+}
+
 async function pickExportFile() {
 	const kind = await p.select({
 		message: 'What kind of export?',
@@ -67,6 +76,7 @@ async function pickExportFile() {
 		message: 'Output file path',
 		placeholder: defaultName,
 		defaultValue: defaultName,
+		validate: validatePath,
 	});
 	if (p.isCancel(file)) cancel();
 	return file || defaultName;
@@ -77,6 +87,7 @@ async function pickImportFile() {
 		message: 'Input file path',
 		placeholder: WORKING_FILE,
 		defaultValue: WORKING_FILE,
+		validate: validatePath,
 	});
 	if (p.isCancel(file)) cancel();
 	return file || WORKING_FILE;

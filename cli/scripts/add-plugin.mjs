@@ -22,7 +22,7 @@ const PLUGINS_FILE = path.join(__dirname, '../config/plugins.mjs');
 
 async function searchPackagist(query) {
 	try {
-		const res = await fetch(`https://packagist.org/search.json?q=${encodeURIComponent(query)}&type=craft-plugin&per_page=15`);
+		const res = await fetch(`https://packagist.org/search.json?q=${encodeURIComponent(query)}&type=craft-plugin&per_page=15`, { signal: AbortSignal.timeout(15_000) });
 		if (!res.ok) return [];
 		const data = await res.json();
 		return data.results || [];
@@ -33,7 +33,7 @@ async function searchPackagist(query) {
 
 async function getPackageDetails(name) {
 	try {
-		const res = await fetch(`https://repo.packagist.org/p2/${name}.json`);
+		const res = await fetch(`https://repo.packagist.org/p2/${name}.json`, { signal: AbortSignal.timeout(15_000) });
 		if (!res.ok) return null;
 		const data = await res.json();
 		const versions = data.packages?.[name] || [];
@@ -51,8 +51,15 @@ function extractHandle(extra, packageName) {
 	if (extra?.['craft-plugin']?.handle) return extra['craft-plugin'].handle;
 	if (extra?.['craft']?.handle) return extra['craft'].handle;
 	if (extra?.handle) return extra.handle;
-	// Fallback: derive from package name (vendor/craft-foo-bar → foo-bar)
-	return packageName.split('/').pop().replace(/^craft-/i, '');
+	// Fallback: derive from package name (vendor/craft-foo-bar → foo-bar).
+	// Normalize so the prompt validator (`^[a-z0-9-]+$`) accepts it without
+	// forcing the user to retype — e.g. `vendor/Foo_Bar` → `foo-bar`.
+	return packageName
+		.split('/').pop()
+		.replace(/^craft-/i, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9-]+/g, '-')
+		.replace(/^-+|-+$/g, '');
 }
 
 /**
@@ -69,7 +76,7 @@ async function fetchPluginConfig(sourceUrl, ref) {
 	const paths = ['src/config.php', 'src/config/config.php'];
 	for (const p of paths) {
 		try {
-			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`);
+			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`, { signal: AbortSignal.timeout(15_000) });
 			if (res.ok) {
 				const text = await res.text();
 				if (text.startsWith('<?php')) return text;
@@ -242,31 +249,27 @@ if (p.isCancel(confirm) || !confirm) {
 	process.exit(0);
 }
 
-// Write to plugins.mjs
+// Write to plugins.mjs. Use JSON.stringify for free-text fields (label, hint)
+// so quotes / backslashes / newlines in user input get properly escaped and
+// don't break JavaScript parsing of plugins.mjs on the next import.
 let content = fs.readFileSync(PLUGINS_FILE, 'utf-8');
 
 const entryStr = `\t{
 \t\tvalue: '${entry.value}',
 \t\thandle: '${entry.handle}',
 \t\tversion: '${entry.version}',
-\t\tlabel: '${entry.label}',
-\t\thint: '${entry.hint}',
+\t\tlabel: ${JSON.stringify(entry.label)},
+\t\thint: ${JSON.stringify(entry.hint)},
 \t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},
 \t},`;
 
-if (list === 'lr') {
-	// Insert before the closing ]; of LR_PLUGINS
-	content = content.replace(
-		/(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m,
-		`$1${entryStr}\n$2`,
-	);
-} else {
-	// Insert before the closing ]; of THIRD_PARTY_PLUGINS
-	content = content.replace(
-		/(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m,
-		`$1${entryStr}\n$2`,
-	);
-}
+// Function replacer so any `$` inside label/hint is treated literally, not as
+// a back-reference pattern like `$&` / `$1`.
+const insertPattern = list === 'lr'
+	? /(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m
+	: /(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m;
+
+content = content.replace(insertPattern, (_match, before, close) => `${before}${entryStr}\n${close}`);
 
 fs.writeFileSync(PLUGINS_FILE, content);
 

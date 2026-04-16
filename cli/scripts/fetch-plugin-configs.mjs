@@ -22,7 +22,7 @@ const TEMPLATES_DIR = path.join(__dirname, '..', 'templates', 'plugins');
 
 async function getPackageSource(packageName) {
 	try {
-		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`);
+		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`, { signal: AbortSignal.timeout(15_000) });
 		if (!res.ok) return null;
 		const data = await res.json();
 		const versions = data.packages?.[packageName] || [];
@@ -43,7 +43,7 @@ async function fetchPluginConfig(sourceUrl, ref) {
 	const paths = ['src/config.php', 'src/config/config.php'];
 	for (const p of paths) {
 		try {
-			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`);
+			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`, { signal: AbortSignal.timeout(15_000) });
 			if (res.ok) {
 				const text = await res.text();
 				if (text.startsWith('<?php')) return text;

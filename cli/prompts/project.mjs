@@ -12,7 +12,16 @@
 import * as p from '@clack/prompts';
 import search from '@inquirer/search';
 import { COMMON_LANGUAGES, ALL_LANGUAGES } from '../config/languages.mjs';
-import { cancel } from '../utils/cancel.mjs';
+import { cancel, isPromptCancel } from '../utils/cancel.mjs';
+
+/**
+ * Convert raw @inquirer errors into the right behavior: real cancels exit
+ * cleanly, anything else re-throws so setup.mjs' main() handler surfaces it.
+ */
+function handlePromptError(err) {
+	if (isPromptCancel(err)) cancel();
+	throw err;
+}
 import { isValidEmail } from '../utils/validate.mjs';
 
 export async function promptProject() {
@@ -61,7 +70,7 @@ export async function promptProject() {
 				.slice(0, 15)
 				.map((tz) => ({ value: tz, name: tz }));
 		},
-	}).catch(() => cancel());
+	}).catch(handlePromptError);
 
 	// Language — autocomplete (press Enter for English)
 	const language = await search({
@@ -73,7 +82,7 @@ export async function promptProject() {
 				.filter((l) => l.name.toLowerCase().includes(lower) || l.value.toLowerCase().includes(lower))
 				.slice(0, 15);
 		},
-	}).catch(() => cancel());
+	}).catch(handlePromptError);
 
 	// Part 2 — credentials
 	const credentials = await p.group(
@@ -109,9 +118,9 @@ export async function promptProject() {
 				}),
 			adminPassword: () =>
 				p.password({
-					message: 'Admin password',
+					message: 'Admin password (minimum 10 chars — use a passphrase)',
 					validate: (v) => {
-						if (!v || v.length < 6) return 'Password must be at least 6 characters';
+						if (!v || v.length < 10) return 'Password must be at least 10 characters';
 					},
 				}),
 			systemEmail: () =>
@@ -128,6 +137,10 @@ export async function promptProject() {
 				p.text({
 					message: 'No-reply email (optional — reply-to address)',
 					placeholder: 'no-reply@example.com',
+					validate: (v) => {
+						if (!v) return; // empty = use system email as reply-to (handled downstream)
+						if (!isValidEmail(v)) return 'Enter a valid email address or leave empty';
+					},
 				}),
 		},
 		{ onCancel: () => cancel() },

@@ -46,8 +46,13 @@ function patchViteConfig(useCritical) {
 	content = content.replace(/^\s*'criticalSuffix' =>.*\n/m, '');
 
 	if (useCritical) {
-		// Insert the two lines before the closing `];` of the return array
-		content = content.replace(/^\];\s*$/m, `${VITE_CONFIG_CRITICAL_LINES}];\n`);
+		// Insert the two lines before the LAST line-anchored `];` — ensures we
+		// hit the closing bracket of the top-level `return [...]` and not a
+		// nested array if the config ever grows one.
+		const lastClose = content.lastIndexOf('\n];');
+		if (lastClose !== -1) {
+			content = content.slice(0, lastClose + 1) + VITE_CONFIG_CRITICAL_LINES + content.slice(lastClose + 1);
+		}
 	}
 
 	fs.writeFileSync(VITE_CONFIG, content);

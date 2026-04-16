@@ -42,8 +42,12 @@ export function generateEnvFile({
 	selectedTp = [],
 	selectedHosting = {},
 }) {
-	// Start from a clean copy of the source template, stripping the internal header
-	let content = fs.readFileSync(ENV_SOURCE, 'utf-8').replace(HEADER_BLOCK_REGEX, '');
+	// Start from a clean copy of the source template, stripping the internal header.
+	// Normalize CRLF → LF defensively so a template accidentally saved with Windows
+	// line endings doesn't leave stray `\r` chars that some .env parsers mishandle.
+	let content = fs.readFileSync(ENV_SOURCE, 'utf-8')
+		.replace(/\r\n/g, '\n')
+		.replace(HEADER_BLOCK_REGEX, '');
 
 	const siteUrlBase = `https://${project.name}.ddev.site`;
 	const siteName = project.description || project.name;
@@ -141,7 +145,7 @@ export function generateEnvFile({
 		siteLines.push(`# Site: ${site.handle}`);
 		siteLines.push(`PRIMARY_SITE_URL_${h}=${url}`);
 		siteLines.push(`PRIMARY_SITE_NAME_${h}=${quoted(site.name)}`);
-		siteLines.push(`PRIMARY_SITE_LABEL_${h}=${site.label}`);
+		siteLines.push(`PRIMARY_SITE_LABEL_${h}=${quoted(site.label)}`);
 		siteLines.push('');
 	}
 	// Insert site blocks after PRIMARY_SITE_URL line.
@@ -205,13 +209,17 @@ export function generateEnvFile({
 
 /**
  * Remove a commented section from .env content — matches `# Section Name`
- * and all following `KEY=value` lines until the next blank line or new comment.
+ * and all following lines until the next blank line (section boundary).
+ *
+ * Hard-stops at the first blank line so removing one section can never
+ * accidentally eat the next one if a contributor forgets a blank separator.
  *
  */
 function removeSection(content, header) {
 	const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	// Match the header line, optional description lines, and all KEY=value lines until blank
-	const regex = new RegExp(`\\n${escaped}[^\\n]*\\n(?:#[^\\n]*\\n)*(?:[A-Z_]+=.*\\n)*`, 'g');
+	// \n<header>[stuff not starting with blank]<stuff until blank>
+	// Each content line must have at least one non-newline char (prevents blank line consumption).
+	const regex = new RegExp(`\\n${escaped}[^\\n]*\\n(?:[^\\n]+\\n)*`, 'g');
 	return content.replace(regex, '\n');
 }
 
@@ -232,6 +240,11 @@ export function setEnvKey(content, key, value) {
 		// patterns like `$&` / `$1`.
 		return content.replace(regex, () => line);
 	}
+	// Warn on append — if the key isn't in env.example, it's usually a typo
+	// (e.g. SERVD_PROJECT_SLOG). The real key keeps its template default and
+	// the typo silently sits at the bottom of .env forever. Loud warning
+	// surfaces this during development.
+	console.warn(`[env] key "${key}" not found in template — appending to end. If this is unexpected, check for typos.`);
 	return content.endsWith('\n') ? content + line + '\n' : content + '\n' + line + '\n';
 }
 

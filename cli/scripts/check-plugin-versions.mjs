@@ -30,12 +30,14 @@ const allPackages = [
 
 async function getLatestVersion(packageName) {
 	try {
-		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`);
+		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`, { signal: AbortSignal.timeout(15_000) });
 		if (!res.ok) return null;
 		const data = await res.json();
 		const versions = data.packages?.[packageName] || [];
 		const stable = versions
-			.filter((v) => !v.version.includes('dev') && !v.version.includes('alpha') && !v.version.includes('beta') && !v.version.includes('RC'))
+			// Case-insensitive prerelease filter so `rc1` / `Alpha` / `BETA` are caught too.
+			// Matches any hyphen-prefixed suffix (the conventional prerelease marker).
+			.filter((v) => !/-(dev|alpha|beta|rc|pre)/i.test(v.version))
 			.map((v) => v.version.replace(/^v/, ''))
 			.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 		return stable[0] || null;
@@ -45,12 +47,17 @@ async function getLatestVersion(packageName) {
 }
 
 function parseConstraint(constraint) {
+	// Caret/tilde/single-version only. Compound constraints (`>=1.0,<2.0`)
+	// collapse weirdly here; warn the caller they need to hand-check.
+	if (/,|\|/.test(constraint)) return null;
 	return constraint.replace(/[\^~>=<\s]/g, '').split('.').map(Number);
 }
 
 function isOutdated(constraint, latest) {
 	if (!latest) return false;
-	const [cMajor, cMinor] = parseConstraint(constraint);
+	const parsed = parseConstraint(constraint);
+	if (!parsed) return false; // compound constraint — skip comparison
+	const [cMajor, cMinor] = parsed;
 	const [lMajor, lMinor] = latest.split('.').map(Number);
 	if (lMajor > cMajor) return true;
 	if (lMajor === cMajor && lMinor > cMinor) return true;
@@ -58,7 +65,9 @@ function isOutdated(constraint, latest) {
 }
 
 function isMajorBump(constraint, latest) {
-	const [cMajor] = parseConstraint(constraint);
+	const parsed = parseConstraint(constraint);
+	if (!parsed) return false;
+	const [cMajor] = parsed;
 	const [lMajor] = latest.split('.').map(Number);
 	return lMajor > cMajor;
 }
