@@ -10,8 +10,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
-import { ROOT } from '../paths.mjs';
+import { ROOT, CLI_DIR } from '../paths.mjs';
 
 // Packages needed by headless Chromium (via rollup-plugin-critical → puppeteer).
 // Order-preserving list so the committed config.yaml's order is respected.
@@ -32,10 +31,14 @@ export function updateDdevConfig({ name, timezone }, { useCritical = true } = {}
 	fs.writeFileSync(ddevPath, ddevConfig);
 
 	// config.m1.yaml is Apple-Silicon Chromium wiring — delete when declined,
-	// restore from git when re-enabled (covers the flip-flop case).
+	// restore from template when re-enabled (works round-trip regardless of
+	// what's committed to git HEAD).
 	const m1Path = path.join(ROOT, '.ddev', 'config.m1.yaml');
+	const m1Template = path.join(CLI_DIR, 'templates', 'critical', 'config.m1.yaml');
 	if (useCritical) {
-		if (!fs.existsSync(m1Path)) restoreFromGit('.ddev/config.m1.yaml');
+		if (!fs.existsSync(m1Path) && fs.existsSync(m1Template)) {
+			fs.copyFileSync(m1Template, m1Path);
+		}
 	} else if (fs.existsSync(m1Path)) {
 		fs.rmSync(m1Path);
 	}
@@ -50,10 +53,3 @@ function updateChromiumPackages(ddevConfig, useCritical) {
 	});
 }
 
-function restoreFromGit(relPath) {
-	try {
-		execSync(`git checkout HEAD -- ${relPath}`, { cwd: ROOT, stdio: 'ignore' });
-	} catch {
-		// silently ignore — git may not be available, file will be re-created on next nuke
-	}
-}

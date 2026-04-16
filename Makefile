@@ -304,9 +304,14 @@ nuke: ## Destroy DDEV + vendor + node_modules + dist + config/project + .env
 	@# Remove DDEV generated artifacts
 	@rm -rf .ddev/addon-metadata/redis .ddev/docker-compose.redis.yaml .ddev/redis 2>/dev/null || true
 	@rm -rf .ddev/traefik/certs .ddev/traefik/config 2>/dev/null || true
-	@# Restore DDEV config from git (covers name, timezone, webimage_extra_packages,
-	@# and config.m1.yaml which the CLI may have deleted when critical was declined)
-	@git checkout .ddev/config.yaml .ddev/config.m1.yaml 2>/dev/null || true
+	@# Restore files the CLI may have modified during `make create`:
+	@# - .ddev/config.yaml: name, timezone, webimage_extra_packages (Chromium deps)
+	@# - .ddev/config.m1.yaml: deleted when critical CSS was declined
+	@# - config/vite.php: criticalPath/criticalSuffix lines toggled by critical choice
+	@# - critical-css.twig: partial swapped by critical choice
+	@# Canonical copies live in git HEAD for the starter repo + cli/templates/critical/
+	@# for project repos that may commit a declined state.
+	@git checkout .ddev/config.yaml .ddev/config.m1.yaml config/vite.php templates/_boilerplate/_partials/critical-css.twig 2>/dev/null || true
 	@# Remove scaffolded translations (template lives in cli/templates/translations/)
 	@find translations -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
 	@# Remove CLI temp files

@@ -1,0 +1,30 @@
+{# -- Critical CSS -- #}
+{#
+# Nginx SSI-based critical CSS delivery.
+# If the `critical-css` cookie is set, the client already has the CSS cached,
+# so load the full stylesheet synchronously. Otherwise, set the cookie,
+# include critical CSS inline, and load the stylesheet asynchronously.
+#}
+{% set cssHash = craft.vite.getCssHash('src/js/main.ts') %}
+
+<!-- # if expr="$HTTP_COOKIE=/critical\-css\={{ cssHash }}/" -->
+{{ craft.vite.script('src/js/main.ts', false) }}
+
+<!-- # else -->
+<script>
+document.cookie = "critical-css={{ cssHash }}; path=/; max-age=604800; secure; samesite=lax";
+</script>
+{% if entry is defined %}
+	{% set specificTemplate = 'entry/' ~ entry.section.handle ~ '/' ~ entry.type.handle %}
+	{% set defaultTemplate = 'entry/' ~ entry.section.handle ~ '/default' %}
+
+	{% if craft.app.view.doesTemplateExist(specificTemplate) %}
+		{{ craft.vite.includeCriticalCssTags(specificTemplate) }}
+	{% else %}
+		{{ craft.vite.includeCriticalCssTags(defaultTemplate) }}
+	{% endif %}
+{% else %}
+	{{ craft.vite.includeCriticalCssTags() }}
+{% endif %}
+{{ craft.vite.script('src/js/main.ts', true) }}
+<!-- # endif -->
