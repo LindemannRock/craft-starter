@@ -144,10 +144,14 @@ export function generateEnvFile({
 		siteLines.push(`PRIMARY_SITE_LABEL_${h}=${site.label}`);
 		siteLines.push('');
 	}
-	// Insert site blocks after PRIMARY_SITE_URL line
+	// Insert site blocks after PRIMARY_SITE_URL line.
+	// Function replacer because siteLines contain user-entered values (name, label,
+	// urlPrefix) that could contain `$` chars which `String.replace` would otherwise
+	// interpret as replacement patterns (`$&`, `$1`, etc.).
+	const siteBlock = siteLines.join('\n');
 	content = content.replace(
 		/(PRIMARY_SITE_URL=[^\n]*\n)/,
-		`$1\n${siteLines.join('\n')}`,
+		(_match, primaryLine) => `${primaryLine}\n${siteBlock}`,
 	);
 	if (!useRedis) {
 		content = removeSection(content, '# Redis Cache');
@@ -223,7 +227,10 @@ export function setEnvKey(content, key, value) {
 	const line = `${key}=${value}`;
 
 	if (regex.test(content)) {
-		return content.replace(regex, line);
+		// Function replacer so `$`-containing values (Postmark tokens, Servd keys
+		// with `$`, site names like "Acme $1") aren't interpreted as replacement
+		// patterns like `$&` / `$1`.
+		return content.replace(regex, () => line);
 	}
 	return content.endsWith('\n') ? content + line + '\n' : content + '\n' + line + '\n';
 }
