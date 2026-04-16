@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.0.1](https://github.com/LindemannRock/craft-starter/compare/v5.0.0...v5.0.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **global-variables.twig:** reset primaryTranslationCategory value ([55efa94](https://github.com/LindemannRock/craft-starter/commit/55efa94873fc9cabdb70c283ad02083c595205d3))
+* **Makefile:** nuke target to include global-variables.twig ([b278adc](https://github.com/LindemannRock/craft-starter/commit/b278adc1e7067df5e45eeca01daa53525d8eceaa))
+
 ## 5.0.0 (2026-04-16)
 
 
