@@ -7,6 +7,24 @@
 
 An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few questions, and end up with a configured DDEV project — Tailwind CSS 4, TypeScript, Alpine.js, the plugins you need, and hosting wired up — all installed and ready to develop.
 
+## Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Make commands](#make-commands)
+- [Project structure](#project-structure)
+- [Stack](#stack)
+- [Plugins](#plugins)
+- [Device testing](#device-testing)
+- [Template hierarchy](#template-hierarchy)
+- [Environment variables](#environment-variables)
+- [What `make create` does differently based on your choices](#what-make-create-does-differently-based-on-your-choices)
+- [After `make create`](#after-make-create)
+- [Versioning & releases (release-please)](#versioning--releases-release-please)
+- [Support](#support)
+- [License](#license)
+
 ## Features
 
 - **Interactive installer** — `make create` walks you through project name, timezone, language, admin credentials, plugin selection, hosting, and feature toggles with a modern TUI (review loop + per-section editing if you change your mind)
@@ -368,6 +386,44 @@ Most project configuration is handled automatically. A few things are still manu
 - [ ] Create `main` / `footer` navigation handles in the CP (Navigation plugin)
 - [ ] Update email template branding in `templates/_emails/system.twig`
 - [ ] If critical CSS is enabled, configure which pages to generate it for in `vite.config.mjs` (default: home + about)
+
+## Versioning & releases (release-please)
+
+The starter ships with a [release-please](https://github.com/googleapis/release-please) GitHub Action at `.github/workflows/release-please.yml`. On every push to `main` it:
+
+1. Reads your [conventional commits](https://www.conventionalcommits.org) since the last tag (`feat:` → minor bump, `fix:` → patch, `feat!:` or `BREAKING CHANGE:` → major)
+2. Opens or updates a PR titled `chore(main): release X.Y.Z` with the computed version + changelog
+3. Merging that PR tags the commit (`vX.Y.Z`), publishes a GitHub Release, and writes/updates `CHANGELOG.md`
+
+### Setup after forking
+
+1. **Create a `RELEASE_TOKEN` secret** in your repo's Settings → Secrets → Actions. Use a fine-grained PAT with `contents: write` + `pull-requests: write` on your repo. A PAT is required (not the default `GITHUB_TOKEN`) so the release PR can re-trigger workflows — important if you chain deploys off release events.
+
+   *Alternative:* if you don't need to trigger other workflows, simplify the step to:
+   ```yaml
+   - uses: googleapis/release-please-action@v4
+     with:
+       release-type: node
+   ```
+   (drop the `token:` line — it falls back to the built-in `GITHUB_TOKEN`)
+
+2. **Bootstrap your initial version** by committing with the `Release-As:` trailer:
+   ```bash
+   git commit --allow-empty -m "chore: bootstrap release-please" -m "Release-As: 1.0.0"
+   git push
+   ```
+   This forces the next release PR to the version you specify, regardless of what the commit types would have produced. Use whenever you want to jump versions (e.g. `5.0.0` for a Craft-5-aligned starter).
+
+### Writing commits that produce good changelogs
+
+| Commit prefix | Bump | Example |
+|---------------|------|---------|
+| `feat:` | minor | `feat(cli): add critical CSS opt-in prompt` |
+| `fix:` | patch | `fix(Makefile): tailscale targets don't propagate exit codes` |
+| `feat!:` / `BREAKING CHANGE:` in body | major | `feat!: drop PHP 8.2 support` |
+| `chore:` / `docs:` / `refactor:` / `test:` | none | (no release, shows in changelog under "Other" if scoped) |
+
+Scopes (`feat(cli):`, `fix(Makefile):`) group related changes in the generated CHANGELOG and make release notes easier to scan. The starter's own history is a live example — see [commit log](https://github.com/LindemannRock/craft-starter/commits/main).
 
 ## Support
 
