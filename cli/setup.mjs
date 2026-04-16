@@ -298,10 +298,15 @@ async function main() {
 	fs.mkdirSync(tmpDir, { recursive: true });
 	fs.writeFileSync(`${tmpDir}/sites.json`, JSON.stringify(sites, null, 2));
 
-	if (project.weekStartDay !== undefined && project.weekStartDay !== 1) {
+	if (project.weekStartDay !== undefined) {
+		// Always rewrite so re-running with a different choice (Sunday → Monday
+		// or vice versa) flips correctly. Matches any digit argument.
 		const generalPath = `${ROOT}/config/general.php`;
 		let general = fs.readFileSync(generalPath, 'utf-8');
-		general = general.replace('->defaultWeekStartDay(1)', `->defaultWeekStartDay(${project.weekStartDay})`);
+		general = general.replace(
+			/->defaultWeekStartDay\(\d+\)/,
+			`->defaultWeekStartDay(${project.weekStartDay})`,
+		);
 		fs.writeFileSync(generalPath, general);
 	}
 

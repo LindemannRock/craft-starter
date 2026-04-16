@@ -31,10 +31,19 @@ export function writePluginConfigs(allSelectedPlugins) {
 /**
  * Run `php craft plugin/install` for each handle inside the DDEV container.
  *
+ * Swallows errors per-plugin so re-running `make create` on an existing project
+ * doesn't fail when a plugin is already active. Matches the Makefile's
+ * `|| true` recovery path.
+ *
  */
 export async function activatePlugins(handles) {
 	for (const handle of handles) {
-		await run(`ddev exec php craft plugin/install ${handle}`);
+		try {
+			await run(`ddev exec php craft plugin/install ${handle} 2>/dev/null`);
+		} catch {
+			// Plugin already installed, invalid handle on a re-run, etc.
+			// `craft up` in the next step will surface any real issues.
+		}
 	}
 }
 
