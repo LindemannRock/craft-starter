@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.2](https://github.com/LindemannRock/craft-starter/compare/v5.1.1...v5.1.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* **cli:** apply security + robustness fixes ([54e0f56](https://github.com/LindemannRock/craft-starter/commit/54e0f5650305198d066dafab625a6ff724f2a32a))
+
 ## [5.1.1](https://github.com/LindemannRock/craft-starter/compare/v5.1.0...v5.1.1) (2026-04-16)
 
 
