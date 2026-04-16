@@ -129,23 +129,33 @@ async function main() {
 	// Bail out early with a clear message if Docker/DDEV/Node aren't ready
 	checkPrerequisites();
 
-	// Detect existing project — .env is written on first run
+	// Detect existing project — .env is written on first run.
+	// `make create` is scoped to first-run scaffolding only; re-runs would
+	// clobber user edits to .env / composer.json / lock files. Route users
+	// to the right tool based on intent.
 	if (fs.existsSync(`${ROOT}/.env`)) {
 		p.log.warn('A project already exists in this directory (.env found).');
+		p.log.info(
+			'For safe resync, use ' + pc.bold('make install') + ' — idempotent, preserves your .env / composer.json / lock files.\n' +
+			'To wipe and re-scaffold, use ' + pc.bold('make reset') + '.'
+		);
 		const action = await p.select({
 			message: 'What would you like to do?',
 			options: [
-				{ value: 'continue', label: 'Continue anyway', hint: 'overwrite config files, skip Craft install if already set up' },
-				{ value: 'reset', label: 'Start fresh', hint: 'same as make reset — wipes DB + .env, then re-runs setup' },
-				{ value: 'cancel', label: 'Cancel' },
+				{ value: 'install', label: 'Run ' + pc.cyan('make install'), hint: 'safe resync — preserves user edits' },
+				{ value: 'reset',   label: 'Run ' + pc.cyan('make reset'),   hint: 'wipe DB + .env, start over' },
+				{ value: 'cancel',  label: pc.red('Cancel') },
 			],
 		});
 		if (p.isCancel(action) || action === 'cancel') cancel();
+		if (action === 'install') {
+			p.log.info('Run ' + pc.bold('make install') + ' to resync the project.');
+			process.exit(0);
+		}
 		if (action === 'reset') {
 			p.log.info('Run ' + pc.bold('make reset') + ' to wipe and start over.');
 			process.exit(0);
 		}
-		// action === 'continue' — fall through to prompts
 	}
 
 	const state = {};
