@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.4](https://github.com/LindemannRock/craft-starter/compare/v5.1.3...v5.1.4) (2026-04-17)
+
+
+### Bug Fixes
+
+* **translation-manager:** translation category examples ([4f8b729](https://github.com/LindemannRock/craft-starter/commit/4f8b7291c54ab23fde89df1393c6990743a1ebbc))
+
 ## [5.1.3](https://github.com/LindemannRock/craft-starter/compare/v5.1.2...v5.1.3) (2026-04-16)
 
 
