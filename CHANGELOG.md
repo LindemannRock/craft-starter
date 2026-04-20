@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.2.0](https://github.com/LindemannRock/craft-starter/compare/v5.1.4...v5.2.0) (2026-04-20)
+
+
+### Features
+
+* **packageJson:** add hasIconManager option to updatePackageJson ([23396bc](https://github.com/LindemannRock/craft-starter/commit/23396bc38018df6cc850151cb54e084898b73bf8))
+
+
+### Bug Fixes
+
+* **cli:** add requireProject guard to update/db pickers for helpful error messages ([db9e4bc](https://github.com/LindemannRock/craft-starter/commit/db9e4bc81c615498cefa006c2c9d49e9850adc58))
+
 ## [5.1.4](https://github.com/LindemannRock/craft-starter/compare/v5.1.3...v5.1.4) (2026-04-17)
 
 
