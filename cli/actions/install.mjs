@@ -33,7 +33,7 @@ function isCraftInstalled() {
 	}
 }
 
-export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedis }) {
+export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedisCache }) {
 	const siteName = project.description || project.name;
 	const siteUrl = `https://${project.name}.ddev.site`;
 
@@ -68,7 +68,7 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 	];
 
 	// Install the Redis DDEV addon BEFORE ddev start so the Redis container boots with the project
-	if (useRedis) {
+	if (useRedisCache) {
 		steps.push({ msg: 'Adding DDEV Redis addon', cmd: 'ddev add-on get ddev/ddev-redis' });
 	}
 

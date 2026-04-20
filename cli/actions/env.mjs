@@ -36,7 +36,8 @@ export function generateEnvFile({
 	servdCredentials,
 	postmarkToken,
 	smtpCredentials,
-	useRedis,
+	useRedisCache,
+	useRedisSession = false,
 	useCritical = false,
 	selectedLr = [],
 	selectedTp = [],
@@ -157,8 +158,14 @@ export function generateEnvFile({
 		/(PRIMARY_SITE_URL=[^\n]*\n)/,
 		(_match, primaryLine) => `${primaryLine}\n${siteBlock}`,
 	);
-	if (!useRedis) {
-		content = removeSection(content, '# Redis Cache');
+	if (!useRedisCache) {
+		content = removeSection(content, '# Redis');
+	} else if (useRedisSession) {
+		// Append session DB index after the Redis block
+		content = content.replace(
+			/(REDIS_DATABASE=\d+)/,
+			(_match, line) => `${line}\nREDIS_SESSION_DB=1`,
+		);
 	}
 
 	if (!useCritical) {

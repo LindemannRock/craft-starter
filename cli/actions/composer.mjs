@@ -13,7 +13,7 @@ import path from 'path';
 import { ROOT } from '../paths.mjs';
 import { CORE_REQUIRE, CORE_REQUIRE_DEV, REDIS_PACKAGE } from '../config/plugins.mjs';
 
-export function updateComposer({ selectedLr, selectedTp, selectedHosting, useRedis }) {
+export function updateComposer({ selectedLr, selectedTp, selectedHosting, useRedisCache }) {
 	const composerPath = path.join(ROOT, 'composer.json');
 	const composer = JSON.parse(fs.readFileSync(composerPath, 'utf-8'));
 
@@ -22,7 +22,7 @@ export function updateComposer({ selectedLr, selectedTp, selectedHosting, useRed
 	composer['require-dev'] = { ...CORE_REQUIRE_DEV };
 
 	// Optional infrastructure
-	if (useRedis) {
+	if (useRedisCache) {
 		composer.require[REDIS_PACKAGE.name] = REDIS_PACKAGE.version;
 	}
 

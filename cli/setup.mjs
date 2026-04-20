@@ -54,7 +54,9 @@ async function collectProject(state) {
 
 async function collectSitesAndFeatures(state) {
 	state.sites = await promptSites(state.project?.description || state.project?.name);
-	state.useRedis = await promptRedis();
+	const redis = await promptRedis();
+	state.useRedisCache = redis.useRedisCache;
+	state.useRedisSession = redis.useRedisSession;
 	state.useCritical = await promptCritical();
 }
 
@@ -225,14 +227,14 @@ async function main() {
 		}
 	}
 
-	const { project, sites, useRedis, useCritical, selectedLr, selectedTp, selectedHosting,
+	const { project, sites, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting,
 		servdCredentials, postmarkToken, smtpCredentials, translationCategory } = state;
 
 	// -- Apply file changes --------------------------------------------------
 	const s = p.spinner();
 
 	s.start('Updating composer.json');
-	updateComposer({ selectedLr, selectedTp, selectedHosting, useRedis });
+	updateComposer({ selectedLr, selectedTp, selectedHosting, useRedisCache });
 	s.stop('composer.json updated');
 
 	s.start('Updating package.json');
@@ -254,7 +256,7 @@ async function main() {
 	p.log.info('composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).');
 
 	s.start('Generating .env');
-	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedis, useCritical, selectedLr, selectedTp, selectedHosting });
+	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting });
 	s.stop('.env generated');
 
 	if (selectedHosting.value === 'craft-cloud') {
@@ -349,7 +351,7 @@ async function main() {
 		selectedLr,
 		selectedTp,
 		selectedHosting,
-		useRedis,
+		useRedisCache,
 	});
 	for (const step of steps) {
 		s.start(step.msg);
