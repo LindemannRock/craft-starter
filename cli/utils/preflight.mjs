@@ -15,9 +15,11 @@
  * @license MIT
  */
 
+import fs from 'fs';
 import { execSync } from 'child_process';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
+import { ROOT } from '../paths.mjs';
 
 const MIN_NODE_MAJOR = 22;
 
@@ -103,5 +105,26 @@ function dockerDaemonRunning() {
 		return true;
 	} catch {
 		return false;
+	}
+}
+
+/**
+ * Light check for interactive picker scripts (update.mjs, db.mjs, etc.)
+ * that need a running DDEV project. Prints a helpful message and exits
+ * if the project isn't ready — avoids cryptic Docker/DDEV errors.
+ *
+ * Call at the top of any picker that runs `ddev exec` commands.
+ */
+export function requireProject() {
+	if (!fs.existsSync(`${ROOT}/.env`)) {
+		p.log.error('No .env file found. Run ' + pc.bold('make create') + ' first.');
+		process.exit(0);
+	}
+
+	try {
+		execSync('ddev describe', { cwd: ROOT, stdio: 'ignore' });
+	} catch {
+		p.log.error('DDEV is not running. Run ' + pc.bold('make start') + ' or ' + pc.bold('ddev start') + ' first.');
+		process.exit(0);
 	}
 }

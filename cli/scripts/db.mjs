@@ -15,6 +15,7 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { spawn } from 'child_process';
 import { cancel } from '../utils/cancel.mjs';
+import { requireProject } from '../utils/preflight.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -95,6 +96,7 @@ async function pickImportFile() {
 
 async function main() {
 	p.intro(pc.bgCyan(pc.black(' Database ')));
+	requireProject();
 
 	const action = await p.select({
 		message: 'What would you like to do?',

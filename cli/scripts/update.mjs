@@ -17,6 +17,7 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { spawn } from 'child_process';
 import { cancel } from '../utils/cancel.mjs';
+import { requireProject } from '../utils/preflight.mjs';
 
 const TARGETS = [
 	{ value: 'craft',    label: 'Craft CMS + plugins', hint: 'interactive — pick what to update' },
@@ -45,6 +46,7 @@ async function runTarget(target, { interactive = true } = {}) {
 
 async function main() {
 	p.intro(pc.bgCyan(pc.black(' Update ')));
+	requireProject();
 
 	const choice = await p.select({
 		message: 'What would you like to update?',
