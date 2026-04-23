@@ -247,7 +247,7 @@ craft-starter/
 | [Sprig](https://putyourlightson.com/plugins/sprig) | Reactive Twig components |
 | [Scout](https://plugins.craftcms.com/scout) | Search indexing (Algolia, Elasticsearch, etc.) |
 | [Cloudflare](https://putyourlightson.com/plugins/cloudflare) | Purge Cloudflare cache from Craft |
-| [CP CSS](https://plugins.craftcms.com/cpcss) · [CP JS](https://plugins.craftcms.com/cpjs) · [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache) | Control panel niceties |
+| [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache) | Clear cache from CP toolbar |
 
 > Updating the list: run `make registry` → _Update versions_ to pull latest from Packagist (major bumps prompt for confirmation). Add new plugins with `make registry` → _Add a plugin_.
 

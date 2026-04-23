@@ -255,22 +255,6 @@ export const THIRD_PARTY_PLUGINS = [
 		config: null,
 	},
 	{
-		value: 'doublesecretagency/craft-cpcss',
-		handle: 'cp-css',
-		version: '^3.0.0',
-		label: 'CP CSS',
-		hint: 'Custom control panel CSS',
-		config: null,
-	},
-	{
-		value: 'doublesecretagency/craft-cpjs',
-		handle: 'cp-js',
-		version: '^3.0.0',
-		label: 'CP JS',
-		hint: 'Custom control panel JS',
-		config: null,
-	},
-	{
 		value: 'mmikkel/cp-clearcache',
 		handle: 'cp-clearcache',
 		version: '^2.0.1',

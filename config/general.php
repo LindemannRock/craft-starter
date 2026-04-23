@@ -52,8 +52,11 @@ return GeneralConfig::create()
     ->sendPoweredByHeader(false)
     ->maxUploadFileSize('100M')
 
-    // CP favicons (served from the built Vite assets)
+    // CP customizations (served from the built Vite assets)
     ->cpHeadTags([
+        // CP stylesheet — login branding, RTL fixes, content builder tweaks
+        ['link', ['rel' => 'stylesheet', 'href' => '/dist/assets/cp/cp.css']],
+        // CP favicons
         ['link', ['rel' => 'icon', 'href' => '/dist/assets/cp/favicons/favicon.ico']],
         ['link', ['rel' => 'icon', 'type' => 'image/svg+xml', 'sizes' => 'any', 'href' => '/dist/assets/cp/favicons/favicon.svg']],
         ['link', ['rel' => 'apple-touch-icon', 'sizes' => '180x180', 'href' => '/dist/assets/cp/favicons/apple-touch-icon.svg']],

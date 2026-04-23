@@ -1,0 +1,175 @@
+/**
+ * Control Panel customizations.
+ *
+ * Loaded via cpHeadTags in config/general.php — no CP CSS plugin needed.
+ * Edit this file to adjust login styling, RTL fixes, content builder tweaks.
+ * Vite copies this to web/dist/assets/cp/cp.css on build.
+ */
+
+/* ==========================================================================
+   Login page
+   ========================================================================== */
+
+.login {
+    background: rgb(242, 193, 214);
+    background: radial-gradient(
+        circle,
+        rgba(242, 193, 214, 1) 0%,
+        rgba(189, 194, 248, 1) 56%,
+        rgba(201, 227, 255, 1) 92%
+    );
+}
+
+.login .login-form-container {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(189, 194, 248);
+    box-shadow: 2px 2px 20px 4px rgb(154 147 232 / 24%);
+    backdrop-filter: blur(20px);
+    height: auto;
+    flex-shrink: unset;
+    width: auto;
+}
+
+#login-logo {
+    width: 200px !important;
+    height: auto !important;
+}
+
+#poweredby,
+#edition,
+#global-footer {
+    display: none !important;
+}
+
+/* ==========================================================================
+   RTL support for CKEditor / Redactor
+   ========================================================================== */
+
+.rtl .vui-editor > div,
+.rtl .vui-editor-toolbar {
+    direction: rtl !important;
+}
+
+.rtl .vui-editor .ProseMirror > ul,
+.rtl .vui-editor .ProseMirror > ol {
+    margin-left: 0;
+    margin-right: 24px;
+}
+
+.rtl .ck-editor__main .ck-content {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.rtl .redactor-box,
+.rtl .redactor-editor {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* ==========================================================================
+   RTL support for CP inputs
+   ========================================================================== */
+
+.rtl input[type='text'],
+.rtl input[type='email'],
+.rtl input[type='tel'],
+.rtl input[type='url'],
+.rtl input[type='search'],
+.rtl input[type='number'],
+.rtl input[type='password'],
+.rtl textarea,
+.rtl select,
+.rtl .text,
+.rtl .textarea,
+div.rtl input,
+div.rtl textarea,
+.input.rtl input,
+.input.rtl textarea {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+body.ltr .rtl .text,
+body.ltr .rtl table.editable textarea {
+    direction: rtl !important;
+    text-align: start !important;
+}
+
+.rtl .field input,
+.rtl .field textarea,
+.rtl .field select,
+.rtl .input,
+.rtl .text-input,
+.rtl .text-input-field {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.rtl .field > .heading > label,
+.rtl .field > .instructions,
+.rtl label {
+    text-align: right !important;
+}
+
+.rtl .field,
+.rtl .buttons,
+.rtl .error,
+.rtl ul.errors {
+    text-align: right !important;
+}
+
+.rtl .select:not(.selectize) select {
+    padding-right: 35px !important;
+    padding-left: 7px !important;
+    background-position: left 5px center !important;
+}
+
+/* ==========================================================================
+   RTL support for block builders (Neo / Matrix)
+   ========================================================================== */
+
+.rtl .ni_block_body,
+.rtl .matrixblock-body {
+    direction: rtl !important;
+}
+
+.rtl .tabs ul li {
+    float: right !important;
+}
+
+.rtl .element-selector .elements {
+    text-align: right !important;
+}
+
+/* ==========================================================================
+   Content builder layout (Neo / Matrix section blocks)
+   ========================================================================== */
+
+.ni_block_body h2,
+.flex-fields h2 {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+    border-bottom: 1px solid var(--hairline-color);
+}
+
+.ni_blocks .ni_block[data-neo-b-name='Section'],
+.blocks .matrixblock[data-type='blockSection'] {
+    margin-top: 30px;
+}
+
+.ni_blocks .ni_block[data-neo-b-name='Section'] ~ .ni_block:not([data-neo-b-name='Section']),
+.blocks .matrixblock[data-type='blockSection'] ~ .matrixblock:not([data-type='blockSection']) {
+    width: 97%;
+    margin-left: 3%;
+}
+
+.rtl .ni_blocks .ni_block[data-neo-b-name='Section'] ~ .ni_block:not([data-neo-b-name='Section']),
+.rtl .blocks .matrixblock[data-type='blockSection'] ~ .matrixblock:not([data-type='blockSection']) {
+    margin-left: auto;
+    margin-right: 3%;
+}
