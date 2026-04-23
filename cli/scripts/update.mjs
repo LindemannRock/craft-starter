@@ -25,6 +25,7 @@ const TARGETS = [
 	{ value: 'npm',      label: 'Frontend packages',    hint: 'vite, tailwind, alpine, etc. (npm-check)' },
 	{ value: 'cli',      label: 'CLI tooling',          hint: 'scaffolding packages in cli/ (npm-check)' },
 	{ value: 'all',      label: 'Everything',           hint: 'Craft + plugins + Composer + Frontend + CLI' },
+	{ value: 'cancel',   label: pc.red('Cancel') },
 ];
 
 function runShell(command, args) {
@@ -52,7 +53,7 @@ async function main() {
 		message: 'What would you like to update?',
 		options: TARGETS,
 	});
-	if (p.isCancel(choice)) cancel();
+	if (p.isCancel(choice) || choice === 'cancel') cancel();
 
 	const isAll = choice === 'all';
 	const order = isAll ? ['craft', 'composer', 'npm', 'cli'] : [choice];

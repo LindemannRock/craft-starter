@@ -42,6 +42,7 @@ function buildActions() {
 	actions.push(
 		{ value: 'export', label: 'Export local database',  hint: 'working dump or seed DB' },
 		{ value: 'import', label: 'Import a SQL dump',      hint: `default: ./${WORKING_FILE}` },
+		{ value: 'cancel', label: pc.red('Cancel') },
 	);
 	return actions;
 }
@@ -102,7 +103,7 @@ async function main() {
 		message: 'What would you like to do?',
 		options: buildActions(),
 	});
-	if (p.isCancel(action)) cancel();
+	if (p.isCancel(action) || action === 'cancel') cancel();
 
 	const args = [`db-${action}`];
 

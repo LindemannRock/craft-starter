@@ -27,6 +27,7 @@ const RESOURCES = [
 			{ value: 'update', label: 'Update versions', hint: 'apply bumps (major bumps confirmed)' },
 			{ value: 'add',    label: 'Add a plugin',    hint: 'search Packagist + add to registry' },
 			{ value: 'fetch',  label: 'Fetch configs',   hint: 'pull default config.php from GitHub' },
+			{ value: 'cancel', label: pc.red('Cancel') },
 		],
 	},
 	// Future: { value: 'themes', label: 'Themes', actions: [...] },
@@ -60,7 +61,7 @@ async function main() {
 		message: `${resource.label} — what would you like to do?`,
 		options: resource.actions,
 	});
-	if (p.isCancel(action)) cancel();
+	if (p.isCancel(action) || action === 'cancel') cancel();
 
 	const target = `registry-${resource.value}-${action}`;
 	p.log.step(`make ${target}`);
