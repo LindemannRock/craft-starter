@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.3.0](https://github.com/LindemannRock/craft-starter/compare/v5.2.0...v5.3.0) (2026-04-23)
+
+
+### Features
+
+* **cli:** add back navigation and cancel options to db and registry pickers ([842a680](https://github.com/LindemannRock/craft-starter/commit/842a68069c3b2cb9d3ffc3c204aa30b59e3abe40))
+* **ddev:** add post-start hook to guide users without .env to make create ([2636bd3](https://github.com/LindemannRock/craft-starter/commit/2636bd3aac5331df2961b03c3c1748b7f97e2f5d))
+
+
+### Bug Fixes
+
+* **cli:** add Cancel option to update, db, and registry pickers ([892c8d4](https://github.com/LindemannRock/craft-starter/commit/892c8d48732f0811fe799c58f39ac7f66f87777b))
+* **install:** clear stale DDEV registration before config rename, not after ([e07cce7](https://github.com/LindemannRock/craft-starter/commit/e07cce7763eaa7112e6013d98cc1c285f9da7279))
+* **install:** clear stale DDEV registration before start to handle project name changes ([71cf2aa](https://github.com/LindemannRock/craft-starter/commit/71cf2aad04457fa2bc37c739804f0bf21410a77f))
+* **Makefile:** fix nuke target to remove Tailscale config file ([d4ea99e](https://github.com/LindemannRock/craft-starter/commit/d4ea99eb58b9249e2c512032cd39718680d61794))
+
 ## [5.2.0](https://github.com/LindemannRock/craft-starter/compare/v5.1.4...v5.2.0) (2026-04-20)
 
 
