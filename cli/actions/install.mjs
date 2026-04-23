@@ -67,12 +67,6 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 		},
 	];
 
-	// Clear any stale DDEV project registration for this directory. Handles the
-	// case where the user ran `ddev start` before `make create` (which changes
-	// the project name in config.yaml). Without this, `ddev start` fails with
-	// "already contains a project named X". Safe on fresh installs (no-op).
-	steps.push({ msg: 'Clearing stale DDEV registration', cmd: 'ddev delete -Oy 2>/dev/null || true' });
-
 	// Install the Redis DDEV addon BEFORE ddev start so the Redis container boots with the project
 	if (useRedisCache) {
 		steps.push({ msg: 'Adding DDEV Redis addon', cmd: 'ddev add-on get ddev/ddev-redis' });

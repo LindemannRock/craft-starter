@@ -242,6 +242,15 @@ async function main() {
 	updatePackageJson(project, { useCritical, hasIconManager });
 	s.stop('package.json updated');
 
+	// Clear any stale DDEV registration BEFORE updating config.yaml — `ddev delete`
+	// reads the project name from the current config, so it must run while the old
+	// name is still in place. Handles the case where the user ran `ddev start`
+	// (as `craft-starter`) before `make create` (which changes the name).
+	try {
+		const { execSync } = await import('child_process');
+		execSync('ddev delete -Oy', { cwd: ROOT, stdio: 'ignore' });
+	} catch { /* no project to delete — fresh install */ }
+
 	s.start('Updating DDEV config');
 	updateDdevConfig(project, { useCritical });
 	s.stop('DDEV config updated');
