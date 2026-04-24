@@ -4,41 +4,182 @@
  * Loaded via cpHeadTags in config/general.php — no CP CSS plugin needed.
  * Edit this file to adjust login styling, RTL fixes, content builder tweaks.
  * Vite copies this to web/dist/assets/cp/cp.css on build.
+ *
+ * Source: https://github.com/craftcms/cms/tree/5.x/src/web/assets/cp/src/css
+ *   _tokens.scss    — design tokens (spacing, radius, focus rings)
+ *   _variables.scss — semantic variables (colors, UI controls, sidebar)
+ *   _color-palette.scss — full color palette (--gray-050..950, --red-050..950, etc.)
  */
+
+/* ==========================================================================
+   Craft CP design token overrides (uncomment to customize)
+
+   Full reference from Craft 5.x source — grouped by category.
+   Override any of these in :root to change the CP look globally.
+   ========================================================================== */
+
+/*
+:root {
+*/
+
+	/* -- General colors --------------------------------------------------- */
+	/* --bg-primary: var(--red-600); */
+	/* --bg-secondary: var(--gray-500); */
+	/* --bg-selection-light: var(--gray-200); */
+	/* --bg-selection-dark: var(--gray-500); */
+	/* --sidebar-bg: var(--gray-150); */
+
+	/* -- Status colors ---------------------------------------------------- */
+	/* --bg-error: var(--red-100); */
+	/* --bg-warning: var(--amber-100); */
+	/* --bg-success: var(--teal-100); */
+	/* --bg-notice: var(--sky-100); */
+	/* --bg-enabled: var(--teal-550); */
+	/* --bg-pending: var(--orange-400); */
+	/* --bg-disabled: var(--red-600); */
+
+	/* -- Text / foreground ------------------------------------------------ */
+	/* --fg-subtle: var(--gray-550); */
+	/* --fg-error: #d81f23; */
+	/* --fg-warning: var(--amber-700); */
+	/* --fg-success: var(--teal-700); */
+	/* --fg-notice: var(--sky-700); */
+	/* --fg-input: hsl(212deg 25% 50%); */
+
+	/* -- Borders ---------------------------------------------------------- */
+	/* --border-primary: var(--red-600); */
+	/* --border-secondary: var(--gray-500); */
+	/* --border-hairline: rgb(from var(--gray-800) r g b / 10%); */
+	/* --border-hairline-medium: #cfd8e3; */
+	/* --border-error: var(--red-300); */
+	/* --border-warning: var(--amber-300); */
+	/* --border-success: var(--teal-300); */
+	/* --border-notice: var(--sky-300); */
+
+	/* -- Focus rings ------------------------------------------------------ */
+	/* --focus-outline-light: var(--blue-300); */
+	/* --focus-outline-medium: var(--focus-ring-color, #0284c7); */
+	/* --focus-outline-dark: #0f74b1; */
+	/* --focus-ring-alpha: 0.85; */
+
+	/* -- Border radius ---------------------------------------------------- */
+	/* --radius-sm: 3px; */
+	/* --radius-md: 4px; */
+	/* --radius-lg: 5px; */
+	/* --radius-full: calc(infinity * 1px); */
+
+	/* -- Spacing ---------------------------------------------------------- */
+	/* --2xs: calc(2rem / 16); */
+	/* --xs: calc(4rem / 16); */
+	/* --s: calc(8rem / 16); */
+	/* --m: calc(14rem / 16); */
+	/* --l: calc(18rem / 16); */
+	/* --xl: calc(24rem / 16); */
+	/* --padding: var(--xl); */
+
+	/* -- UI controls (inputs, selects, buttons) --------------------------- */
+	/* --ui-control-fg: var(--fg-subtle); */
+	/* --ui-control-fg-hover: var(--gray-600); */
+	/* --ui-control-fg-active: var(--gray-700); */
+	/* --ui-control-bg: rgb(from var(--fg-input) r g b / 25%); */
+	/* --ui-control-bg-hover: rgb(from var(--fg-input) r g b / 30%); */
+	/* --ui-control-bg-active: rgb(from var(--fg-input) r g b / 50%); */
+	/* --ui-control-border: var(--ui-control-fg); */
+	/* --ui-control-radius: var(--radius-lg); */
+	/* --ui-control-height: calc(34rem / 16); */
+	/* --ui-control-height-small: calc(30rem / 16); */
+
+	/* -- Sizing ----------------------------------------------------------- */
+	/* --size-touch-target: calc(24rem / 16); */
+	/* --size-icon: 1rem; */
+	/* --size-line-height: 1.42em; */
+
+	/* -- Navigation sidebar ----------------------------------------------- */
+	/* --nav-item-badge-bg: var(--fg-subtle); */
+	/* --nav-item-badge-fg: var(--white); */
+	/* --nav-item-fg-active: var(--text-color); */
+	/* --nav-item-fg-hover: var(--text-color); */
+	/* --nav-item-bg-active: var(--gray-200); */
+	/* --nav-item-bg-hover: var(--gray-200); */
+
+	/* -- Legacy semantic variables (still work in Craft 5) ---------------- */
+	/* --bg-color: ...; */
+	/* --primary-color: ...; */
+	/* --secondary-color: ...; */
+	/* --hairline-color: ...; */
+	/* --medium-hairline-color: ...; */
+	/* --medium-text-color: ...; */
+	/* --medium-dark-text-color: ...; */
+	/* --error-color: ...; */
+	/* --warning-color: ...; */
+	/* --success-color: ...; */
+	/* --notice-color: ...; */
+	/* --enabled-color: ...; */
+	/* --pending-color: ...; */
+	/* --disabled-color: ...; */
+	/* --sidebar-bgColor: ...; */
+
+/*
+}
+*/
 
 /* ==========================================================================
    Login page
    ========================================================================== */
 
 .login {
-    background: rgb(242, 193, 214);
-    background: radial-gradient(
-        circle,
-        rgba(242, 193, 214, 1) 0%,
-        rgba(189, 194, 248, 1) 56%,
-        rgba(201, 227, 255, 1) 92%
-    );
+	background: rgb(242, 193, 214);
+	background: radial-gradient(
+		circle,
+		rgba(242, 193, 214, 1) 0%,
+		rgba(189, 194, 248, 1) 56%,
+		rgba(201, 227, 255, 1) 92%
+	);
 }
 
 .login .login-form-container {
-    background: #ffffff;
-    padding: 2.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgb(189, 194, 248);
-    box-shadow: 2px 2px 20px 4px rgb(154 147 232 / 24%);
-    backdrop-filter: blur(20px);
-    height: auto;
-    flex-shrink: unset;
-    width: auto;
+	background: #ffffff;
+	padding: 2.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid rgb(189, 194, 248);
+	box-shadow: 2px 2px 20px 4px rgb(154 147 232 / 24%);
+	backdrop-filter: blur(20px);
+	height: auto;
+	flex-shrink: unset;
+	width: auto;
 }
 
 #login-logo {
-    width: 200px !important;
-    height: auto !important;
+	width: 200px !important;
+	height: auto !important;
 }
 
-#poweredby,
-#edition,
-#global-footer {
-    display: none !important;
+/* ==========================================================================
+   Content builder layout (Neo / Matrix section blocks)
+   ========================================================================== */
+
+.ni_block_body h2,
+.flex-fields h2 {
+	padding-top: 15px !important;
+	padding-bottom: 15px !important;
+	margin-top: 15px !important;
+	margin-bottom: 15px !important;
+	border-bottom: 1px solid var(--hairline-color);
+}
+
+.ni_blocks .ni_block[data-neo-b-name='Section'],
+.blocks .matrixblock[data-type='blockSection'] {
+	margin-top: 30px;
+}
+
+.ni_blocks .ni_block[data-neo-b-name='Section'] ~ .ni_block:not([data-neo-b-name='Section']),
+.blocks .matrixblock[data-type='blockSection'] ~ .matrixblock:not([data-type='blockSection']) {
+	width: 97%;
+	margin-left: 3%;
+}
+
+.rtl .ni_blocks .ni_block[data-neo-b-name='Section'] ~ .ni_block:not([data-neo-b-name='Section']),
+.rtl .blocks .matrixblock[data-type='blockSection'] ~ .matrixblock:not([data-type='blockSection']) {
+	margin-left: auto;
+	margin-right: 3%;
 }
