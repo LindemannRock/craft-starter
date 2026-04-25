@@ -46,7 +46,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-campaign-manager',
 		handle: 'campaign-manager',
-		version: '^5.7',
+		version: '^5.8',
 		label: 'Campaign Manager',
 		hint: 'SMS, email, WhatsApp campaigns',
 		config: null,
@@ -86,7 +86,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-rating-field',
 		handle: 'formie-rating-field',
-		version: '^3.15',
+		version: '^3.16',
 		label: 'Formie Rating',
 		hint: 'Star/emoji/numeric rating for Formie',
 		config: null,
@@ -151,7 +151,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-search-manager',
 		handle: 'search-manager',
-		version: '^5.43',
+		version: '^5.44',
 		label: 'Search Manager',
 		hint: 'Search analytics + synonyms',
 		config: null,
