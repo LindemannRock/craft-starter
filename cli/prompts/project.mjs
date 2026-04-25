@@ -22,6 +22,25 @@ function handlePromptError(err) {
 	if (isPromptCancel(err)) cancel();
 	throw err;
 }
+
+/**
+ * Format a timezone's UTC offset as a human-readable string, e.g. "UTC+4" or "UTC-5:30".
+ * Uses Intl.DateTimeFormat to get the real offset for a given date (handles DST).
+ */
+function getUtcOffset(tz, date) {
+	try {
+		const parts = new Intl.DateTimeFormat('en-US', {
+			timeZone: tz,
+			timeZoneName: 'shortOffset',
+		}).formatToParts(date);
+		const offsetPart = parts.find((p) => p.type === 'timeZoneName');
+		// "GMT+4" → "UTC+4", "GMT" → "UTC+0"
+		const raw = offsetPart?.value || 'GMT';
+		return raw === 'GMT' ? 'UTC+0' : raw.replace('GMT', 'UTC');
+	} catch {
+		return 'UTC';
+	}
+}
 import { isValidEmail } from '../utils/validate.mjs';
 
 export async function promptProject() {
@@ -47,28 +66,38 @@ export async function promptProject() {
 		{ onCancel: () => cancel() },
 	);
 
-	// Timezone — autocomplete from all IANA timezones
+	// Timezone — autocomplete from all IANA timezones with UTC offset display.
+	// Supports searching by zone name ("dubai"), region ("asia"), offset ("+4", "UTC+4"),
+	// or city-style partial matches ("new_y" → America/New_York).
 	const allTimezones = Intl.supportedValuesOf('timeZone');
+
+	// Pre-compute offset labels once (they don't change during the prompt session).
+	const now = new Date();
+	const tzEntries = allTimezones.map((tz) => {
+		const offset = getUtcOffset(tz, now);
+		const label = `${tz} (${offset})`;
+		// Searchable text: zone name + offset string (e.g. "America/New_York UTC-5 -5")
+		const searchText = `${tz} ${offset} ${offset.replace('UTC', '')}`.toLowerCase();
+		return { value: tz, name: label, searchText };
+	});
+
+	const popularTimezones = [
+		'UTC', 'Europe/London', 'Europe/Berlin', 'America/New_York',
+		'America/Los_Angeles', 'Asia/Dubai', 'Asia/Riyadh', 'Asia/Tokyo',
+		'Asia/Shanghai', 'Australia/Sydney',
+	];
+	const popularEntries = popularTimezones
+		.map((tz) => tzEntries.find((e) => e.value === tz))
+		.filter(Boolean);
+
 	const timezone = await search({
-		message: 'Timezone (type to search)',
+		message: 'Timezone (type to search — name, region, or offset like +4)',
 		source: async (input) => {
-			if (!input) {
-				return [
-					{ value: 'UTC', name: 'UTC' },
-					{ value: 'Europe/London', name: 'Europe/London' },
-					{ value: 'Europe/Berlin', name: 'Europe/Berlin' },
-					{ value: 'America/New_York', name: 'America/New_York' },
-					{ value: 'America/Los_Angeles', name: 'America/Los_Angeles' },
-					{ value: 'Asia/Dubai', name: 'Asia/Dubai' },
-					{ value: 'Asia/Riyadh', name: 'Asia/Riyadh' },
-					{ value: 'Asia/Tokyo', name: 'Asia/Tokyo' },
-				];
-			}
+			if (!input) return popularEntries;
 			const lower = input.toLowerCase();
-			return allTimezones
-				.filter((tz) => tz.toLowerCase().includes(lower))
-				.slice(0, 15)
-				.map((tz) => ({ value: tz, name: tz }));
+			return tzEntries
+				.filter((e) => e.searchText.includes(lower))
+				.slice(0, 30);
 		},
 	}).catch(handlePromptError);
 
