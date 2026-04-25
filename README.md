@@ -13,14 +13,15 @@ An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
 - [Make commands](#make-commands)
+- [After `make create`](#after-make-create)
 - [Project structure](#project-structure)
 - [Stack](#stack)
 - [Plugins](#plugins)
-- [Device testing](#device-testing)
 - [Template hierarchy](#template-hierarchy)
 - [Environment variables](#environment-variables)
 - [What `make create` does differently based on your choices](#what-make-create-does-differently-based-on-your-choices)
-- [After `make create`](#after-make-create)
+- [Testing](#testing)
+- [Device testing (Tailscale)](#device-testing-tailscale)
 - [Versioning & releases (release-please)](#versioning--releases-release-please)
 - [Support](#support)
 - [License](#license)
@@ -95,6 +96,7 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 | Command                    | Alias  | Description                                       |
 | -------------------------- | ------ | ------------------------------------------------- |
 | `make dev`                 |        | Start Vite dev server (HMR)                       |
+| `make test`                |        | Run CLI unit tests (vitest — no DDEV needed)      |
 | `make prod`                |        | Production build (fast — skips critical CSS)      |
 | `make critical`            |        | Production build + critical CSS (slow — spawns Chromium per page). Only available if you opted in to critical CSS during `make create` |
 | `make favicons`            |        | Generate favicons from `src/img/favicon.svg`      |
@@ -162,6 +164,19 @@ The `db-export` picker asks whether it's a disposable working dump (`.sql.gz`, g
 | -------------------------- | ---------------------------------------------------------- |
 | `make reset`               | Wipe the database + `.env` (keeps vendor/node_modules)     |
 | `make nuke`                | Destroy DDEV + vendor + node_modules + dist + config/project + .env |
+
+## After `make create`
+
+Most project configuration is handled automatically. A few things are still manual because they depend on assets you provide:
+
+- [ ] Replace brand colors in `src/css/global.css`
+- [ ] Add project fonts to `src/fonts/` and update `global.css`
+- [ ] Update font preloads in `templates/_layouts/base-fonts.twig`
+- [ ] Add your favicon to `src/img/favicon.svg` and run `make favicons`
+- [ ] Optionally set `FAVICON_THEME_COLOR` and `FAVICON_BG_COLOR` in `.env` before running
+- [ ] Create `main` / `footer` navigation handles in the CP (Navigation plugin)
+- [ ] Update email template branding in `templates/_emails/system.twig`
+- [ ] If critical CSS is enabled, configure which pages to generate it for in `vite.config.mjs` (default: home + about)
 
 ## Project structure
 
@@ -264,44 +279,6 @@ craft-starter/
 - `craftcms/cms` · `craftcms/ckeditor` · `nystudio107/craft-vite` · `vlucas/phpdotenv`
 - Dev: `craftcms/generator` · `yiisoft/yii2-shell`
 
-## Device testing
-
-Test your dev site on real phones and tablets via [Tailscale](https://tailscale.com) — optional, only needed if you use `make share` / `make funnel`.
-
-### Install Tailscale
-
-Two options on macOS. Pick one:
-
-**1. App cask (recommended — GUI + auto-start)**
-
-```bash
-brew install --cask tailscale-app
-```
-
-Launch Tailscale from Applications, sign in via the menubar icon. Daemon runs automatically on login, reconnects after sleep.
-
-**2. CLI only (headless / servers / if you prefer)**
-
-```bash
-brew install tailscale                  # CLI + daemon
-sudo brew services start tailscale      # daemon doesn't auto-start with this install
-sudo tailscale up                       # sign in (follow the URL it prints)
-```
-
-### Two modes
-
-- **`make share`** — serves the site over your private Tailnet. The test device also needs Tailscale installed and signed into the same account. Fastest + most private.
-- **`make funnel`** — serves the site publicly via [Tailscale Funnel](https://tailscale.com/kb/1223/funnel). Any device can hit the URL without Tailscale. Requires Funnel enabled for your tailnet (see Tailscale admin console).
-
-### First-run gotchas
-
-- **"Serve is not enabled on your tailnet"** — Tailscale prints a URL the first time you run `make share`. Visit it to enable Serve for your tailnet, then re-run the command. One-time setup.
-- **Funnel needs explicit enabling** too, per-machine, in the [Tailscale admin console](https://login.tailscale.com/admin/acls) under ACLs.
-
-Both commands register a temporary `.ddev/config.tailscale.yaml` (gitignored), expose the Vite dev server on port 8443 so HMR works on the test device, and clean up when you hit Ctrl+C.
-
-Run the command in one terminal and `make dev` in another.
-
 ## Template hierarchy
 
 ```
@@ -378,18 +355,56 @@ No `mailer` component override in `config/app.php` — single source of truth in
 - **Formie SMS** → SMS Manager is auto-added
 - Auto-added plugins are labelled `(req. by X)` in the confirmation summary
 
-## After `make create`
+## Testing
 
-Most project configuration is handled automatically. A few things are still manual because they depend on assets you provide:
+The CLI ships with unit tests for its pure utility functions — no DDEV or Craft install needed.
 
-- [ ] Replace brand colors in `src/css/global.css`
-- [ ] Add project fonts to `src/fonts/` and update `global.css`
-- [ ] Update font preloads in `templates/_layouts/base-fonts.twig`
-- [ ] Add your favicon to `src/img/favicon.svg` and run `make favicons`
-- [ ] Optionally set `FAVICON_THEME_COLOR` and `FAVICON_BG_COLOR` in `.env` before running
-- [ ] Create `main` / `footer` navigation handles in the CP (Navigation plugin)
-- [ ] Update email template branding in `templates/_emails/system.twig`
-- [ ] If critical CSS is enabled, configure which pages to generate it for in `vite.config.mjs` (default: home + about)
+```bash
+make test              # single run (41 tests, ~200ms)
+cd cli && npx vitest   # watch mode (re-runs on save)
+```
+
+Tests cover: `setEnvKey` (including `$`-pattern safety), `shellEscape`, `isValidEmail`, `quoted`, `removeSection`, `redactSecrets`, and all crypto generators. Located in `cli/tests/`.
+
+When contributing changes to `cli/utils/` or `cli/actions/`, run `make test` before pushing.
+
+## Device testing (Tailscale)
+
+Test your dev site on real phones and tablets via [Tailscale](https://tailscale.com) — optional, only needed if you use `make share` / `make funnel`.
+
+### Install Tailscale
+
+Two options on macOS. Pick one:
+
+**1. App cask (recommended — GUI + auto-start)**
+
+```bash
+brew install --cask tailscale-app
+```
+
+Launch Tailscale from Applications, sign in via the menubar icon. Daemon runs automatically on login, reconnects after sleep.
+
+**2. CLI only (headless / servers / if you prefer)**
+
+```bash
+brew install tailscale                  # CLI + daemon
+sudo brew services start tailscale      # daemon doesn't auto-start with this install
+sudo tailscale up                       # sign in (follow the URL it prints)
+```
+
+### Two modes
+
+- **`make share`** — serves the site over your private Tailnet. The test device also needs Tailscale installed and signed into the same account. Fastest + most private.
+- **`make funnel`** — serves the site publicly via [Tailscale Funnel](https://tailscale.com/kb/1223/funnel). Any device can hit the URL without Tailscale. Requires Funnel enabled for your tailnet (see Tailscale admin console).
+
+### First-run gotchas
+
+- **"Serve is not enabled on your tailnet"** — Tailscale prints a URL the first time you run `make share`. Visit it to enable Serve for your tailnet, then re-run the command. One-time setup.
+- **Funnel needs explicit enabling** too, per-machine, in the [Tailscale admin console](https://login.tailscale.com/admin/acls) under ACLs.
+
+Both commands register a temporary `.ddev/config.tailscale.yaml` (gitignored), expose the Vite dev server on port 8443 so HMR works on the test device, and clean up when you hit Ctrl+C.
+
+Run the command in one terminal and `make dev` in another.
 
 ## Versioning & releases (release-please)
 
