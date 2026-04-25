@@ -5,7 +5,7 @@ config-backups
 logs
 runtime
 
-# Plugin runtime data (harmless if plugin not installed)
+# Plugin runtime data
 redirect-manager
 report-manager
 translation-manager
