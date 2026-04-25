@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { setEnvKey, quoted, removeSection } from '../actions/env.mjs';
 
 describe('setEnvKey', () => {
@@ -7,9 +7,12 @@ describe('setEnvKey', () => {
 		expect(result).toBe('FOO=new\nBAR=keep\n');
 	});
 
-	it('appends a missing key', () => {
+	it('appends a missing key (warns about typo)', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const result = setEnvKey('FOO=bar\n', 'NEW_KEY', 'val');
 		expect(result).toContain('NEW_KEY=val');
+		expect(warn).toHaveBeenCalledOnce();
+		warn.mockRestore();
 	});
 
 	it('handles $ characters in values (critical audit fix)', () => {

@@ -222,7 +222,7 @@ export function generateEnvFile({
  * accidentally eat the next one if a contributor forgets a blank separator.
  *
  */
-function removeSection(content, header) {
+export function removeSection(content, header) {
 	const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	// \n<header>[stuff not starting with blank]<stuff until blank>
 	// Each content line must have at least one non-newline char (prevents blank line consumption).
