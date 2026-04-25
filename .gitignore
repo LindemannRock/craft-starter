@@ -20,12 +20,6 @@
 # tracking your project config like any normal Craft site.
 /config/project/
 
-# Lock files — TEMPORARY for the same reason. Regenerated on every
-# `make create` since composer.json changes based on plugin selection.
-# Fork for a client project? Remove these two lines and commit locks.
-/composer.lock
-/package-lock.json
-
 # Dependencies
 /vendor/
 /node_modules/
@@ -41,9 +35,8 @@
 /web/cache/*
 /web/transforms/*
 
-# Storage
-/storage/*
-!/storage/.gitkeep
+# Storage — has its own storage/.gitignore (Craft convention).
+# rebrand/ and config-deltas/ are committed; everything else is ignored.
 
 # Development tools & logs
 .cache

@@ -1,0 +1,11 @@
+# Craft CMS runtime
+backups
+composer-backups
+config-backups
+logs
+runtime
+
+# Plugin runtime data (harmless if plugin not installed)
+redirect-manager
+report-manager
+translation-manager

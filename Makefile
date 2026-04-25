@@ -303,7 +303,7 @@ nuke: ## Destroy DDEV + vendor + node_modules + dist + config/project + .env
 	@# Purge .DS_Store files first so macOS Finder can't block directory removal mid-rm
 	@find vendor node_modules web/dist config/project -name '.DS_Store' -delete 2>/dev/null || true
 	@# First-pass removal
-	@rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/rebrand storage/runtime 2>/dev/null || true
+	@rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/runtime 2>/dev/null || true
 	@rm -f .env composer.lock package-lock.json craft-cloud.yaml 2>/dev/null || true
 	@# Reset files modified by make create back to starter defaults
 	@git checkout composer.json package.json 2>/dev/null || true
@@ -331,14 +331,14 @@ nuke: ## Destroy DDEV + vendor + node_modules + dist + config/project + .env
 	@if [ -e vendor ] || [ -e node_modules ] || [ -e web/dist ] || [ -e config/project ]; then \
 		sleep 1; \
 		find vendor node_modules web/dist config/project -name '.DS_Store' -delete 2>/dev/null || true; \
-		rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/rebrand storage/runtime 2>/dev/null || true; \
+		rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/runtime 2>/dev/null || true; \
 	fi
 	@# Final safety check — fail loudly if anything survived
 	@if [ -e vendor ] || [ -e node_modules ] || [ -e web/dist ] || [ -e config/project ] || [ -e .env ]; then \
 		echo ""; \
 		echo "Some files could not be removed. They may be locked by a running process."; \
 		echo "Try:  pkill -9 node && make nuke"; \
-		echo "Or manually:  rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/rebrand storage/runtime .env"; \
+		echo "Or manually:  rm -rf vendor node_modules web/dist config/project storage/config-deltas storage/logs storage/runtime .env"; \
 		exit 1; \
 	fi
 	@echo "Nuke complete — run 'make create' or 'make install' to rebuild"
