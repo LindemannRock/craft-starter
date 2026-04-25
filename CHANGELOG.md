@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.4.0](https://github.com/LindemannRock/craft-starter/compare/v5.3.0...v5.4.0) (2026-04-25)
+
+
+### Features
+
+* **cli:** add getUtcOffset function for human-readable timezone offsets ([7d9c3ed](https://github.com/LindemannRock/craft-starter/commit/7d9c3ed573cbf4206bee673b06dbcfb087f8d423))
+* **cli:** add unit tests for crypto and env utilities, implement redactSecrets function ([c2bc406](https://github.com/LindemannRock/craft-starter/commit/c2bc40662504998edbd03abfd790286d468f5713))
+* **cli:** export removeSection function for section management in env files ([4f8f7b6](https://github.com/LindemannRock/craft-starter/commit/4f8f7b689de943ad4ef66b371ed1378ef623121d))
+
+
+### Bug Fixes
+
+* **cli:** update plugin versions for Campaign Manager, Formie Rating, and Search Manager ([bc2ab00](https://github.com/LindemannRock/craft-starter/commit/bc2ab00e0662c1bd6558e84a9d2df3c55f390cf8))
+* **nuke:** remove storage/config-deltas from cleanup process ([b237069](https://github.com/LindemannRock/craft-starter/commit/b2370698c476afbc3dc7bf8f6a99414e4edb41b6))
+
 ## [5.3.0](https://github.com/LindemannRock/craft-starter/compare/v5.2.0...v5.3.0) (2026-04-23)
 
 
