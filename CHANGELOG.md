@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.1](https://github.com/LindemannRock/craft-starter/compare/v5.4.0...v5.4.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **cli:** remove alpha plugins from env files ([e3dd516](https://github.com/LindemannRock/craft-starter/commit/e3dd516affe0ce7ab4bb7e591b3cee92b27e62bf))
+
 ## [5.4.0](https://github.com/LindemannRock/craft-starter/compare/v5.3.0...v5.4.0) (2026-04-25)
 
 
