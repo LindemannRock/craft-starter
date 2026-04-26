@@ -230,10 +230,8 @@ craft-starter/
 
 | Plugin | Purpose |
 |--------|---------|
-| [Campaign Manager](https://github.com/LindemannRock/craft-campaign-manager) | SMS, email, and WhatsApp campaigns |
 | [Code Highlighter](https://github.com/LindemannRock/craft-code-highlighter) | Syntax highlighting (Prism.js) |
 | [Component Manager](https://github.com/LindemannRock/craft-component-manager) | Advanced component management |
-| [Formie Booking Slot](https://github.com/LindemannRock/craft-formie-booking-slot-field) | Date/time slot selection for Formie |
 | [Formie Paragraph](https://github.com/LindemannRock/craft-formie-paragraph-field) | Multi-line paragraph field for Formie |
 | [Formie Rating](https://github.com/LindemannRock/craft-formie-rating-field) | Star/emoji/numeric rating for Formie |
 | [Formie REST API](https://github.com/LindemannRock/craft-formie-rest-api) | REST + GraphQL API for Formie |

@@ -175,7 +175,6 @@ export function generateEnvFile({
 	// Remove plugin env sections when the plugin isn't selected.
 	// Each section header in env.example must match the string passed here.
 	const pluginEnvSections = [
-		{ handle: 'campaign-manager', section: '# Campaign Manager' },
 		{ handle: 'redirect-manager', section: '# Redirect Manager' },
 		{ handle: 'search-manager', section: '# Search Manager' },
 		{ handle: 'shortlink-manager', section: '# Shortlink Manager' },

@@ -44,14 +44,6 @@ export const REDIS_PACKAGE = {
 
 export const LR_PLUGINS = [
 	{
-		value: 'lindemannrock/craft-campaign-manager',
-		handle: 'campaign-manager',
-		version: '^5.8',
-		label: 'Campaign Manager',
-		hint: 'SMS, email, WhatsApp campaigns',
-		config: null,
-	},
-	{
 		value: 'lindemannrock/craft-code-highlighter',
 		handle: 'code-highlighter',
 		version: '^5.5',
@@ -65,14 +57,6 @@ export const LR_PLUGINS = [
 		version: '^5.5',
 		label: 'Component Manager',
 		hint: 'Advanced component management',
-		config: null,
-	},
-	{
-		value: 'lindemannrock/craft-formie-booking-slot-field',
-		handle: 'formie-booking-slot-field',
-		version: '^3.4',
-		label: 'Formie Booking Slot',
-		hint: 'Date/time slot selection for Formie',
 		config: null,
 	},
 	{
