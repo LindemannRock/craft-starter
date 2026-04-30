@@ -19,7 +19,9 @@ import pc from 'picocolors';
 import { LR_PLUGINS, THIRD_PARTY_PLUGINS, CORE_REQUIRE, HOSTING_OPTIONS } from '../config/plugins.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..', '..');
 const PLUGINS_FILE = path.join(__dirname, '../config/plugins.mjs');
+const COMPOSER_FILE = path.join(ROOT, 'composer.json');
 
 const allPackages = [
 	...Object.entries(CORE_REQUIRE).map(([name, version]) => ({ name, version, source: 'core' })),
@@ -157,7 +159,7 @@ if (updates.length === 0) {
 	process.exit(0);
 }
 
-// Apply updates
+// Apply updates to plugins.mjs
 let content = fs.readFileSync(PLUGINS_FILE, 'utf-8');
 for (const u of updates) {
 	const escaped = u.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -176,6 +178,29 @@ for (const u of updates) {
 
 	p.log.success(`${u.name}  ${pc.dim(u.from)} → ${pc.green(u.to)}`);
 }
-
 fs.writeFileSync(PLUGINS_FILE, content);
+
+// Sync core package versions into the committed composer.json so `make nuke`
+// restores the up-to-date baseline. Only the keys present in composer.json
+// (require + require-dev) get touched — plugin selections are written by the
+// CLI from the registry during `make create`, not stored here.
+if (fs.existsSync(COMPOSER_FILE)) {
+	const composer = JSON.parse(fs.readFileSync(COMPOSER_FILE, 'utf-8'));
+	let composerChanged = false;
+	for (const u of updates) {
+		if (composer.require?.[u.name]) {
+			composer.require[u.name] = u.to;
+			composerChanged = true;
+		}
+		if (composer['require-dev']?.[u.name]) {
+			composer['require-dev'][u.name] = u.to;
+			composerChanged = true;
+		}
+	}
+	if (composerChanged) {
+		fs.writeFileSync(COMPOSER_FILE, JSON.stringify(composer, null, '\t') + '\n');
+		p.log.info('composer.json synced with new core versions');
+	}
+}
+
 p.outro(pc.green(`${updates.length} package${updates.length === 1 ? '' : 's'} updated.`));
