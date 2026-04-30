@@ -77,8 +77,14 @@ function isMajorBump(constraint, latest) {
 }
 
 function newConstraint(latest) {
+	// Pin the floor to the latest version so security/bug-fix patches are
+	// guaranteed. Caret already allows newer compatible versions above.
+	// Examples: 5.6.3 → ^5.6.3, 3.0.20 → ^3.0.20.
 	const parts = latest.split('.');
-	return `^${parts[0]}.${parts[1]}`;
+	const major = parts[0] ?? '0';
+	const minor = parts[1] ?? '0';
+	const patch = parts[2] ?? '0';
+	return `^${major}.${minor}.${patch}`;
 }
 
 const interactive = process.argv.includes('--update');
