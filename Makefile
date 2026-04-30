@@ -1,6 +1,6 @@
 .PHONY: help create install start dev test prod critical favicons reset nuke \
 	clean clean-logs update update-craft update-composer update-npm update-cli \
-	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-fetch \
+	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-remove registry-plugins-fetch \
 	up npm-install kill-vite \
 	db db-pull db-export db-import verify reindex-search \
 	launch tableplus mailpit keys format share funnel \
@@ -231,6 +231,9 @@ registry-plugins-update:
 
 registry-plugins-add:
 	@node cli/scripts/add-plugin.mjs
+
+registry-plugins-remove:
+	@node cli/scripts/remove-plugin.mjs
 
 registry-plugins-fetch:
 	@node cli/scripts/fetch-plugin-configs.mjs

@@ -146,6 +146,7 @@ Tip: pick "Craft CMS + plugins" in the picker to get Craft's native interactive 
 | `make registry-plugins-check` | Compare registry versions against Packagist   |
 | `make registry-plugins-update`| Apply version bumps (confirms major bumps)    |
 | `make registry-plugins-add`   | Search Packagist + add a plugin to the registry |
+| `make registry-plugins-remove`| Remove a plugin from the registry (optionally deletes config template) |
 | `make registry-plugins-fetch` | Pull default `config.php` from each plugin's GitHub repo |
 
 #### `make db` sub-targets (hidden)

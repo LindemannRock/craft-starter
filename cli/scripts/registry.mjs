@@ -26,6 +26,7 @@ const RESOURCES = [
 			{ value: 'check',  label: 'Check versions',  hint: 'compare registry against Packagist' },
 			{ value: 'update', label: 'Update versions', hint: 'apply bumps (major bumps confirmed)' },
 			{ value: 'add',    label: 'Add a plugin',    hint: 'search Packagist + add to registry' },
+			{ value: 'remove', label: 'Remove a plugin', hint: 'remove an entry from the registry' },
 			{ value: 'fetch',  label: 'Fetch configs',   hint: 'pull default config.php from GitHub' },
 		],
 	},
