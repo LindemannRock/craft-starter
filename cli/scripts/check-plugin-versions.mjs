@@ -118,9 +118,18 @@ if (outdatedList.length === 0) {
 
 p.log.step(`${outdatedList.length} package${outdatedList.length === 1 ? '' : 's'} can be updated.`);
 
+// In check-only mode, ask if the user wants to proceed with the update right
+// now (reuses the already-fetched data — no second Packagist round-trip).
+// Direct callers can pass --update to skip the prompt and go straight to select.
 if (!interactive) {
-	p.outro('Run ' + pc.bold('make update-plugins') + ' to select which to update.');
-	process.exit(0);
+	const proceed = await p.confirm({
+		message: 'Update now?',
+		initialValue: false,
+	});
+	if (p.isCancel(proceed) || !proceed) {
+		p.outro('Run ' + pc.bold('make registry') + ' → ' + pc.cyan('Update versions') + ' to select which to update later.');
+		process.exit(0);
+	}
 }
 
 // Interactive selection
