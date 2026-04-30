@@ -186,7 +186,7 @@ craft-starter/
 │   │                      scripts, tests, templates)
 │   └── templates/         Source files: env.example, plugin configs, translations,
 │                          rebrand assets, critical-CSS variants
-├── config/                Craft config (app.php, general.php, vite.php, routes.php)
+├── config/                Craft config (app.php, app.web.php, general.php, vite.php, routes.php)
 ├── src/                   Frontend: css, js, brand, cp, fonts, icons, img
 ├── storage/               Craft runtime (own .gitignore — only rebrand/ committed)
 ├── templates/             Twig templates (_boilerplate → base → pages)

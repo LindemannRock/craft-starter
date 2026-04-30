@@ -56,6 +56,29 @@ The handle is uppercased (`en` → `_EN`). These are referenced by Craft's proje
 | `CRAFT_TIMEZONE` | `UTC` or other | same | same |
 | `PRIMARY_SITE_URL` | `https://{project}.ddev.site` | staging URL | production URL |
 
+## Security headers
+
+The starter ships sensible default security headers in `config/app.web.php` via Craft's `headersFilter`:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: SAMEORIGIN`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Permissions-Policy` (locked-down feature defaults)
+
+Edit `config/app.web.php` to extend or override per-project. CORS and CSP are left as commented examples — opt in if your project needs them.
+
+These are set at the application layer (in source control), not at the CDN. Hosting-specific headers (caching, HSTS) still live with your host.
+
+### Further reading
+
+- [MDN: Security headers reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers) — authoritative syntax + browser support per header
+- [Permissions-Policy feature directives](https://github.com/w3c/webappsec-permissions-policy/blob/main/features.md) — full list of `feature=()` keys
+- [OWASP Secure Headers Project](https://owasp.org/www-project-secure-headers/) — recommended values + threat models
+- [securityheaders.com](https://securityheaders.com) — paste your URL, get a graded report
+- [Mozilla Observatory](https://observatory.mozilla.org) — broader security report
+- [csp-evaluator.withgoogle.com](https://csp-evaluator.withgoogle.com) — when you eventually add CSP
+
 ## Email
 
 Email transport is configured in project config during `make create`. The PHP script (`cli/scripts/configure-project.php`) picks a transport based on which env vars are set, in this order:
