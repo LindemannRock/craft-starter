@@ -18,15 +18,15 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.9.18',
-	'craftcms/ckeditor': '^5.4.0',
+	'craftcms/cms': '^5.9.22',
+	'craftcms/ckeditor': '^5.5.0',
 	'nystudio107/craft-vite': '^5.0.1',
-	'vlucas/phpdotenv': '^5.6.0',
+	'vlucas/phpdotenv': '^5.6.3',
 };
 
 export const CORE_REQUIRE_DEV = {
-	'craftcms/generator': '^2.0.0',
-	'yiisoft/yii2-shell': '^2.0.3',
+	'craftcms/generator': '^2.2.0',
+	'yiisoft/yii2-shell': '^2.0.6',
 };
 
 // Craft plugin handles always activated after install
@@ -35,7 +35,7 @@ export const CORE_PLUGIN_HANDLES = ['ckeditor', 'vite'];
 // Optional: Redis cache package — only added when user opts in
 export const REDIS_PACKAGE = {
 	name: 'yiisoft/yii2-redis',
-	version: '^2.1',
+	version: '^2.1.1',
 };
 
 // -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-component-manager',
 		handle: 'component-manager',
-		version: '^5.5',
+		version: '^5.5.1',
 		label: 'Component Manager',
 		hint: 'Advanced component management',
 		config: null,
@@ -102,7 +102,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-icon-manager',
 		handle: 'icon-manager',
-		version: '^5.12',
+		version: '^5.12.1',
 		label: 'Icon Manager',
 		hint: 'SVG + icon font management',
 		config: null,
@@ -110,7 +110,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-logging-library',
 		handle: 'logging-library',
-		version: '^5.8',
+		version: '^5.8.2',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
 		config: null,
@@ -135,7 +135,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-search-manager',
 		handle: 'search-manager',
-		version: '^5.44',
+		version: '^5.44.1',
 		label: 'Search Manager',
 		hint: 'Search analytics + synonyms',
 		config: null,
@@ -162,7 +162,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-sms-manager',
 		handle: 'sms-manager',
-		version: '^5.10',
+		version: '^5.10.2',
 		label: 'SMS Manager',
 		hint: 'SMS gateway (multi-provider)',
 		config: null,
@@ -170,7 +170,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-translation-manager',
 		handle: 'translation-manager',
-		version: '^5.23',
+		version: '^5.23.2',
 		label: 'Translation Manager',
 		hint: 'Translation management',
 		config: 'translation-manager.php',
@@ -193,7 +193,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/formie',
 		handle: 'formie',
-		version: '^3.1.19',
+		version: '^3.1.22',
 		label: 'Formie',
 		hint: 'Form builder',
 		config: 'formie.php',
@@ -201,7 +201,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/navigation',
 		handle: 'navigation',
-		version: '^3.0.18',
+		version: '^3.0.20',
 		label: 'Navigation',
 		hint: 'Navigation management',
 		config: null,
@@ -233,7 +233,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'putyourlightson/craft-sprig',
 		handle: 'sprig',
-		version: '^3.7.1',
+		version: '^3.7.2',
 		label: 'Sprig',
 		hint: 'Reactive Twig components',
 		config: null,
@@ -257,7 +257,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'studioespresso/craft-scout',
 		handle: 'scout',
-		version: '^5.0',
+		version: '^5.0.7',
 		label: 'Scout',
 		hint: 'Search indexing (Algolia, Elasticsearch, etc.)',
 		config: 'scout.php',
