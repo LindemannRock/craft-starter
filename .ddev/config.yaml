@@ -7,6 +7,11 @@ xdebug_enabled: false
 additional_hostnames: []
 additional_fqdns: []
 database:
+    # Craft 5 requires: MySQL 8.0.36+, MariaDB 10.4.6+, or PostgreSQL 16+.
+    # MySQL 8.0 is the Servd default. To switch:
+    #   PostgreSQL: type: postgres, version: "16"
+    #   MariaDB:    type: mariadb,  version: "10.11"
+    # Run `ddev delete -Oy && ddev start` after changing.
     type: mysql
     version: "8.0"
 webimage_extra_packages: [build-essential, libvips-dev, libasound2, libatk1.0-0, libcairo2, libgdk-pixbuf-xlib-2.0-0, libgtk-3-0, libnspr4, libpango-1.0-0, libpangocairo-1.0-0, libx11-xcb1, libxcomposite1, libxcursor1, libxdamage1, libxfixes3, libxi6, libxrandr2, libxrender1, libxss1, libxtst6, fonts-liberation, libappindicator3-1, libnss3, xdg-utils]
