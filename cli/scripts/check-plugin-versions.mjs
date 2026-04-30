@@ -16,7 +16,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { LR_PLUGINS, THIRD_PARTY_PLUGINS, CORE_REQUIRE, HOSTING_OPTIONS } from '../config/plugins.mjs';
+import { LR_PLUGINS, THIRD_PARTY_PLUGINS, CORE_REQUIRE, CORE_REQUIRE_DEV, REDIS_PACKAGE, HOSTING_OPTIONS } from '../config/plugins.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -25,6 +25,8 @@ const COMPOSER_FILE = path.join(ROOT, 'composer.json');
 
 const allPackages = [
 	...Object.entries(CORE_REQUIRE).map(([name, version]) => ({ name, version, source: 'core' })),
+	...Object.entries(CORE_REQUIRE_DEV).map(([name, version]) => ({ name, version, source: 'core-dev' })),
+	{ name: REDIS_PACKAGE.name, version: REDIS_PACKAGE.version, source: 'core-optional' },
 	...LR_PLUGINS.map((pl) => ({ name: pl.value, version: pl.version, source: 'lr' })),
 	...THIRD_PARTY_PLUGINS.map((pl) => ({ name: pl.value, version: pl.version, source: '3rd-party' })),
 	...HOSTING_OPTIONS.flatMap((h) => h.packages.map((pk) => ({ name: pk.name, version: pk.version, source: `hosting:${h.value}` }))),
