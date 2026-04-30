@@ -1,5 +1,27 @@
 # Changelog
 
+## [5.5.0](https://github.com/LindemannRock/craft-starter/compare/v5.4.1...v5.5.0) (2026-04-30)
+
+
+### Features
+
+* **cli:** add IP salt option for privacy-preserving analytics plugins ([0ce735f](https://github.com/LindemannRock/craft-starter/commit/0ce735f41465436ee447fb84793612c0b1a205c2))
+* **cli:** add php-version command to manage PHP version across configs ([ee0885a](https://github.com/LindemannRock/craft-starter/commit/ee0885acca9dbad928813276ba6eea0cc9475a5d))
+* **cli:** add registry-plugins-remove target to remove plugins from registry ([676938f](https://github.com/LindemannRock/craft-starter/commit/676938f0d45b4734fc3186a7f18f7bba72e83792))
+* **cli:** include core-dev and optional Redis package in plugin version check ([d55cdff](https://github.com/LindemannRock/craft-starter/commit/d55cdffe676ef27e81b328b6e1505dc3542f1178))
+* **cli:** insert new plugins in alphabetical order in registry ([db73a87](https://github.com/LindemannRock/craft-starter/commit/db73a87bd6fa483a4fbacc4466ca0d816f123bef))
+* **cli:** prompt user for update confirmation in check-only mode ([4ad9f6c](https://github.com/LindemannRock/craft-starter/commit/4ad9f6cc4db1283e7f48c858b5a72cc202d1cda6))
+* **cli:** sync core package versions in composer.json after updates ([9201217](https://github.com/LindemannRock/craft-starter/commit/9201217cf9bd53b1ec0fa25f1bd179c6f7fe4f3c))
+* **headers:** add default security headers for public site responses ([246752f](https://github.com/LindemannRock/craft-starter/commit/246752fdd4913876643d6735d161661044c660ea))
+
+
+### Bug Fixes
+
+* **database:** update MySQL version requirement comments for clarity ([dce8e09](https://github.com/LindemannRock/craft-starter/commit/dce8e09bd6fc1d6cd39b09840f4fde18d58392c7))
+* ensure newConstraint pins the floor to the latest version for security patches ([3e6e822](https://github.com/LindemannRock/craft-starter/commit/3e6e822c9784087a85d6e36ca4309c3e6a25d79f))
+* improve version comparison logic in plugin version check ([a29cde5](https://github.com/LindemannRock/craft-starter/commit/a29cde5ee23782c0abb90afd19ec7cc2b78783d0))
+* update core package versions for security and compatibility ([8879347](https://github.com/LindemannRock/craft-starter/commit/8879347949567d86626c6063ba85854ccecf0857))
+
 ## [5.4.1](https://github.com/LindemannRock/craft-starter/compare/v5.4.0...v5.4.1) (2026-04-26)
 
 
