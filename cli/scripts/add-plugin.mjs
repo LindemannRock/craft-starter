@@ -263,13 +263,41 @@ const entryStr = `\t{
 \t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},
 \t},`;
 
-// Function replacer so any `$` inside label/hint is treated literally, not as
-// a back-reference pattern like `$&` / `$1`.
-const insertPattern = list === 'lr'
-	? /(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m
-	: /(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m;
+// Find the alphabetical insertion point so the registry file stays sorted.
+// Each list (LR_PLUGINS / THIRD_PARTY_PLUGINS) is sorted by `label`. We pick
+// the first existing entry whose label sorts after the new entry and insert
+// the new entry before it. If none, append at the end.
+const targetList = list === 'lr' ? LR_PLUGINS : THIRD_PARTY_PLUGINS;
+const successor = targetList.find((pl) => pl.label.localeCompare(entry.label) > 0);
 
-content = content.replace(insertPattern, (_match, before, close) => `${before}${entryStr}\n${close}`);
+if (successor) {
+	// Insert before the successor's `{ ... }` block.
+	// Match the start of that block by anchoring on its `value: 'package'` line,
+	// then walk back to the `\t{` that opens it.
+	const successorEscaped = successor.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const blockOpenRegex = new RegExp(
+		`(\\n\\t\\{\\n` +
+		`(?:\\t\\t[^\\n]*\\n)*?` +
+		`\\t\\tvalue:\\s*['"]${successorEscaped}['"])`,
+	);
+	if (blockOpenRegex.test(content)) {
+		content = content.replace(blockOpenRegex, (_match, block) => `\n${entryStr}${block}`);
+	} else {
+		// Fallback: append before closing `];` (shouldn't happen but safe)
+		content = appendAtEnd(content, list, entryStr);
+	}
+} else {
+	content = appendAtEnd(content, list, entryStr);
+}
+
+function appendAtEnd(content, list, entryStr) {
+	const insertPattern = list === 'lr'
+		? /(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m
+		: /(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m;
+	// Function replacer so any `$` inside label/hint is treated literally, not as
+	// a back-reference pattern like `$&` / `$1`.
+	return content.replace(insertPattern, (_match, before, close) => `${before}${entryStr}\n${close}`);
+}
 
 fs.writeFileSync(PLUGINS_FILE, content);
 

@@ -237,16 +237,16 @@ craft-starter/
 
 | Plugin | Purpose |
 |--------|---------|
-| [SEOmatic](https://nystudio107.com/plugins/seomatic) | SEO management |
-| [Formie](https://verbb.io/craft-plugins/formie) | Form builder (auto-added when any Formie addon is selected) |
-| [Navigation](https://verbb.io/craft-plugins/navigation) | Navigation management |
-| [Expanded Singles](https://github.com/verbb/expanded-singles) | Singles as direct sidebar links |
-| [Imager X](https://plugins.craftcms.com/imager-x) | Image transforms |
-| [Postmark](https://github.com/craftcms/postmark) | Email transport |
-| [Sprig](https://putyourlightson.com/plugins/sprig) | Reactive Twig components |
-| [Scout](https://plugins.craftcms.com/scout) | Search indexing (Algolia, Elasticsearch, etc.) |
 | [Cloudflare](https://putyourlightson.com/plugins/cloudflare) | Purge Cloudflare cache from Craft |
 | [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache) | Clear cache from CP toolbar |
+| [Expanded Singles](https://github.com/verbb/expanded-singles) | Singles as direct sidebar links |
+| [Formie](https://verbb.io/craft-plugins/formie) | Form builder (auto-added when any Formie addon is selected) |
+| [Imager X](https://plugins.craftcms.com/imager-x) | Image transforms |
+| [Navigation](https://verbb.io/craft-plugins/navigation) | Navigation management |
+| [Postmark](https://github.com/craftcms/postmark) | Email transport |
+| [Scout](https://plugins.craftcms.com/scout) | Search indexing (Algolia, Elasticsearch, etc.) |
+| [SEOmatic](https://nystudio107.com/plugins/seomatic) | SEO management |
+| [Sprig](https://putyourlightson.com/plugins/sprig) | Reactive Twig components |
 
 > Updating the list: run `make registry` → _Update versions_ to pull latest from Packagist (major bumps prompt for confirmation). Add new plugins with `make registry` → _Add a plugin_.
 
