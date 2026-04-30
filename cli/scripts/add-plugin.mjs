@@ -224,6 +224,19 @@ if (hasConfig) {
 	}
 }
 
+// IP salt — for plugins that hash IP addresses for privacy-preserving analytics
+// (e.g. Redirect/Search/Shortlink/Smartlink Manager). The CLI auto-generates a
+// 64-char hex salt and writes it to the named env var during `make create`.
+const needsIpSalt = await p.confirm({
+	message: 'Does this plugin need an IP salt env var? (privacy-analytics plugins)',
+	initialValue: false,
+});
+if (p.isCancel(needsIpSalt)) process.exit(0);
+
+const ipSaltEnv = needsIpSalt
+	? (pluginHandle || handle).toUpperCase().replace(/-/g, '_') + '_IP_SALT'
+	: null;
+
 // Build the entry
 const entry = {
 	value: packageName,
@@ -232,6 +245,7 @@ const entry = {
 	label: label || packageName,
 	hint: hint || '',
 	config: configFile || null,
+	...(ipSaltEnv ? { ipSaltEnv } : {}),
 };
 
 // Show preview
@@ -260,7 +274,7 @@ const entryStr = `\t{
 \t\tversion: '${entry.version}',
 \t\tlabel: ${JSON.stringify(entry.label)},
 \t\thint: ${JSON.stringify(entry.hint)},
-\t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},
+\t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},${entry.ipSaltEnv ? `\n\t\tipSaltEnv: '${entry.ipSaltEnv}',` : ''}
 \t},`;
 
 // Find the alphabetical insertion point so the registry file stays sorted.
