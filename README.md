@@ -121,9 +121,10 @@ Three commands open interactive pickers so you don't have to remember sub-target
 | ----------------------- | ---------------------------------------------------------- |
 | `make up`               | Apply project config + run pending migrations              |
 | `make update`           | Interactive picker — Craft / Composer / Frontend / CLI / All |
-| `make registry`         | Maintain the plugin list offered by `make create` (check / update / add / fetch configs) |
+| `make registry`         | Maintain the plugin list offered by `make create` (check / update / add / remove / fetch) |
 | `make db`               | Database picker — pull from Servd / export / import        |
 | `make verify`           | Scan `.env` for unfilled `# TODO:` placeholders (run before deploy) |
+| `make php-version`      | Set PHP version across `.ddev/config.yaml` + `composer.json` (interactive, or `VERSION=8.4`) |
 | `make clean`            | Remove vendor & node_modules then reinstall                |
 | `make clean-logs`       | Remove `storage/logs/*.log`                                |
 | `make reindex-search`   | Rebuild the search index                                   |

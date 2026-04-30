@@ -113,6 +113,20 @@ export async function promptProject() {
 		},
 	}).catch(handlePromptError);
 
+	// PHP version — pinned in both .ddev/config.yaml and composer.json platform.
+	// Craft 5 minimum is 8.2; 8.3 is the recommended default.
+	// PHP 8.4 is excluded for now — voku/Stringy dependency throws deprecation
+	// warnings under 8.4 (tracked at craftcms/cms#17572). Re-add when fixed upstream.
+	const phpVersion = await p.select({
+		message: 'PHP version',
+		options: [
+			{ value: '8.3', label: '8.3', hint: 'recommended (Craft 5 default)' },
+			{ value: '8.2', label: '8.2', hint: 'Craft 5 minimum' },
+		],
+		initialValue: '8.3',
+	});
+	if (p.isCancel(phpVersion)) cancel();
+
 	// Part 2 — credentials
 	const credentials = await p.group(
 		{
@@ -175,5 +189,5 @@ export async function promptProject() {
 		{ onCancel: () => cancel() },
 	);
 
-	return { ...base, timezone, language, ...credentials };
+	return { ...base, timezone, language, phpVersion, ...credentials };
 }

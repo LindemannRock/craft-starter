@@ -2,7 +2,7 @@
 	clean clean-logs update update-craft update-composer update-npm update-cli \
 	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-remove registry-plugins-fetch \
 	up npm-install kill-vite \
-	db db-pull db-export db-import verify reindex-search \
+	db db-pull db-export db-import verify php-version reindex-search \
 	launch tableplus mailpit keys format share funnel \
 	l tp mp fmt kv
 
@@ -202,6 +202,9 @@ verify: ## Scan .env for unfilled placeholders (run before deploy)
 	@# For CI gating, call the script directly: `node cli/scripts/verify.mjs`
 	@node cli/scripts/verify.mjs || true
 
+php-version: ## Set PHP version (interactive, or pass VERSION=8.4)
+	@VERSION="$(VERSION)" node cli/scripts/php-version.mjs
+
 update: ## Interactive update picker (Craft / Composer / NPM / CLI / All)
 	@node cli/scripts/update.mjs
 
@@ -218,7 +221,7 @@ update-npm:
 update-cli:
 	@cd cli && npm run update
 
-registry: ## Maintain the plugin list offered by make create (check / update / add / fetch)
+registry: ## Maintain the plugin list offered by make create (check / update / add / remove / fetch)
 	@node cli/scripts/registry.mjs
 
 # Hidden (no `##` description) — still callable, invoked by the picker above.

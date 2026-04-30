@@ -32,6 +32,7 @@ import { promptCritical } from './prompts/critical.mjs';
 import { updateComposer } from './actions/composer.mjs';
 import { updatePackageJson } from './actions/packageJson.mjs';
 import { updateDdevConfig } from './actions/ddev.mjs';
+import { setPhpVersion } from './actions/php.mjs';
 import { applyCriticalCssChoice } from './actions/critical.mjs';
 import { stripStarterOnlyIgnores } from './actions/gitignore.mjs';
 import { generateEnvFile } from './actions/env.mjs';
@@ -254,6 +255,12 @@ async function main() {
 	s.start('Updating DDEV config');
 	updateDdevConfig(project, { useCritical });
 	s.stop('DDEV config updated');
+
+	if (project.phpVersion) {
+		s.start(`Pinning PHP ${project.phpVersion}`);
+		setPhpVersion(project.phpVersion);
+		s.stop(`PHP ${project.phpVersion} pinned in .ddev/config.yaml + composer.json`);
+	}
 
 	s.start('Applying critical-CSS choice');
 	applyCriticalCssChoice(useCritical);
