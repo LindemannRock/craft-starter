@@ -57,11 +57,11 @@ function isOutdated(constraint, latest) {
 	if (!latest) return false;
 	const parsed = parseConstraint(constraint);
 	if (!parsed) return false; // compound constraint — skip comparison
-	const [cMajor, cMinor] = parsed;
-	const [lMajor, lMinor] = latest.split('.').map(Number);
-	if (lMajor > cMajor) return true;
-	if (lMajor === cMajor && lMinor > cMinor) return true;
-	return false;
+	const [cMajor = 0, cMinor = 0, cPatch = 0] = parsed;
+	const [lMajor = 0, lMinor = 0, lPatch = 0] = latest.split('.').map(Number);
+	if (lMajor !== cMajor) return lMajor > cMajor;
+	if (lMinor !== cMinor) return lMinor > cMinor;
+	return lPatch > cPatch;
 }
 
 function isMajorBump(constraint, latest) {
