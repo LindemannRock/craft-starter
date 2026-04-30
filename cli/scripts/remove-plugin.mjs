@@ -30,9 +30,12 @@ const TEMPLATES_DIR = path.join(__dirname, '..', 'templates', 'plugins');
 
 p.intro(pc.bgCyan(pc.black(' Remove Plugin from Registry ')));
 
+// Sort each list alphabetically by label to match `make create`'s display order.
+// LR plugins first, then third-party — same grouping users see in the registry.
+const sortByLabel = (a, b) => a.label.localeCompare(b.label);
 const all = [
-	...LR_PLUGINS.map((pl) => ({ ...pl, list: 'lr', listLabel: 'LR' })),
-	...THIRD_PARTY_PLUGINS.map((pl) => ({ ...pl, list: 'tp', listLabel: 'Third-party' })),
+	...LR_PLUGINS.map((pl) => ({ ...pl, list: 'lr', listLabel: 'LR' })).sort(sortByLabel),
+	...THIRD_PARTY_PLUGINS.map((pl) => ({ ...pl, list: 'tp', listLabel: 'Third-party' })).sort(sortByLabel),
 ];
 
 if (all.length === 0) {
