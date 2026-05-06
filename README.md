@@ -138,7 +138,7 @@ Three commands open interactive pickers so you don't have to remember sub-target
 | `make update-npm`       | Frontend packages in project `node_modules/` (via `npm-check`) |
 | `make update-cli`       | CLI scaffolding packages in `cli/node_modules/`           |
 
-Tip: pick "Craft CMS + plugins" in the picker to get Craft's native interactive flow (pick a specific plugin handle, or update all).
+Tip: pick "Craft CMS + plugins" in the picker to see a checklist of available updates (Craft + each plugin) — uncheck anything you want to skip. Selecting all runs `craft update all`; partial selections run `craft update <handle>` for each chosen package.
 
 #### `make registry` sub-targets (hidden)
 
