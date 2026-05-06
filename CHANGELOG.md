@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.0](https://github.com/LindemannRock/craft-starter/compare/v5.5.0...v5.6.0) (2026-05-06)
+
+
+### Features
+
+* **cli:** enhance interactive update process for Craft CMS and plugins ([17eff94](https://github.com/LindemannRock/craft-starter/commit/17eff94bd05c61028cac8e9120ee6c7891fbcdc6))
+
 ## [5.5.0](https://github.com/LindemannRock/craft-starter/compare/v5.4.1...v5.5.0) (2026-04-30)
 
 
