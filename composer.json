@@ -9,8 +9,8 @@
 		}
 	],
 	"require": {
-		"craftcms/cms": "^5.9.22",
-		"craftcms/ckeditor": "^5.5.0",
+		"craftcms/cms": "^5.10.2",
+		"craftcms/ckeditor": "^5.6.1",
 		"nystudio107/craft-vite": "^5.0.1",
 		"vlucas/phpdotenv": "^5.6.3"
 	},

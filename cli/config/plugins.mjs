@@ -18,8 +18,8 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.9.22',
-	'craftcms/ckeditor': '^5.5.0',
+	'craftcms/cms': '^5.10.2',
+	'craftcms/ckeditor': '^5.6.1',
 	'nystudio107/craft-vite': '^5.0.1',
 	'vlucas/phpdotenv': '^5.6.3',
 };
@@ -35,7 +35,7 @@ export const CORE_PLUGIN_HANDLES = ['ckeditor', 'vite'];
 // Optional: Redis cache package — only added when user opts in
 export const REDIS_PACKAGE = {
 	name: 'yiisoft/yii2-redis',
-	version: '^2.1.1',
+	version: '^2.1.2',
 };
 
 // -----------------------------------------------------------------------------
@@ -209,7 +209,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/formie',
 		handle: 'formie',
-		version: '^3.1.23',
+		version: '^3.1.26',
 		label: 'Formie',
 		hint: 'Form builder',
 		config: 'formie.php',
@@ -225,7 +225,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/navigation',
 		handle: 'navigation',
-		version: '^3.0.20',
+		version: '^3.0.22',
 		label: 'Navigation',
 		hint: 'Navigation management',
 		config: null,
