@@ -1,0 +1,27 @@
+name: Question
+description: "Ask a question about the Craft Starter. Not for bug reports."
+labels: 'question'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before asking, please check:
+
+          - I've read the [README](https://github.com/LindemannRock/craft-starter#readme) and [DEPLOYMENT.md](https://github.com/LindemannRock/craft-starter/blob/main/DEPLOYMENT.md).
+          - I've searched [open and closed issues](https://github.com/LindemannRock/craft-starter/issues?q=is%3Aissue).
+          - This is not a bug report — just a general question.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: Is it possible to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Screenshots, code snippets, or anything that helps clarify your question.

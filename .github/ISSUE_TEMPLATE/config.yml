@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: README
+    url: https://github.com/LindemannRock/craft-starter#readme
+    about: Project setup, CLI commands, and conventions.
+  - name: Deployment Guide
+    url: https://github.com/LindemannRock/craft-starter/blob/main/DEPLOYMENT.md
+    about: Staging and production deployment instructions.
+  - name: Craft Discord
+    url: https://craftcms.com/discord
+    about: Community discussion and support.

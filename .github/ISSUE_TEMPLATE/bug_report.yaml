@@ -1,0 +1,85 @@
+name: Bug Report
+description: Report a bug or unexpected behavior.
+labels: 'bug'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, please check:
+
+          - I've read the [README](https://github.com/LindemannRock/craft-starter#readme) and [DEPLOYMENT.md](https://github.com/LindemannRock/craft-starter/blob/main/DEPLOYMENT.md).
+          - I've searched [open and closed issues](https://github.com/LindemannRock/craft-starter/issues?q=is%3Aissue).
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: What happened? What did you expect to happen instead?
+      placeholder: "I have an issue where..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this issue?
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup-context
+    attributes:
+      label: Setup context
+      description: Tell us about your setup so we can reproduce the issue.
+      value: |
+        - Install method: `make create` or `make install`
+        - Local environment: DDEV, Laravel Herd, native PHP, or other
+        - Hosting target: Servd, Craft Cloud, or self-hosted
+        - Redis enabled: Yes or No
+        - Mail driver: Postmark or SMTP
+    validations:
+      required: true
+
+  - type: dropdown
+    id: craft-major
+    attributes:
+      label: Craft CMS major version
+      options:
+        - "Craft 5"
+    validations:
+      required: true
+
+  - type: input
+    id: craft-version
+    attributes:
+      label: Craft CMS exact version
+      description: "**Do not write \"latest\"** — run `php craft version` to check."
+      placeholder: e.g. 5.10.2
+    validations:
+      required: true
+
+  - type: input
+    id: starter-version
+    attributes:
+      label: Starter version
+      description: "**Do not write \"latest\"** — check `CHANGELOG.md` or `package.json`."
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      description: "Run `php -v` to check."
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything else that might help — screenshots, log entries, plugins selected during install.
+      placeholder: I also selected X plugin during setup... or This only happens on production...
