@@ -14,5 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
+
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.pr }}
         with:
-          release-type: node
+          fetch-depth: 0
+
+      - name: Reformat CHANGELOG headings
+        if: ${{ steps.release.outputs.pr }}
+        env:
+          RELEASE_PR_JSON: ${{ steps.release.outputs.pr }}
+        run: |
+          PR_BRANCH=$(echo "$RELEASE_PR_JSON" | jq -r '.headBranchName')
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
+          sed -i -E '/^## /s/ \(([0-9.-]+)\)$/ - \1/' CHANGELOG.md
+          if ! git diff --quiet CHANGELOG.md; then
+            git add CHANGELOG.md
+            git commit -m "chore: reformat CHANGELOG date"
+            git push origin "$PR_BRANCH"
+          fi
