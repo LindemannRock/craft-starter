@@ -1,5 +1,26 @@
 # Changelog
 
+## [5.7.0](https://github.com/LindemannRock/craft-starter/compare/v5.6.0...v5.7.0) (2026-05-29)
+
+
+### Added
+
+* **cli:** add review link for major updates in plugin version check ([e9fc09a](https://github.com/LindemannRock/craft-starter/commit/e9fc09a110d27457ad0e1000939239cb20e763c8))
+* **cli:** enhance plugin version check with detailed release URLs ([6e51767](https://github.com/LindemannRock/craft-starter/commit/6e51767516231505fdb088285713790e05c537bc))
+* **cli:** warn about major updates requiring review during plugin check ([ada1b43](https://github.com/LindemannRock/craft-starter/commit/ada1b43fba6c761d2b2800f60a95239b616bb7e9))
+
+
+### Fixed
+
+* **ci:** align release-please with unprefixed tags ([9b3efe7](https://github.com/LindemannRock/craft-starter/commit/9b3efe747826cef91543dc0e440191b054908345))
+* **cli:** correct asset storage package name in database script ([36d9029](https://github.com/LindemannRock/craft-starter/commit/36d90295cfc520bf3f55bf510ccf3752b3d70400))
+* **cli:** remove success log for no available updates ([f733e64](https://github.com/LindemannRock/craft-starter/commit/f733e64a52087ee5010a493f607cc45a0ad449a5))
+* **cli:** update craftcms/cms version to ^5.10.4 ([0fec116](https://github.com/LindemannRock/craft-starter/commit/0fec11612e70ebaa46c7ac36b2ccf1ce16d41183))
+* **cli:** update hint for Composer packages in update picker ([4a2a5c2](https://github.com/LindemannRock/craft-starter/commit/4a2a5c29437bab48ea12cbfb885018173b285ed2))
+* **cli:** update package selection label to include full name ([b1a1880](https://github.com/LindemannRock/craft-starter/commit/b1a1880b54ff753690a188b9d4e9385926f7c62d))
+* **cli:** update plugin label for clarity in registry picker ([8e845f1](https://github.com/LindemannRock/craft-starter/commit/8e845f15122efa8a817576ec2574bbe963b99e09))
+* component field to release-please configuration ([90f02d0](https://github.com/LindemannRock/craft-starter/commit/90f02d088fad0e3d924fb125791cd01d9f399453))
+
 ## [5.6.0](https://github.com/LindemannRock/craft-starter/compare/v5.5.0...v5.6.0) (2026-05-06)
 
 
