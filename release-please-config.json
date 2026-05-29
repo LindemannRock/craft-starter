@@ -3,6 +3,7 @@
   "packages": {
     ".": {
       "release-type": "node",
+      "component": "",
       "changelog-sections": [
         { "type": "feat", "section": "Added" },
         { "type": "fix", "section": "Fixed" },
