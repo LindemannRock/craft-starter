@@ -110,6 +110,10 @@ function newConstraint(latest) {
 	return `^${major}.${minor}.${patch}`;
 }
 
+function reviewLink(pkg) {
+	return pkg.releaseUrl || pkg.packagistUrl;
+}
+
 const interactive = process.argv.includes('--update');
 
 p.intro(pc.bgCyan(pc.black(' Plugin Version Check ')));
@@ -133,13 +137,7 @@ for (const r of results) {
 	} else if (isOutdated(r.version, r.latest)) {
 		const major = isMajorBump(r.version, r.latest);
 		const arrow = `${pc.dim(r.version)} → ${major ? pc.red(r.latest + ' MAJOR') : pc.green(r.latest)}`;
-		p.log.info(`${r.name}  ${arrow}  ${pc.dim(`(${r.source})`)}`);
-		if (major) {
-			p.log.warn(`Review major changes: ${r.releaseUrl || r.packagistUrl}`);
-			if (r.releaseUrl && r.releaseUrl !== r.packagistUrl) {
-				p.log.info(`Package: ${r.packagistUrl}`);
-			}
-		}
+		p.log.info(`${r.name}  ${arrow}`);
 		outdatedList.push({ ...r, major });
 	} else {
 		p.log.success(`${r.name}  ${pc.dim(r.version)}  ${pc.dim('up to date')}`);
@@ -155,11 +153,13 @@ p.log.step(`${outdatedList.length} package${outdatedList.length === 1 ? '' : 's'
 
 const majorUpdates = outdatedList.filter((r) => r.major);
 if (majorUpdates.length > 0) {
-	p.log.warn(`${majorUpdates.length} major update${majorUpdates.length === 1 ? '' : 's'} require review:`);
-	for (const r of majorUpdates) {
-		p.log.info(`${r.name}  ${pc.dim(r.version)} → ${pc.red(newConstraint(r.latest))}`);
-		p.log.info(`Review: ${r.releaseUrl || r.packagistUrl}`);
-	}
+	p.note(
+		majorUpdates.map((r) => [
+			`${pc.bold(r.name)}  ${pc.dim(r.version)} → ${pc.red(newConstraint(r.latest))}`,
+			`Review: ${reviewLink(r)}`,
+		].join('\n')).join('\n\n'),
+		`${majorUpdates.length} major update${majorUpdates.length === 1 ? '' : 's'} ${majorUpdates.length === 1 ? 'requires' : 'require'} review`,
+	);
 }
 
 // In check-only mode, ask if the user wants to proceed with the update right
@@ -197,7 +197,7 @@ const updates = [];
 for (const name of selected) {
 	const r = outdatedList.find((o) => o.name === name);
 	if (r.major) {
-		p.log.warn(`Review before updating: ${r.releaseUrl || r.packagistUrl}`);
+		p.log.warn(`Review before updating: ${reviewLink(r)}`);
 		const confirm = await p.confirm({
 			message: `${r.name} is a MAJOR bump (${r.version} → ${newConstraint(r.latest)}). Proceed?`,
 			initialValue: false,
