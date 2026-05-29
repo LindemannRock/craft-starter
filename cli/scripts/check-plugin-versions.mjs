@@ -32,7 +32,24 @@ const allPackages = [
 	...HOSTING_OPTIONS.flatMap((h) => h.packages.map((pk) => ({ name: pk.name, version: pk.version, source: `hosting:${h.value}` }))),
 ];
 
-async function getLatestVersion(packageName) {
+function normalizeVersion(version) {
+	return version.replace(/^v/, '');
+}
+
+function packagistUrl(packageName) {
+	return `https://packagist.org/packages/${packageName}`;
+}
+
+function releaseUrl(sourceUrl) {
+	if (!sourceUrl) return null;
+	const cleanUrl = sourceUrl.replace(/\.git$/, '');
+	if (/^https:\/\/(www\.)?github\.com\//.test(cleanUrl) || /^https:\/\/gitlab\.com\//.test(cleanUrl)) {
+		return `${cleanUrl}/releases`;
+	}
+	return cleanUrl;
+}
+
+async function getPackageInfo(packageName) {
 	try {
 		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`, { signal: AbortSignal.timeout(15_000) });
 		if (!res.ok) return null;
@@ -42,9 +59,15 @@ async function getLatestVersion(packageName) {
 			// Case-insensitive prerelease filter so `rc1` / `Alpha` / `BETA` are caught too.
 			// Matches any hyphen-prefixed suffix (the conventional prerelease marker).
 			.filter((v) => !/-(dev|alpha|beta|rc|pre)/i.test(v.version))
-			.map((v) => v.version.replace(/^v/, ''))
-			.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-		return stable[0] || null;
+			.sort((a, b) => normalizeVersion(b.version).localeCompare(normalizeVersion(a.version), undefined, { numeric: true }));
+		const latest = stable[0];
+		if (!latest) return null;
+		const sourceUrl = latest.source?.url || latest.homepage || null;
+		return {
+			latest: normalizeVersion(latest.version),
+			packagistUrl: packagistUrl(packageName),
+			releaseUrl: releaseUrl(sourceUrl),
+		};
 	} catch {
 		return null;
 	}
@@ -96,8 +119,8 @@ s.start('Fetching versions from Packagist');
 
 const results = [];
 for (const pkg of allPackages) {
-	const latest = await getLatestVersion(pkg.name);
-	results.push({ ...pkg, latest });
+	const info = await getPackageInfo(pkg.name);
+	results.push({ ...pkg, ...info });
 }
 
 s.stop('Versions fetched');
@@ -111,6 +134,12 @@ for (const r of results) {
 		const major = isMajorBump(r.version, r.latest);
 		const arrow = `${pc.dim(r.version)} → ${major ? pc.red(r.latest + ' MAJOR') : pc.green(r.latest)}`;
 		p.log.info(`${r.name}  ${arrow}  ${pc.dim(`(${r.source})`)}`);
+		if (major) {
+			p.log.warn(`Review major changes: ${r.releaseUrl || r.packagistUrl}`);
+			if (r.releaseUrl && r.releaseUrl !== r.packagistUrl) {
+				p.log.info(`Package: ${r.packagistUrl}`);
+			}
+		}
 		outdatedList.push({ ...r, major });
 	} else {
 		p.log.success(`${r.name}  ${pc.dim(r.version)}  ${pc.dim('up to date')}`);
@@ -144,7 +173,7 @@ const selected = await p.multiselect({
 	options: outdatedList.map((r) => ({
 		value: r.name,
 		label: r.name,
-		hint: `${r.version} → ${newConstraint(r.latest)}${r.major ? ' (MAJOR)' : ''}`,
+		hint: `${r.version} → ${newConstraint(r.latest)}${r.major ? ` (${pc.red('MAJOR')})` : ''}`,
 	})),
 	required: false,
 });
@@ -159,6 +188,7 @@ const updates = [];
 for (const name of selected) {
 	const r = outdatedList.find((o) => o.name === name);
 	if (r.major) {
+		p.log.warn(`Review before updating: ${r.releaseUrl || r.packagistUrl}`);
 		const confirm = await p.confirm({
 			message: `${r.name} is a MAJOR bump (${r.version} → ${newConstraint(r.latest)}). Proceed?`,
 			initialValue: false,
