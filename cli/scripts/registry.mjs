@@ -20,7 +20,7 @@ import { cancel } from '../utils/cancel.mjs';
 const RESOURCES = [
 	{
 		value: 'plugins',
-		label: 'Plugins',
+		label: 'Plugin registry',
 		hint: 'cli/config/plugins.mjs',
 		actions: [
 			{ value: 'check',  label: 'Check versions',  hint: 'compare registry against Packagist' },
