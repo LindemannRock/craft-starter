@@ -153,6 +153,15 @@ if (outdatedList.length === 0) {
 
 p.log.step(`${outdatedList.length} package${outdatedList.length === 1 ? '' : 's'} can be updated.`);
 
+const majorUpdates = outdatedList.filter((r) => r.major);
+if (majorUpdates.length > 0) {
+	p.log.warn(`${majorUpdates.length} major update${majorUpdates.length === 1 ? '' : 's'} require review:`);
+	for (const r of majorUpdates) {
+		p.log.info(`${r.name}  ${pc.dim(r.version)} → ${pc.red(newConstraint(r.latest))}`);
+		p.log.info(`Review: ${r.releaseUrl || r.packagistUrl}`);
+	}
+}
+
 // In check-only mode, ask if the user wants to proceed with the update right
 // now (reuses the already-fetched data — no second Packagist round-trip).
 // Direct callers can pass --update to skip the prompt and go straight to select.
