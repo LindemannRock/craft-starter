@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.10.2',
+	'craftcms/cms': '^5.10.4',
 	'craftcms/ckeditor': '^5.6.1',
 	'nystudio107/craft-vite': '^5.0.1',
 	'vlucas/phpdotenv': '^5.6.3',
