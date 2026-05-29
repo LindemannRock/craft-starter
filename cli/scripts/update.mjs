@@ -69,7 +69,6 @@ async function runCraftInteractive() {
 
 	const updates = parseUpdates(stdout);
 	if (updates.length === 0) {
-		p.log.success('Nothing to update.');
 		return 0;
 	}
 
