@@ -143,7 +143,7 @@ const selected = await p.multiselect({
 	message: 'Select packages to update',
 	options: outdatedList.map((r) => ({
 		value: r.name,
-		label: r.name.split('/').pop(),
+		label: r.name,
 		hint: `${r.version} → ${newConstraint(r.latest)}${r.major ? ' (MAJOR)' : ''}`,
 	})),
 	required: false,
