@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.7.0](https://github.com/LindemannRock/craft-starter/compare/v5.6.0...v5.7.0) (2026-05-29)
+## [5.7.0](https://github.com/LindemannRock/craft-starter/compare/v5.6.0...v5.7.0) - 2026-05-29
 
 
 ### Added
@@ -21,14 +21,14 @@
 * **cli:** update plugin label for clarity in registry picker ([8e845f1](https://github.com/LindemannRock/craft-starter/commit/8e845f15122efa8a817576ec2574bbe963b99e09))
 * component field to release-please configuration ([90f02d0](https://github.com/LindemannRock/craft-starter/commit/90f02d088fad0e3d924fb125791cd01d9f399453))
 
-## [5.6.0](https://github.com/LindemannRock/craft-starter/compare/v5.5.0...v5.6.0) (2026-05-06)
+## [5.6.0](https://github.com/LindemannRock/craft-starter/compare/v5.5.0...v5.6.0) - 2026-05-06
 
 
 ### Features
 
 * **cli:** enhance interactive update process for Craft CMS and plugins ([17eff94](https://github.com/LindemannRock/craft-starter/commit/17eff94bd05c61028cac8e9120ee6c7891fbcdc6))
 
-## [5.5.0](https://github.com/LindemannRock/craft-starter/compare/v5.4.1...v5.5.0) (2026-04-30)
+## [5.5.0](https://github.com/LindemannRock/craft-starter/compare/v5.4.1...v5.5.0) - 2026-04-30
 
 
 ### Features
@@ -50,14 +50,14 @@
 * improve version comparison logic in plugin version check ([a29cde5](https://github.com/LindemannRock/craft-starter/commit/a29cde5ee23782c0abb90afd19ec7cc2b78783d0))
 * update core package versions for security and compatibility ([8879347](https://github.com/LindemannRock/craft-starter/commit/8879347949567d86626c6063ba85854ccecf0857))
 
-## [5.4.1](https://github.com/LindemannRock/craft-starter/compare/v5.4.0...v5.4.1) (2026-04-26)
+## [5.4.1](https://github.com/LindemannRock/craft-starter/compare/v5.4.0...v5.4.1) - 2026-04-26
 
 
 ### Bug Fixes
 
 * **cli:** remove alpha plugins from env files ([e3dd516](https://github.com/LindemannRock/craft-starter/commit/e3dd516affe0ce7ab4bb7e591b3cee92b27e62bf))
 
-## [5.4.0](https://github.com/LindemannRock/craft-starter/compare/v5.3.0...v5.4.0) (2026-04-25)
+## [5.4.0](https://github.com/LindemannRock/craft-starter/compare/v5.3.0...v5.4.0) - 2026-04-25
 
 
 ### Features
@@ -72,7 +72,7 @@
 * **cli:** update plugin versions for Campaign Manager, Formie Rating, and Search Manager ([bc2ab00](https://github.com/LindemannRock/craft-starter/commit/bc2ab00e0662c1bd6558e84a9d2df3c55f390cf8))
 * **nuke:** remove storage/config-deltas from cleanup process ([b237069](https://github.com/LindemannRock/craft-starter/commit/b2370698c476afbc3dc7bf8f6a99414e4edb41b6))
 
-## [5.3.0](https://github.com/LindemannRock/craft-starter/compare/v5.2.0...v5.3.0) (2026-04-23)
+## [5.3.0](https://github.com/LindemannRock/craft-starter/compare/v5.2.0...v5.3.0) - 2026-04-23
 
 
 ### Features
@@ -88,7 +88,7 @@
 * **install:** clear stale DDEV registration before start to handle project name changes ([71cf2aa](https://github.com/LindemannRock/craft-starter/commit/71cf2aad04457fa2bc37c739804f0bf21410a77f))
 * **Makefile:** fix nuke target to remove Tailscale config file ([d4ea99e](https://github.com/LindemannRock/craft-starter/commit/d4ea99eb58b9249e2c512032cd39718680d61794))
 
-## [5.2.0](https://github.com/LindemannRock/craft-starter/compare/v5.1.4...v5.2.0) (2026-04-20)
+## [5.2.0](https://github.com/LindemannRock/craft-starter/compare/v5.1.4...v5.2.0) - 2026-04-20
 
 
 ### Features
@@ -100,35 +100,35 @@
 
 * **cli:** add requireProject guard to update/db pickers for helpful error messages ([db9e4bc](https://github.com/LindemannRock/craft-starter/commit/db9e4bc81c615498cefa006c2c9d49e9850adc58))
 
-## [5.1.4](https://github.com/LindemannRock/craft-starter/compare/v5.1.3...v5.1.4) (2026-04-17)
+## [5.1.4](https://github.com/LindemannRock/craft-starter/compare/v5.1.3...v5.1.4) - 2026-04-17
 
 
 ### Bug Fixes
 
 * **translation-manager:** translation category examples ([4f8b729](https://github.com/LindemannRock/craft-starter/commit/4f8b7291c54ab23fde89df1393c6990743a1ebbc))
 
-## [5.1.3](https://github.com/LindemannRock/craft-starter/compare/v5.1.2...v5.1.3) (2026-04-16)
+## [5.1.3](https://github.com/LindemannRock/craft-starter/compare/v5.1.2...v5.1.3) - 2026-04-16
 
 
 ### Bug Fixes
 
 * **config:** improve Redis cache configuration handling ([d4ebeaf](https://github.com/LindemannRock/craft-starter/commit/d4ebeaf89a0604bde885362b93ff656c138e5585))
 
-## [5.1.2](https://github.com/LindemannRock/craft-starter/compare/v5.1.1...v5.1.2) (2026-04-16)
+## [5.1.2](https://github.com/LindemannRock/craft-starter/compare/v5.1.1...v5.1.2) - 2026-04-16
 
 
 ### Bug Fixes
 
 * **cli:** apply security + robustness fixes ([54e0f56](https://github.com/LindemannRock/craft-starter/commit/54e0f5650305198d066dafab625a6ff724f2a32a))
 
-## [5.1.1](https://github.com/LindemannRock/craft-starter/compare/v5.1.0...v5.1.1) (2026-04-16)
+## [5.1.1](https://github.com/LindemannRock/craft-starter/compare/v5.1.0...v5.1.1) - 2026-04-16
 
 
 ### Bug Fixes
 
 * **setup:** enhance project reset confirmation and process handling ([f1f9d8a](https://github.com/LindemannRock/craft-starter/commit/f1f9d8af29937fe96b6ae2a9da6fff10c69b0f92))
 
-## [5.1.0](https://github.com/LindemannRock/craft-starter/compare/v5.0.1...v5.1.0) (2026-04-16)
+## [5.1.0](https://github.com/LindemannRock/craft-starter/compare/v5.0.1...v5.1.0) - 2026-04-16
 
 
 ### Features
@@ -145,7 +145,7 @@
 * **Makefile:** swallow exit code for friendly output in verify target ([2989940](https://github.com/LindemannRock/craft-starter/commit/2989940a1fb4a58c0b3d46b1da90b64b3953145c))
 * **setup:** improve project detection and user guidance ([f715f62](https://github.com/LindemannRock/craft-starter/commit/f715f62152e005388f84952c86802d39ef6e03db))
 
-## [5.0.1](https://github.com/LindemannRock/craft-starter/compare/v5.0.0...v5.0.1) (2026-04-16)
+## [5.0.1](https://github.com/LindemannRock/craft-starter/compare/v5.0.0...v5.0.1) - 2026-04-16
 
 
 ### Bug Fixes
@@ -153,7 +153,7 @@
 * **global-variables.twig:** reset primaryTranslationCategory value ([55efa94](https://github.com/LindemannRock/craft-starter/commit/55efa94873fc9cabdb70c283ad02083c595205d3))
 * **Makefile:** nuke target to include global-variables.twig ([b278adc](https://github.com/LindemannRock/craft-starter/commit/b278adc1e7067df5e45eeca01daa53525d8eceaa))
 
-## 5.0.0 (2026-04-16)
+## 5.0.0 - 2026-04-16
 
 
 ### Features
