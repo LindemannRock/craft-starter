@@ -20,7 +20,7 @@ import { requireProject } from '../utils/preflight.mjs';
 
 const TARGETS = [
 	{ value: 'craft',    label: 'Craft CMS + plugins', hint: 'pick which packages to update' },
-	{ value: 'composer', label: 'Composer packages',    hint: 'composer update' },
+	{ value: 'composer', label: 'Composer packages',    hint: 'updates all Composer deps' },
 	{ value: 'npm',      label: 'Frontend packages',    hint: 'vite, tailwind, alpine, etc. (npm-check)' },
 	{ value: 'cli',      label: 'CLI tooling',          hint: 'scaffolding packages in cli/ (npm-check)' },
 	{ value: 'all',      label: 'Everything',           hint: 'Craft + plugins + Composer + Frontend + CLI' },
