@@ -1,9 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": false,
+  "last-release-sha": "fad4b4197e1d4ecb67783035a1f8d53fe5bbab85",
   "packages": {
     ".": {
       "release-type": "node",
-      "component": "",
+      "component": "craft-starter",
+      "package-name": "craft-starter",
+      "include-component-in-tag": false,
       "changelog-sections": [
         { "type": "feat", "section": "Added" },
         { "type": "fix", "section": "Fixed" },
