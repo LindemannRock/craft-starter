@@ -28,7 +28,7 @@ const SEED_FILE = 'db.sql.gzip';
 function hasServd() {
 	try {
 		const composer = JSON.parse(fs.readFileSync(path.join(ROOT, 'composer.json'), 'utf-8'));
-		return Boolean(composer.require?.['servd/asset-storage'] || composer['require-dev']?.['servd/asset-storage']);
+		return Boolean(composer.require?.['servd/craft-asset-storage'] || composer['require-dev']?.['servd/craft-asset-storage']);
 	} catch {
 		return false;
 	}
