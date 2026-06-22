@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.7.1](https://github.com/LindemannRock/craft-starter/compare/v5.7.0...v5.7.1) - 2026-06-22
+
+
+### Fixed
+
+* **plugins:** update Craft CMS and plugin versions for compatibility ([0c28e2f](https://github.com/LindemannRock/craft-starter/commit/0c28e2f69c5af7d57a8ea6c5aaadfc2d392e7a2d))
+
 ## [5.7.0](https://github.com/LindemannRock/craft-starter/compare/v5.6.0...v5.7.0) - 2026-05-29
 
 
