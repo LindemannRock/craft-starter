@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { setEnvKey, quoted, removeSection } from '../actions/env.mjs';
+import { getDatabaseOption } from '../config/databases.mjs';
 
 describe('setEnvKey', () => {
 	it('replaces an existing key', () => {
@@ -89,5 +90,15 @@ describe('removeSection', () => {
 	it('returns content unchanged for non-existent section', () => {
 		const result = removeSection(content, '# Non-existent');
 		expect(result).toBe(content);
+	});
+});
+
+describe('database options', () => {
+	it('maps PostgreSQL to Craft driver and port', () => {
+		const postgres = getDatabaseOption('postgres');
+		expect(postgres.craftDriver).toBe('pgsql');
+		expect(postgres.craftPort).toBe('5432');
+		expect(postgres.ddevType).toBe('postgres');
+		expect(postgres.ddevVersion).toBe('16');
 	});
 });

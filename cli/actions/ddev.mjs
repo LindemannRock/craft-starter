@@ -22,11 +22,14 @@ const CHROMIUM_PACKAGES = [
 ];
 const CHROMIUM_SET = new Set(CHROMIUM_PACKAGES);
 
-export function updateDdevConfig({ name, timezone }, { useCritical = true } = {}) {
+export function updateDdevConfig({ name, timezone }, { useCritical = true, database = null } = {}) {
 	const ddevPath = path.join(ROOT, '.ddev', 'config.yaml');
 	let ddevConfig = fs.readFileSync(ddevPath, 'utf-8');
 	ddevConfig = ddevConfig.replace(/^name: .*/m, `name: ${name}`);
 	ddevConfig = ddevConfig.replace(/^timezone: .*/m, `timezone: ${timezone}`);
+	if (database) {
+		ddevConfig = updateDatabaseConfig(ddevConfig, database);
+	}
 	ddevConfig = updateChromiumPackages(ddevConfig, useCritical);
 	fs.writeFileSync(ddevPath, ddevConfig);
 
@@ -44,6 +47,13 @@ export function updateDdevConfig({ name, timezone }, { useCritical = true } = {}
 	}
 }
 
+export function updateDatabaseConfig(ddevConfig, database) {
+	return ddevConfig.replace(
+		/(^database:\n(?:    #.*\n)*)(    type: .*\n)(    version: .*)/m,
+		`$1    type: ${database.ddevType}\n    version: "${database.ddevVersion}"`,
+	);
+}
+
 function updateChromiumPackages(ddevConfig, useCritical) {
 	return ddevConfig.replace(/^webimage_extra_packages: \[([^\]]*)\]/m, (_match, inner) => {
 		const current = inner.split(',').map((pkg) => pkg.trim()).filter(Boolean);
@@ -52,4 +62,3 @@ function updateChromiumPackages(ddevConfig, useCritical) {
 		return `webimage_extra_packages: [${final.join(', ')}]`;
 	});
 }
-

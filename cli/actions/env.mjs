@@ -16,6 +16,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT, CLI_DIR } from '../paths.mjs';
+import { DEFAULT_DATABASE } from '../config/databases.mjs';
 import { generateSecurityKey, generateAppId, generateIpSalt, generateApiKey } from '../utils/crypto.mjs';
 
 const ENV_SOURCE = path.join(CLI_DIR, 'templates', 'env.example');
@@ -42,6 +43,7 @@ export function generateEnvFile({
 	selectedLr = [],
 	selectedTp = [],
 	selectedHosting = {},
+	database = DEFAULT_DATABASE,
 }) {
 	// Start from a clean copy of the source template, stripping the internal header.
 	// Normalize CRLF → LF defensively so a template accidentally saved with Windows
@@ -75,6 +77,10 @@ export function generateEnvFile({
 		VITE_DEV_SERVER_PUBLIC: `${siteUrlBase}:3000/`,
 		VITE_DEV_SERVER_INTERNAL: 'http://localhost:3000/',
 		CRAFT_TEST_TO_EMAIL_ADDRESS: project.adminEmail,
+
+		// Database
+		CRAFT_DB_DRIVER: database.craftDriver,
+		CRAFT_DB_PORT: database.craftPort,
 	};
 
 	// Per-site env vars — NOT added to updates because the site blocks are

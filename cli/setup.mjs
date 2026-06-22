@@ -23,6 +23,7 @@ import {
 	promptHosting,
 } from './prompts/plugins.mjs';
 import { promptSites } from './prompts/sites.mjs';
+import { promptDatabase } from './prompts/database.mjs';
 import { promptServdCredentials } from './prompts/servd.mjs';
 import { promptServdEmail } from './prompts/servd-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
@@ -55,6 +56,7 @@ async function collectProject(state) {
 
 async function collectSitesAndFeatures(state) {
 	state.sites = await promptSites(state.project?.description || state.project?.name);
+	state.database = await promptDatabase();
 	const redis = await promptRedis();
 	state.useRedisCache = redis.useRedisCache;
 	state.useRedisSession = redis.useRedisSession;
@@ -202,7 +204,7 @@ async function main() {
 			options: [
 				{ value: 'install', label: pc.green('Install with these settings') },
 				{ value: 'project', label: 'Edit project details', hint: 'name, timezone, admin, etc.' },
-				{ value: 'features', label: 'Edit sites / Redis' },
+				{ value: 'features', label: 'Edit sites / database / Redis' },
 				{ value: 'plugins', label: 'Edit plugin selection' },
 				{ value: 'hosting', label: 'Edit hosting / email' },
 				{ value: 'cancel', label: pc.red('Cancel') },
@@ -228,7 +230,7 @@ async function main() {
 		}
 	}
 
-	const { project, sites, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting,
+	const { project, sites, database, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting,
 		servdCredentials, postmarkToken, smtpCredentials, translationCategory } = state;
 
 	// -- Apply file changes --------------------------------------------------
@@ -253,7 +255,7 @@ async function main() {
 	} catch { /* no project to delete — fresh install */ }
 
 	s.start('Updating DDEV config');
-	updateDdevConfig(project, { useCritical });
+	updateDdevConfig(project, { useCritical, database });
 	s.stop('DDEV config updated');
 
 	if (project.phpVersion) {
@@ -272,7 +274,7 @@ async function main() {
 	p.log.info('composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).');
 
 	s.start('Generating .env');
-	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting });
+	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting, database });
 	s.stop('.env generated');
 
 	if (selectedHosting.value === 'craft-cloud') {

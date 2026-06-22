@@ -32,6 +32,7 @@ An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few
 - **Auto-generated credentials** — Craft security key, app ID, and LR plugin IP salts generated locally, never committed
 - **Multi-hosting ready** — Servd, Craft Cloud, or self-hosted with plugin-level conditionals
 - **Email transport configured automatically** — Postmark, SMTP (Servd SMTP, Mailgun, etc.), or Mailpit as a safe dev default; written to project config so the CP shows the right value and Servd's sendmail alert never fires
+- **Database choice** — MySQL 8.0 by default, with PostgreSQL 16 available during `make create` for plugin compatibility testing
 - **Redis opt-in** — cache + optional sessions. Adds `ddev/ddev-redis` addon + `yii2-redis` package, env-var-gated components in `app.php` (DB 0 for cache, DB 1 for sessions). Each Redis feature prompted separately
 - **Critical CSS opt-in** — slow builds (Chromium-based) are off by default; `make prod` is fast, `make critical` generates above-the-fold CSS when you need it. Declining removes `rollup-plugin-critical` + ~20 Chromium apt packages from DDEV
 - **Multi-site support** — 1 to N sites with per-site language, URL prefix, name, and RTL detection. Sites created via Craft's project-config API, translation files scaffolded per locale, favicon generation with per-site web manifests
@@ -65,7 +66,7 @@ make create
 
 `make create` will:
 
-1. Prompt you for project details, sites, features (Redis, critical CSS), plugins, hosting, and email transport
+1. Prompt you for project details, sites, database, features (Redis, critical CSS), plugins, hosting, and email transport
 2. Let you review the full configuration and jump back to edit any section
 3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, plugin configs, and translation scaffolding
 4. Strip or keep conditional code based on your choices (critical CSS deps, hosting-specific env sections, unused plugin env vars)
