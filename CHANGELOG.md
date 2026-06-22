@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.0](https://github.com/LindemannRock/craft-starter/compare/v5.7.1...v5.8.0) (2026-06-22)
+
+
+### Added
+
+* **plugins:** add Freeform plugin for flexible form building ([c26cc58](https://github.com/LindemannRock/craft-starter/commit/c26cc58cd1d8be0b36b0b6b1fb7fb13e73d05f0a))
+
 ## [5.7.1](https://github.com/LindemannRock/craft-starter/compare/v5.7.0...v5.7.1) - 2026-06-22
 
 
