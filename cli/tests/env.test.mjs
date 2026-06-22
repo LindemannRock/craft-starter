@@ -94,8 +94,16 @@ describe('removeSection', () => {
 });
 
 describe('database options', () => {
-	it('maps PostgreSQL to Craft driver and port', () => {
+	it('maps PostgreSQL 18 to Craft driver and port', () => {
 		const postgres = getDatabaseOption('postgres');
+		expect(postgres.craftDriver).toBe('pgsql');
+		expect(postgres.craftPort).toBe('5432');
+		expect(postgres.ddevType).toBe('postgres');
+		expect(postgres.ddevVersion).toBe('18');
+	});
+
+	it('keeps PostgreSQL 16 available as the Craft baseline', () => {
+		const postgres = getDatabaseOption('postgres-16');
 		expect(postgres.craftDriver).toBe('pgsql');
 		expect(postgres.craftPort).toBe('5432');
 		expect(postgres.ddevType).toBe('postgres');

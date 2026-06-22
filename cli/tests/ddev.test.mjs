@@ -15,7 +15,7 @@ describe('updateDatabaseConfig', () => {
 	].join('\n');
 
 	it('updates only the database type and version', () => {
-		const result = updateDatabaseConfig(config, getDatabaseOption('postgres'));
+		const result = updateDatabaseConfig(config, getDatabaseOption('postgres-16'));
 
 		expect(result).toContain('type: craftcms');
 		expect(result).toContain('database:\n    # Craft 5 requires');
