@@ -191,6 +191,14 @@ export const THIRD_PARTY_PLUGINS = [
 		config: null,
 	},
 	{
+		value: 'craftcms/commerce',
+		handle: 'commerce',
+		version: '^5.6',
+		label: "Commerce",
+		hint: "Craft Commerce",
+		config: null,
+	},
+	{
 		value: 'mmikkel/cp-clearcache',
 		handle: 'cp-clearcache',
 		version: '^2.0.1',
