@@ -215,6 +215,14 @@ export const THIRD_PARTY_PLUGINS = [
 		config: 'formie.php',
 	},
 	{
+		value: 'solspace/craft-freeform',
+		handle: 'freeform',
+		version: '^5.15',
+		label: "Freeform",
+		hint: "Freeform is the most flexible form builder for Craft CMS, built to work the way Craft developers do.",
+		config: null,
+	},
+	{
 		value: 'spacecatninja/imager-x',
 		handle: 'imager-x',
 		version: '^5.2.1',
