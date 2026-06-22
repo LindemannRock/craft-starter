@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.9.0](https://github.com/LindemannRock/craft-starter/compare/v5.8.0...v5.9.0) - 2026-06-22
+
+
+### Added
+
+* **cli:** integrate database prompt into project setup flow ([1dbf37c](https://github.com/LindemannRock/craft-starter/commit/1dbf37caaa0b43cb7432574ce3c4e50333602709))
+* **database:** add support for database schema configuration ([ab5284b](https://github.com/LindemannRock/craft-starter/commit/ab5284ba8ff3abc2cba3ab0b62d560e2665507e6))
+* **database:** add support for MySQL 8.0 and PostgreSQL 16 ([42257d7](https://github.com/LindemannRock/craft-starter/commit/42257d72165ade6c35112576d90d6e5c0eaecd47))
+* **database:** add support for PostgreSQL 18 alongside PostgreSQL 16 ([d838ab4](https://github.com/LindemannRock/craft-starter/commit/d838ab46a7c71bf14de2376216ab5b979b9bd454))
+* **plugins:** add Craft Commerce plugin for e-commerce functionality ([f3119e5](https://github.com/LindemannRock/craft-starter/commit/f3119e5a770ec3bdae2d48bbd48a6a3eed0f3929))
+
 ## [5.8.0](https://github.com/LindemannRock/craft-starter/compare/v5.7.1...v5.8.0) - 2026-06-22
 
 
