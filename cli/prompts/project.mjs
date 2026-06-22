@@ -12,6 +12,7 @@
 import * as p from '@clack/prompts';
 import search from '@inquirer/search';
 import { COMMON_LANGUAGES, ALL_LANGUAGES } from '../config/languages.mjs';
+import { promptDatabase } from './database.mjs';
 import { cancel, isPromptCancel } from '../utils/cancel.mjs';
 
 /**
@@ -127,6 +128,8 @@ export async function promptProject() {
 	});
 	if (p.isCancel(phpVersion)) cancel();
 
+	const database = await promptDatabase();
+
 	// Part 2 — credentials
 	const credentials = await p.group(
 		{
@@ -189,5 +192,5 @@ export async function promptProject() {
 		{ onCancel: () => cancel() },
 	);
 
-	return { ...base, timezone, language, phpVersion, ...credentials };
+	return { ...base, timezone, language, phpVersion, database, ...credentials };
 }

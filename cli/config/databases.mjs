@@ -9,7 +9,7 @@ export const DATABASE_OPTIONS = [
 	{
 		value: 'mysql',
 		label: 'MySQL 8.0',
-		hint: 'Default for most Craft projects and Servd',
+		hint: 'Default for most Craft projects',
 		ddevType: 'mysql',
 		ddevVersion: '8.0',
 		craftDriver: 'mysql',
@@ -18,7 +18,7 @@ export const DATABASE_OPTIONS = [
 	{
 		value: 'postgres',
 		label: 'PostgreSQL 16',
-		hint: 'Useful for plugin compatibility testing',
+		hint: 'Popular open-source relational database',
 		ddevType: 'postgres',
 		ddevVersion: '16',
 		craftDriver: 'pgsql',

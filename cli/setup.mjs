@@ -23,7 +23,6 @@ import {
 	promptHosting,
 } from './prompts/plugins.mjs';
 import { promptSites } from './prompts/sites.mjs';
-import { promptDatabase } from './prompts/database.mjs';
 import { promptServdCredentials } from './prompts/servd.mjs';
 import { promptServdEmail } from './prompts/servd-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
@@ -52,11 +51,11 @@ import { ROOT } from './paths.mjs';
 
 async function collectProject(state) {
 	state.project = await promptProject();
+	state.database = state.project.database;
 }
 
 async function collectSitesAndFeatures(state) {
 	state.sites = await promptSites(state.project?.description || state.project?.name);
-	state.database = await promptDatabase();
 	const redis = await promptRedis();
 	state.useRedisCache = redis.useRedisCache;
 	state.useRedisSession = redis.useRedisSession;
@@ -203,8 +202,8 @@ async function main() {
 			message: 'Ready to install?',
 			options: [
 				{ value: 'install', label: pc.green('Install with these settings') },
-				{ value: 'project', label: 'Edit project details', hint: 'name, timezone, admin, etc.' },
-				{ value: 'features', label: 'Edit sites / database / Redis' },
+				{ value: 'project', label: 'Edit project details', hint: 'name, timezone, PHP, database, admin, etc.' },
+				{ value: 'features', label: 'Edit sites / Redis' },
 				{ value: 'plugins', label: 'Edit plugin selection' },
 				{ value: 'hosting', label: 'Edit hosting / email' },
 				{ value: 'cancel', label: pc.red('Cancel') },
