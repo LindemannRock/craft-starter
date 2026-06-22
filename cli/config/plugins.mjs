@@ -84,14 +84,6 @@ export const LR_PLUGINS = [
 		config: null,
 	},
 	{
-		value: 'lindemannrock/craft-formie-sap-integration',
-		handle: 'formie-sap-integration',
-		version: '^3.6.1',
-		label: 'Formie SAP Integration',
-		hint: 'Send Formie submissions to SAP Cloud',
-		config: null,
-	},
-	{
 		value: 'lindemannrock/craft-formie-sms',
 		handle: 'formie-sms',
 		version: '^3.11.1',
@@ -195,7 +187,7 @@ export const THIRD_PARTY_PLUGINS = [
 		handle: 'commerce',
 		version: '^5.6',
 		label: "Commerce",
-		hint: "Craft Commerce",
+		hint: "E-commerce platform",
 		config: null,
 	},
 	{
@@ -227,7 +219,7 @@ export const THIRD_PARTY_PLUGINS = [
 		handle: 'freeform',
 		version: '^5.15',
 		label: "Freeform",
-		hint: "Freeform is the most flexible form builder for Craft CMS, built to work the way Craft developers do.",
+		hint: "Form builder",
 		config: null,
 	},
 	{
