@@ -14,6 +14,7 @@ export const DATABASE_OPTIONS = [
 		ddevVersion: '8.0',
 		craftDriver: 'mysql',
 		craftPort: '3306',
+		craftSchema: '',
 	},
 	{
 		value: 'postgres',
@@ -23,6 +24,7 @@ export const DATABASE_OPTIONS = [
 		ddevVersion: '18',
 		craftDriver: 'pgsql',
 		craftPort: '5432',
+		craftSchema: 'public',
 	},
 	{
 		value: 'postgres-16',
@@ -32,6 +34,7 @@ export const DATABASE_OPTIONS = [
 		ddevVersion: '16',
 		craftDriver: 'pgsql',
 		craftPort: '5432',
+		craftSchema: 'public',
 	},
 ];
 

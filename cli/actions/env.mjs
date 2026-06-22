@@ -81,6 +81,7 @@ export function generateEnvFile({
 		// Database
 		CRAFT_DB_DRIVER: database.craftDriver,
 		CRAFT_DB_PORT: database.craftPort,
+		CRAFT_DB_SCHEMA: database.craftSchema,
 	};
 
 	// Per-site env vars — NOT added to updates because the site blocks are

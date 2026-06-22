@@ -98,6 +98,7 @@ describe('database options', () => {
 		const postgres = getDatabaseOption('postgres');
 		expect(postgres.craftDriver).toBe('pgsql');
 		expect(postgres.craftPort).toBe('5432');
+		expect(postgres.craftSchema).toBe('public');
 		expect(postgres.ddevType).toBe('postgres');
 		expect(postgres.ddevVersion).toBe('18');
 	});
@@ -106,6 +107,7 @@ describe('database options', () => {
 		const postgres = getDatabaseOption('postgres-16');
 		expect(postgres.craftDriver).toBe('pgsql');
 		expect(postgres.craftPort).toBe('5432');
+		expect(postgres.craftSchema).toBe('public');
 		expect(postgres.ddevType).toBe('postgres');
 		expect(postgres.ddevVersion).toBe('16');
 	});
