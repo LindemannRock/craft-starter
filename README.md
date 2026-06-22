@@ -1,6 +1,6 @@
 # Craft CMS Starter by LindemannRock
 
-[![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.9%2B-orange.svg)](https://craftcms.com/)
+[![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.10%2B-orange.svg)](https://craftcms.com/)
 [![PHP](https://img.shields.io/badge/PHP-8.3%2B-blue.svg)](https://php.net/)
 [![Node](https://img.shields.io/badge/Node-22%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
@@ -203,8 +203,8 @@ craft-starter/
 
 ## Stack
 
-- **[Craft CMS 5.9+](https://craftcms.com)** — Content management system
-- **[DDEV](https://ddev.com)** — Local development environment (nginx-fpm, PHP 8.3, MySQL 8.0)
+- **[Craft CMS 5.10+](https://craftcms.com)** — Content management system
+- **[DDEV](https://ddev.com)** — Local development environment (nginx-fpm, PHP 8.3, MySQL 8.0 or PostgreSQL 18/16)
 - **[Vite 8](https://vitejs.dev)** — Rolldown-powered frontend build tool with HMR
 - **[Tailwind CSS 4](https://tailwindcss.com)** — Utility-first CSS (CSS-first, no config file)
 - **[Alpine.js 3](https://alpinejs.dev)** — Reactive UI
@@ -222,7 +222,6 @@ craft-starter/
 | [Formie Paragraph](https://github.com/LindemannRock/craft-formie-paragraph-field) | Multi-line paragraph field for Formie |
 | [Formie Rating](https://github.com/LindemannRock/craft-formie-rating-field) | Star/emoji/numeric rating for Formie |
 | [Formie REST API](https://github.com/LindemannRock/craft-formie-rest-api) | REST + GraphQL API for Formie |
-| [Formie SAP Integration](https://github.com/LindemannRock/craft-formie-sap-integration) | Send Formie submissions to SAP Cloud |
 | [Formie SMS](https://github.com/LindemannRock/craft-formie-sms) | SMS notifications for Formie (auto-adds SMS Manager) |
 | [Icon Manager](https://github.com/LindemannRock/craft-icon-manager) | SVG + icon font management (auto-adds `svgo` devDependency for advanced SVG optimization) |
 | [Logging Library](https://github.com/LindemannRock/craft-logging-library) | Centralized logging |
@@ -239,9 +238,11 @@ craft-starter/
 | Plugin | Purpose |
 |--------|---------|
 | [Cloudflare](https://putyourlightson.com/plugins/cloudflare) | Purge Cloudflare cache from Craft |
+| [Commerce](https://craftcms.com/commerce) | E-commerce platform |
 | [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache) | Clear cache from CP toolbar |
 | [Expanded Singles](https://github.com/verbb/expanded-singles) | Singles as direct sidebar links |
 | [Formie](https://verbb.io/craft-plugins/formie) | Form builder (auto-added when any Formie addon is selected) |
+| [Freeform](https://solspace.com/craft/freeform) | Form builder |
 | [Imager X](https://plugins.craftcms.com/imager-x) | Image transforms |
 | [Navigation](https://verbb.io/craft-plugins/navigation) | Navigation management |
 | [Postmark](https://github.com/craftcms/postmark) | Email transport |
