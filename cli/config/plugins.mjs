@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.10.4',
+	'craftcms/cms': '^5.10.7',
 	'craftcms/ckeditor': '^5.6.1',
 	'nystudio107/craft-vite': '^5.0.1',
 	'vlucas/phpdotenv': '^5.6.3',
@@ -46,7 +46,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-code-highlighter',
 		handle: 'code-highlighter',
-		version: '^5.6.0',
+		version: '^5.8.1',
 		label: 'Code Highlighter',
 		hint: 'Syntax highlighting (Prism.js)',
 		config: null,
@@ -54,7 +54,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-component-manager',
 		handle: 'component-manager',
-		version: '^5.5.2',
+		version: '^5.7.1',
 		label: 'Component Manager',
 		hint: 'Advanced component management',
 		config: null,
@@ -62,7 +62,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-paragraph-field',
 		handle: 'formie-paragraph-field',
-		version: '^3.3.0',
+		version: '^3.5.1',
 		label: 'Formie Paragraph',
 		hint: 'Multi-line paragraph field for Formie',
 		config: null,
@@ -70,7 +70,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-rating-field',
 		handle: 'formie-rating-field',
-		version: '^3.17.0',
+		version: '^3.21.0',
 		label: 'Formie Rating',
 		hint: 'Star/emoji/numeric rating for Formie',
 		config: null,
@@ -78,7 +78,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-rest-api',
 		handle: 'formie-rest-api',
-		version: '^3.4.0',
+		version: '^3.10.1',
 		label: 'Formie REST API',
 		hint: 'REST + GraphQL API for Formie',
 		config: null,
@@ -86,7 +86,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-sap-integration',
 		handle: 'formie-sap-integration',
-		version: '^3.4.0',
+		version: '^3.6.1',
 		label: 'Formie SAP Integration',
 		hint: 'Send Formie submissions to SAP Cloud',
 		config: null,
@@ -94,7 +94,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-sms',
 		handle: 'formie-sms',
-		version: '^3.9.0',
+		version: '^3.11.1',
 		label: 'Formie SMS',
 		hint: 'SMS notifications for Formie',
 		config: null,
@@ -102,7 +102,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-icon-manager',
 		handle: 'icon-manager',
-		version: '^5.13.0',
+		version: '^5.17.0',
 		label: 'Icon Manager',
 		hint: 'SVG + icon font management',
 		config: null,
@@ -110,7 +110,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-logging-library',
 		handle: 'logging-library',
-		version: '^5.8.3',
+		version: '^5.10.1',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
 		config: null,
@@ -118,7 +118,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-redirect-manager',
 		handle: 'redirect-manager',
-		version: '^5.30.0',
+		version: '^5.34.0',
 		label: 'Redirect Manager',
 		hint: 'Auto-redirects + analytics',
 		config: 'redirect-manager.php',
@@ -127,7 +127,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-report-manager',
 		handle: 'report-manager',
-		version: '^5.2.1',
+		version: '^5.5.1',
 		label: 'Report Manager',
 		hint: 'Report generation + analytics',
 		config: null,
@@ -135,7 +135,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-search-manager',
 		handle: 'search-manager',
-		version: '^5.45.0',
+		version: '^5.52.0',
 		label: 'Search Manager',
 		hint: 'Search analytics + synonyms',
 		config: null,
@@ -144,7 +144,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-shortlink-manager',
 		handle: 'shortlink-manager',
-		version: '^5.18.1',
+		version: '^5.21.1',
 		label: 'Shortlink Manager',
 		hint: 'Short links + QR codes',
 		config: 'shortlink-manager.php',
@@ -153,7 +153,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-smartlink-manager',
 		handle: 'smartlink-manager',
-		version: '^5.27.0',
+		version: '^5.30.0',
 		label: 'Smartlink Manager',
 		hint: 'Device-aware smart links',
 		config: null,
@@ -162,7 +162,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-sms-manager',
 		handle: 'sms-manager',
-		version: '^5.11.0',
+		version: '^5.14.1',
 		label: 'SMS Manager',
 		hint: 'SMS gateway (multi-provider)',
 		config: null,
@@ -170,7 +170,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-translation-manager',
 		handle: 'translation-manager',
-		version: '^5.23.3',
+		version: '^5.29.1',
 		label: 'Translation Manager',
 		hint: 'Translation management',
 		config: 'translation-manager.php',
@@ -209,7 +209,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/formie',
 		handle: 'formie',
-		version: '^3.1.26',
+		version: '^3.1.29',
 		label: 'Formie',
 		hint: 'Form builder',
 		config: 'formie.php',
@@ -274,7 +274,7 @@ export const HOSTING_OPTIONS = [
 		label: 'Servd',
 		hint: 'Craft CMS hosting',
 		packages: [
-			{ name: 'servd/craft-asset-storage', version: '^4.2.4.2', handle: 'servd-asset-storage' },
+			{ name: 'servd/craft-asset-storage', version: '^4.2.6', handle: 'servd-asset-storage' },
 		],
 	},
 	{
