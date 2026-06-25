@@ -8,6 +8,7 @@
 
 // Common languages shown when the search input is empty (press Enter = English)
 export const COMMON_LANGUAGES = [
+	{ value: 'en', name: 'English' },
 	{ value: 'en-US', name: 'English (US)' },
 	{ value: 'en-GB', name: 'English (UK)' },
 	{ value: 'ar', name: 'Arabic' },
