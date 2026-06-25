@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.10.0](https://github.com/LindemannRock/craft-starter/compare/v5.9.0...v5.10.0) (2026-06-25)
+
+
+### Added
+
+* **cli:** add build artifact tracking prompt and update gitignore handling ([00bd5cf](https://github.com/LindemannRock/craft-starter/commit/00bd5cf226fe9b8eeae9302f4fda6d5b376a3917))
+* **cli:** add validation for site handles and URL prefix generation ([2b2e3a8](https://github.com/LindemannRock/craft-starter/commit/2b2e3a8afe8db8e04e1b23adc378a67878a14224))
+* **cli:** enhance defaultLabel function to preserve region codes ([4fcecda](https://github.com/LindemannRock/craft-starter/commit/4fcecda9d13e1f3d58c8d74ba4907751fab359fe))
+* **i18n:** add English as a common language option ([d4eff45](https://github.com/LindemannRock/craft-starter/commit/d4eff4539b1403ba2c56f4f29e5f89abd0eb543e))
+
 ## [5.9.0](https://github.com/LindemannRock/craft-starter/compare/v5.8.0...v5.9.0) - 2026-06-22
 
 
