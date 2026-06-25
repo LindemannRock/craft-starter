@@ -35,6 +35,7 @@ An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few
 - **Database choice** — MySQL 8.0 by default, with PostgreSQL 18 or 16 available during `make create`
 - **Redis opt-in** — cache + optional sessions. Adds `ddev/ddev-redis` addon + `yii2-redis` package, env-var-gated components in `app.php` (DB 0 for cache, DB 1 for sessions). Each Redis feature prompted separately
 - **Critical CSS opt-in** — slow builds (Chromium-based) are off by default; `make prod` is fast, `make critical` generates above-the-fold CSS when you need it. Declining removes `rollup-plugin-critical` + ~20 Chromium apt packages from DDEV
+- **Build artifact choice** — choose whether `web/dist/` is committed for hosts without a build step, or ignored when CI/hosting builds assets
 - **Multi-site support** — 1 to N sites with per-site language, URL prefix, name, and RTL detection. Sites created via Craft's project-config API, translation files scaffolded per locale, favicon generation with per-site web manifests
 - **Vite 8 build pipeline** — Rolldown-powered (10-30× faster), single `web/dist/` output, Subresource Integrity (SRI), gzip compression, page-specific asset splitting. For per-environment runtime config (Algolia keys, Mapbox tokens, etc.) inject from Twig into `window.__APP_CONFIG__` — do **not** rely on `import.meta.env.VITE_*` baking values into the bundle.
 - **TypeScript-first frontend** — Alpine.js session/UTM store, lazy-loaded Swiper + mmenu, conditional `svgo` (with Icon Manager)

@@ -29,12 +29,13 @@ import { promptPostmarkToken } from './prompts/postmark.mjs';
 import { promptTranslationCategory } from './prompts/translation-manager.mjs';
 import { promptRedis } from './prompts/redis.mjs';
 import { promptCritical } from './prompts/critical.mjs';
+import { promptBuildFiles } from './prompts/build-files.mjs';
 import { updateComposer } from './actions/composer.mjs';
 import { updatePackageJson } from './actions/packageJson.mjs';
 import { updateDdevConfig } from './actions/ddev.mjs';
 import { setPhpVersion } from './actions/php.mjs';
 import { applyCriticalCssChoice } from './actions/critical.mjs';
-import { stripStarterOnlyIgnores } from './actions/gitignore.mjs';
+import { updateGitignore } from './actions/gitignore.mjs';
 import { generateEnvFile } from './actions/env.mjs';
 import { writePluginConfigs, cleanUnusedPluginConfigs } from './actions/plugins.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from './actions/sites.mjs';
@@ -60,6 +61,7 @@ async function collectSitesAndFeatures(state) {
 	state.useRedisCache = redis.useRedisCache;
 	state.useRedisSession = redis.useRedisSession;
 	state.useCritical = await promptCritical();
+	state.commitBuildFiles = await promptBuildFiles();
 }
 
 async function collectPlugins(state) {
@@ -229,7 +231,7 @@ async function main() {
 		}
 	}
 
-	const { project, sites, database, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting,
+	const { project, sites, database, useRedisCache, useRedisSession, useCritical, commitBuildFiles, selectedLr, selectedTp, selectedHosting,
 		servdCredentials, postmarkToken, smtpCredentials, translationCategory } = state;
 
 	// -- Apply file changes --------------------------------------------------
@@ -268,8 +270,8 @@ async function main() {
 	s.stop('Critical-CSS choice applied');
 
 	s.start('Updating .gitignore');
-	stripStarterOnlyIgnores();
-	s.stop('.gitignore updated — lock files now trackable');
+	updateGitignore({ commitBuildFiles });
+	s.stop('.gitignore updated');
 	p.log.info('composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).');
 
 	s.start('Generating .env');

@@ -13,7 +13,7 @@ export function intro() {
 	p.intro(pc.bgCyan(pc.black(' LindemannRock — Craft CMS Starter ')));
 }
 
-export function showConfigurationSummary({ project, sites, database, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting }) {
+export function showConfigurationSummary({ project, sites, database, useRedisCache, useRedisSession, useCritical, commitBuildFiles, selectedLr, selectedTp, selectedHosting }) {
 	const rows = [
 		['Project', project.name],
 		['Site name', project.description],
@@ -27,6 +27,7 @@ export function showConfigurationSummary({ project, sites, database, useRedisCac
 		['Database', database?.label || 'MySQL 8.0'],
 		['Cache', useRedisCache ? (useRedisSession ? 'Redis (cache + sessions)' : 'Redis (cache only)') : 'File (default)'],
 		['Critical CSS', useCritical ? 'Yes (run make critical)' : 'No'],
+		['Build files', commitBuildFiles ? 'Track web/dist' : 'Ignore web/dist'],
 		['LR Plugins', selectedLr.length ? selectedLr.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
 		['Plugins', selectedTp.length ? selectedTp.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],
