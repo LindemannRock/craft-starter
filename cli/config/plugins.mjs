@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.10.7',
+	'craftcms/cms': '^5.10.8',
 	'craftcms/ckeditor': '^5.6.1',
 	'nystudio107/craft-vite': '^5.0.1',
 	'vlucas/phpdotenv': '^5.6.3',
@@ -102,7 +102,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-logging-library',
 		handle: 'logging-library',
-		version: '^5.10.1',
+		version: '^5.13.0',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
 		config: null,
@@ -162,7 +162,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-translation-manager',
 		handle: 'translation-manager',
-		version: '^5.29.1',
+		version: '^5.33.0',
 		label: 'Translation Manager',
 		hint: 'Translation management',
 		config: 'translation-manager.php',
@@ -185,7 +185,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'craftcms/commerce',
 		handle: 'commerce',
-		version: '^5.6',
+		version: '^5.6.6',
 		label: "Commerce",
 		hint: "E-commerce platform",
 		config: null,
@@ -217,7 +217,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'solspace/craft-freeform',
 		handle: 'freeform',
-		version: '^5.15',
+		version: '^5.15.17',
 		label: "Freeform",
 		hint: "Form builder",
 		config: null,
