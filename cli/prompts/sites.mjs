@@ -23,19 +23,23 @@ function defaultHandle(language) {
 
 /**
  * Derive a short switcher label from a locale code.
- * Uses Intl.DisplayNames to get the native-script name, then takes the first word.
+ * Uses native-script language names and preserves the region code when present.
  *
  */
-function defaultLabel(language) {
+export function defaultLabel(language) {
 	try {
-		const lang = language.split('-')[0];
+		const [lang, region] = language.split('-');
 		const display = new Intl.DisplayNames([lang], { type: 'language' });
 		const name = display.of(lang) || lang;
-		// Capitalize first letter, take first word only
-		return name.split(/\s/)[0].slice(0, 10);
+		const label = region ? `${name} (${region.toUpperCase()})` : name;
+		return capitalizeFirst(label).slice(0, 20);
 	} catch {
 		return language.split('-')[0].toUpperCase();
 	}
+}
+
+function capitalizeFirst(value) {
+	return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value;
 }
 
 export async function promptSites(projectName) {
