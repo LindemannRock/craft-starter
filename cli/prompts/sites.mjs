@@ -13,12 +13,20 @@ import { COMMON_LANGUAGES, ALL_LANGUAGES } from '../config/languages.mjs';
 import { cancel, isPromptCancel } from '../utils/cancel.mjs';
 
 /**
- * Derive a short handle from a locale code.
- * 'en-US' → 'en', 'ar' → 'ar', 'zh-TW' → 'zh-tw'
+ * Derive a short code-safe handle from a locale code.
+ * 'en-US' → 'en', 'ar' → 'ar', 'zh-TW' → 'zh'
  *
  */
 function defaultHandle(language) {
 	return language.toLowerCase().split('-')[0];
+}
+
+export function isValidSiteHandle(value) {
+	return /^[a-z][a-z0-9_]*$/.test(value);
+}
+
+export function urlPrefixFromHandle(handle) {
+	return handle.replace(/_/g, '-');
 }
 
 /**
@@ -84,12 +92,12 @@ export async function promptSites(projectName) {
 
 		// Handle
 		const handle = await p.text({
-			message: `Site ${num} — Handle (used in URLs and code)`,
+			message: `Site ${num} — Handle (used in code/env vars)`,
 			placeholder: suggestedHandle,
 			initialValue: suggestedHandle,
 			validate: (v) => {
 				if (!v) return 'Handle is required';
-				if (!/^[a-z0-9-]+$/.test(v)) return 'Use lowercase letters, numbers, and hyphens only';
+				if (!isValidSiteHandle(v)) return 'Start with a lowercase letter; use lowercase letters, numbers, and underscores only';
 				if (v.length > 32) return 'Max 32 characters';
 				if (usedHandles.has(v)) return `Handle "${v}" is already used by another site`;
 			},
@@ -99,8 +107,8 @@ export async function promptSites(projectName) {
 		// URL prefix — only URL-safe characters (no spaces, no control chars)
 		const urlPrefix = await p.text({
 			message: `Site ${num} — URL prefix`,
-			placeholder: isFirst ? '(empty = root site)' : suggestedHandle,
-			initialValue: isFirst ? '' : suggestedHandle,
+			placeholder: isFirst ? '(empty = root site)' : urlPrefixFromHandle(handle),
+			initialValue: isFirst ? '' : urlPrefixFromHandle(handle),
 			validate: (v) => {
 				if (!v) return; // empty = root site, allowed
 				if (!/^[a-z0-9-]+$/.test(v)) return 'Lowercase letters, numbers, and hyphens only';
@@ -153,7 +161,7 @@ export async function promptSites(projectName) {
 		const changed = [];
 		for (let i = 1; i < sites.length; i++) {
 			if (sites[i].urlPrefix === '') {
-				sites[i].urlPrefix = sites[i].handle;
+				sites[i].urlPrefix = urlPrefixFromHandle(sites[i].handle);
 				changed.push(sites[i].handle);
 			}
 		}
