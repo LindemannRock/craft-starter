@@ -16,12 +16,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
+import { spawn } from 'child_process';
 import { LR_PLUGINS, THIRD_PARTY_PLUGINS, CORE_REQUIRE, CORE_REQUIRE_DEV, REDIS_PACKAGE, HOSTING_OPTIONS } from '../config/plugins.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
 const PLUGINS_FILE = path.join(__dirname, '../config/plugins.mjs');
 const COMPOSER_FILE = path.join(ROOT, 'composer.json');
+const ENV_FILE = path.join(ROOT, '.env');
 
 const allPackages = [
 	...Object.entries(CORE_REQUIRE).map(([name, version]) => ({ name, version, source: 'core' })),
@@ -243,20 +245,57 @@ fs.writeFileSync(PLUGINS_FILE, content);
 if (fs.existsSync(COMPOSER_FILE)) {
 	const composer = JSON.parse(fs.readFileSync(COMPOSER_FILE, 'utf-8'));
 	let composerChanged = false;
+	const composerUpdatedPackages = [];
 	for (const u of updates) {
 		if (composer.require?.[u.name]) {
 			composer.require[u.name] = u.to;
 			composerChanged = true;
+			composerUpdatedPackages.push(u.name);
 		}
 		if (composer['require-dev']?.[u.name]) {
 			composer['require-dev'][u.name] = u.to;
 			composerChanged = true;
+			composerUpdatedPackages.push(u.name);
 		}
 	}
 	if (composerChanged) {
 		fs.writeFileSync(COMPOSER_FILE, JSON.stringify(composer, null, '\t') + '\n');
-		p.log.info('composer.json synced with new core versions');
+		p.log.info('composer.json synced with selected package versions');
+		if (fs.existsSync(ENV_FILE)) {
+			p.log.warn('composer.json changed in an existing project. Refresh composer.lock before using Craft CP updates/plugin installs.');
+			const updateLock = await p.confirm({
+				message: 'Run ddev composer update now?',
+				initialValue: true,
+			});
+			if (p.isCancel(updateLock)) {
+				p.outro(pc.yellow('Cancelled before updating composer.lock. Run make update-composer before Craft CP updates.'));
+				process.exit(0);
+			}
+			if (updateLock) {
+				const code = await runInherited('ddev', [
+					'composer',
+					'update',
+					...composerUpdatedPackages,
+					'--with-all-dependencies',
+					'--minimal-changes',
+				]);
+				if (code !== 0) {
+					p.outro(pc.red('composer.lock was not updated. Run make update-composer before Craft CP updates.'));
+					process.exit(code);
+				}
+				p.log.success('composer.lock updated');
+			} else {
+				p.log.warn('Skipped composer.lock update. Run make update-composer before Craft CP updates.');
+			}
+		}
 	}
 }
 
 p.outro(pc.green(`${updates.length} package${updates.length === 1 ? '' : 's'} updated.`));
+
+function runInherited(command, args) {
+	return new Promise((resolve) => {
+		const child = spawn(command, args, { cwd: ROOT, stdio: 'inherit' });
+		child.on('exit', (code) => resolve(code ?? 0));
+	});
+}
