@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.11.0](https://github.com/LindemannRock/craft-starter/compare/v5.10.0...v5.11.0) (2026-07-05)
+
+
+### Added
+
+* **cli:** add interactive composer.lock update prompt for plugin version sync ([63e1fbf](https://github.com/LindemannRock/craft-starter/commit/63e1fbfeb4af723d47f639803c98b1e199bb2b43))
+
 ## [5.10.0](https://github.com/LindemannRock/craft-starter/compare/v5.9.0...v5.10.0) - 2026-06-25
 
 
