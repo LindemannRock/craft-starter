@@ -18,10 +18,10 @@
 // -----------------------------------------------------------------------------
 
 export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.10.8',
+	'craftcms/cms': '^5.10.11',
 	'craftcms/ckeditor': '^5.6.1',
 	'nystudio107/craft-vite': '^5.0.1',
-	'vlucas/phpdotenv': '^5.6.3',
+	'vlucas/phpdotenv': '^5.6.4',
 };
 
 export const CORE_REQUIRE_DEV = {
@@ -94,7 +94,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-icon-manager',
 		handle: 'icon-manager',
-		version: '^5.17.0',
+		version: '^5.17.1',
 		label: 'Icon Manager',
 		hint: 'SVG + icon font management',
 		config: null,
@@ -102,7 +102,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-logging-library',
 		handle: 'logging-library',
-		version: '^5.13.0',
+		version: '^5.15.1',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
 		config: null,
@@ -110,7 +110,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-redirect-manager',
 		handle: 'redirect-manager',
-		version: '^5.34.0',
+		version: '^5.39.1',
 		label: 'Redirect Manager',
 		hint: 'Auto-redirects + analytics',
 		config: 'redirect-manager.php',
@@ -127,7 +127,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-search-manager',
 		handle: 'search-manager',
-		version: '^5.52.0',
+		version: '^5.53.0',
 		label: 'Search Manager',
 		hint: 'Search analytics + synonyms',
 		config: null,
@@ -136,7 +136,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-shortlink-manager',
 		handle: 'shortlink-manager',
-		version: '^5.21.1',
+		version: '^5.28.2',
 		label: 'Shortlink Manager',
 		hint: 'Short links + QR codes',
 		config: 'shortlink-manager.php',
@@ -145,7 +145,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-smartlink-manager',
 		handle: 'smartlink-manager',
-		version: '^5.30.0',
+		version: '^5.37.2',
 		label: 'Smartlink Manager',
 		hint: 'Device-aware smart links',
 		config: null,
@@ -154,7 +154,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-sms-manager',
 		handle: 'sms-manager',
-		version: '^5.14.1',
+		version: '^5.15.0',
 		label: 'SMS Manager',
 		hint: 'SMS gateway (multi-provider)',
 		config: null,
@@ -162,7 +162,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-translation-manager',
 		handle: 'translation-manager',
-		version: '^5.33.0',
+		version: '^5.33.3',
 		label: 'Translation Manager',
 		hint: 'Translation management',
 		config: 'translation-manager.php',
@@ -185,7 +185,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'craftcms/commerce',
 		handle: 'commerce',
-		version: '^5.6.6',
+		version: '^5.7.0',
 		label: "Commerce",
 		hint: "E-commerce platform",
 		config: null,
@@ -199,6 +199,14 @@ export const THIRD_PARTY_PLUGINS = [
 		config: null,
 	},
 	{
+		value: 'putyourlightson/craft-datastar',
+		handle: 'datastar',
+		version: '^1.0',
+		label: "Datastar",
+		hint: "A reactive hypermedia framework for Craft.",
+		config: null,
+	},
+	{
 		value: 'verbb/expanded-singles',
 		handle: 'expanded-singles',
 		version: '^3.0.3',
@@ -209,7 +217,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/formie',
 		handle: 'formie',
-		version: '^3.1.29',
+		version: '^3.1.33',
 		label: 'Formie',
 		hint: 'Form builder',
 		config: 'formie.php',
@@ -217,7 +225,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'solspace/craft-freeform',
 		handle: 'freeform',
-		version: '^5.15.17',
+		version: '^5.15.21',
 		label: "Freeform",
 		hint: "Form builder",
 		config: null,
@@ -249,7 +257,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'studioespresso/craft-scout',
 		handle: 'scout',
-		version: '^5.0.7',
+		version: '^5.0.10',
 		label: 'Scout',
 		hint: 'Search indexing (Algolia, Elasticsearch, etc.)',
 		config: 'scout.php',
@@ -265,7 +273,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'putyourlightson/craft-sprig',
 		handle: 'sprig',
-		version: '^3.7.2',
+		version: '^3.7.3',
 		label: 'Sprig',
 		hint: 'Reactive Twig components',
 		config: null,
