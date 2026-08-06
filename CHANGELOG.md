@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.12.0](https://github.com/LindemannRock/craft-starter/compare/v5.11.0...v5.12.0) (2026-08-06)
+
+
+### Added
+
+* **redis:** add Redis management commands and environment configuration ([a198f48](https://github.com/LindemannRock/craft-starter/commit/a198f486dc458fb992a39edbffd2493a53766edd))
+
 ## [5.11.0](https://github.com/LindemannRock/craft-starter/compare/v5.10.0...v5.11.0) - 2026-07-05
 
 
