@@ -1,4 +1,4 @@
-.PHONY: help create install start dev test prod critical favicons reset nuke \
+.PHONY: help create install start redis dev test prod critical favicons reset nuke \
 	clean clean-logs update update-craft update-composer update-npm update-cli \
 	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-remove registry-plugins-fetch \
 	up npm-install kill-vite \
@@ -120,6 +120,9 @@ keys: ## Generate Craft security key + app ID into .env
 npm-install: ## Run `npm install` inside DDEV
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
 	else ddev start && ddev exec -- npm install $(NPM_INSTALL_FLAGS); fi
+
+redis: ## Manage Redis cache and sessions (enable, change, or remove)
+	@node cli/scripts/redis.mjs
 
 ##@ Development
 

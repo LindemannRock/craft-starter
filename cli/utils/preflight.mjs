@@ -23,7 +23,7 @@ import { ROOT } from '../paths.mjs';
 
 const MIN_NODE_MAJOR = 22;
 
-export function checkPrerequisites() {
+export function checkPrerequisites({ retryCommand = 'make create' } = {}) {
 	const problems = [];
 
 	// -- Node version --------------------------------------------------------
@@ -76,7 +76,7 @@ export function checkPrerequisites() {
 	}
 
 	console.log('');
-	p.outro(pc.red('Install the missing prerequisites and run `make create` again.'));
+	p.outro(pc.red(`Install the missing prerequisites and run \`${retryCommand}\` again.`));
 	process.exit(1);
 }
 

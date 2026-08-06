@@ -92,6 +92,7 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 | `make start`               | `ddev start` + Vite dev server                             |
 | `make keys`                | Generate Craft security key + app ID into `.env`           |
 | `make npm-install`         | Run `npm install` inside DDEV                              |
+| `make redis`               | Enable, configure, repair, or remove Redis                 |
 
 ### Development
 
@@ -316,6 +317,7 @@ The installer tailors the project to your selections so you don't end up with de
 - **Cache enabled** → `ddev/ddev-redis` addon installed before `ddev start`, `yiisoft/yii2-redis` added to composer, Redis env vars kept in `.env`, cache component uses Redis DB 0
 - **Sessions enabled** (sub-prompt, only shown when cache is on) → `REDIS_SESSION_DB=1` added to `.env`, session component switches to `yii\redis\Session` with its own Redis DB
 - **Disabled** → Craft's default file-based cache + DB-backed sessions, Redis env vars stripped from `.env`
+- **Post-install changes** → run `make redis` to enable Redis, toggle Redis sessions, finish a partial setup, or fully remove the package + DDEV add-on
 - **Servd note:** Servd auto-configures Redis for cache + sessions at deploy time, overriding your `app.php`. Your local config is for DDEV / self-hosted / Craft Cloud only
 - **DB allocation:** DB 0 = cache, DB 1 = sessions. Plugins (e.g. Search Manager) manage their own DB indices
 
