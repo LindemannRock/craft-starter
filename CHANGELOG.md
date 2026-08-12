@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.12.1](https://github.com/LindemannRock/craft-starter/compare/v5.12.0...v5.12.1) - 2026-08-12
+
+
+### Fixed
+
+* **vite:** Cloud artifact handling and path resolution ([fd1a6e4](https://github.com/LindemannRock/craft-starter/commit/fd1a6e435146b9acd55da8e13bcb549c58fe7d08))
+
 ## [5.12.0](https://github.com/LindemannRock/craft-starter/compare/v5.11.0...v5.12.0) - 2026-08-06
 
 
