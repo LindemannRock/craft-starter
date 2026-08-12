@@ -6,6 +6,7 @@ This starter is configured for **local development with DDEV**. For staging and 
 
 - [ ] Run `make verify` — scans `.env` for unfilled `# TODO:` placeholders (e.g. Servd credentials you skipped during `make create`)
 - [ ] Commit `composer.lock` + `package-lock.json` — the CLI un-gitignores them during `make create` for reproducible installs. Craft Cloud and most CI pipelines require them
+- [ ] Commit `config/project/` — the CLI un-gitignores the generated Project Config during `make create` so plugin installation state and schema changes deploy with the code
 - [ ] Run `make prod` (or `make critical` if critical CSS is enabled) — builds frontend assets to `web/dist/`
 - [ ] Verify `storage/rebrand/` is committed — contains CP login branding (logo + site icon)
 

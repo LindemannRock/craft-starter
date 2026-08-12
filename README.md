@@ -69,13 +69,13 @@ make create
 
 1. Prompt you for project details, sites, database, features (Redis, critical CSS), plugins, hosting, and email transport
 2. Let you review the full configuration and jump back to edit any section
-3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, plugin configs, and translation scaffolding
+3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, plugin configs, and translation scaffolding; make generated Project Config and lockfiles trackable
 4. Strip or keep conditional code based on your choices (critical CSS deps, hosting-specific env sections, unused plugin env vars)
 5. Start DDEV (plus the Redis add-on if enabled)
 6. Run Composer + NPM installs
 7. Install Craft CMS with your credentials (non-interactive, idempotent)
 8. Activate all selected plugins
-9. Apply project config and persist your email transport choice
+9. Apply and write Project Config, including plugin installation state, sites, and your email transport choice
 
 When it finishes you'll see the site URL, CP URL, login, and a hint about which commands to run next (`make dev`, `make prod`, `make critical` if enabled).
 
@@ -287,6 +287,8 @@ Entry routing is handled by `_routerEntries.twig`, which resolves the most speci
 The CLI generates `.env` from `cli/templates/env.example` on every run. For local changes, edit `.env` directly. For staging/production deployment, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Craft's built-in settings use `CRAFT_*` env vars (`CRAFT_DEV_MODE`, `CRAFT_TIMEZONE`, `CRAFT_CP_TRIGGER`, `CRAFT_IS_SYSTEM_LIVE`, etc.) which Craft auto-reads into `GeneralConfig`. Project config values use `SYSTEM_*` env vars (`SYSTEM_NAME`, `SYSTEM_EMAIL`, etc.) referenced as `$VAR` in YAML. We don't re-read `CRAFT_*` vars in `general.php` — **one source of truth per setting**.
+
+The starter repository temporarily ignores `config/project/` because it does not yet ship a fixed baseline. During `make create`, the CLI removes that ignore rule before Craft generates the downstream project's configuration. Commit the generated `config/project/` directory so plugin and schema changes are applied consistently on Craft Cloud, Servd, and other deployment targets.
 
 ## What `make create` does differently based on your choices
 
