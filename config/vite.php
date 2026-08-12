@@ -1,8 +1,14 @@
 <?php
 
+use craft\cloud\Helper as CloudHelper;
 use craft\helpers\App;
 
-$distDir = '@web/dist';
+// Craft Cloud publishes build output to its artifact CDN. The Cloud package is
+// optional in this starter, so retain filesystem paths everywhere else.
+$isCraftCloud = class_exists(CloudHelper::class) && CloudHelper::isCraftCloud();
+$distDir = $isCraftCloud
+    ? rtrim(CloudHelper::artifactUrl('dist/'), '/')
+    : Craft::getAlias('@webroot/dist');
 $baseUrl = '/dist';
 
 // When Tailscale is sharing the site (via `make share` or `make funnel`), the
@@ -15,15 +21,17 @@ $devServerPublic = $tailscaleHost
 
 return [
     'useDevServer' => App::env('ENVIRONMENT') === 'dev' || App::env('CRAFT_ENVIRONMENT') === 'dev',
-    'manifestPath' => Craft::getAlias($distDir) . '/manifest.json',
+    'manifestPath' => $distDir . '/manifest.json',
     'devServerPublic' => $devServerPublic,
-    'serverPublic' => App::env('PRIMARY_SITE_URL') . $baseUrl . '/',
+    'serverPublic' => $isCraftCloud
+        ? CloudHelper::artifactUrl('dist/')
+        : rtrim((string) App::env('PRIMARY_SITE_URL'), '/') . $baseUrl . '/',
     'errorEntry' => 'src/js/main.ts',
     'cacheKeySuffix' => '',
     'devServerInternal' => App::env('VITE_DEV_SERVER_INTERNAL'),
     'checkDevServer' => true,
     'includeReactRefreshShim' => false,
     'includeModulePreloadShim' => true,
-    'criticalPath' => Craft::getAlias($distDir) . '/criticalcss',
+    'criticalPath' => $distDir . '/criticalcss',
     'criticalSuffix' => '_critical.min.css',
 ];

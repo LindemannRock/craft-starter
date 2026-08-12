@@ -172,7 +172,7 @@ SYSTEM_EMAIL=no-reply@example.com
 SYSTEM_SENDER_NAME="Your Site"
 ```
 
-The `npm run build` step runs automatically during Cloud deployments (configured in `craft-cloud.yaml`).
+The `npm run build` step runs automatically during Cloud deployments (configured in `craft-cloud.yaml`). Keep `web/dist/` ignored: Cloud uploads the generated files to its artifact CDN, and the Vite configuration resolves the manifest and asset URLs from that CDN at runtime.
 
 ## LindemannRock plugins
 

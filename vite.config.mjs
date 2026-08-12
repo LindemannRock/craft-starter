@@ -38,7 +38,7 @@ export default defineConfig(async ({ command, mode }) => {
 	const sharedAssetsDir = path.resolve(process.cwd(), 'web/dist/assets');
 
 	return {
-		base: command === 'serve' ? '' : '/dist/',
+		base: command === 'serve' ? '' : `${process.env.CRAFT_CLOUD_ARTIFACT_BASE_URL || ''}/dist/`,
 		logLevel: 'info',
 		build: {
 			minify: 'terser',

@@ -20,7 +20,7 @@ const DISABLED_PARTIAL = path.join(TEMPLATES_DIR, 'critical-css-disabled.twig');
 
 // Canonical criticalPath + criticalSuffix lines for config/vite.php.
 // Re-inserted on opt-in if they were previously stripped.
-const VITE_CONFIG_CRITICAL_LINES = `    'criticalPath' => Craft::getAlias($distDir) . '/criticalcss',
+const VITE_CONFIG_CRITICAL_LINES = `    'criticalPath' => $distDir . '/criticalcss',
     'criticalSuffix' => '_critical.min.css',
 `;
 
