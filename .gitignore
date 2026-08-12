@@ -16,8 +16,8 @@
 # (Canvas Studio, etc.). When the plugin APIs stabilise we'll revisit what
 # a committed baseline should look like.
 #
-# If you fork this starter for a client project, REMOVE this line and start
-# tracking your project config like any normal Craft site.
+# `make create` removes this section for generated projects so their Project
+# Config is tracked and can be applied during deployment.
 /config/project/
 
 # Dependencies
