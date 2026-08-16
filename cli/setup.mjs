@@ -36,6 +36,7 @@ import { updateDdevConfig } from './actions/ddev.mjs';
 import { setPhpVersion } from './actions/php.mjs';
 import { applyCriticalCssChoice } from './actions/critical.mjs';
 import { updateGitignore } from './actions/gitignore.mjs';
+import { applyCraftCloudDefaults, writeCraftCloudConfig } from './actions/cloud.mjs';
 import { generateEnvFile } from './actions/env.mjs';
 import { writePluginConfigs, cleanUnusedPluginConfigs } from './actions/plugins.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from './actions/sites.mjs';
@@ -198,6 +199,9 @@ async function main() {
 
 	// -- Review loop ---------------------------------------------------------
 	while (true) {
+		for (const notice of applyCraftCloudDefaults(state)) {
+			p.log.info(notice);
+		}
 		showConfigurationSummary(state);
 
 		const action = await p.select({
@@ -280,12 +284,7 @@ async function main() {
 
 	if (selectedHosting.value === 'craft-cloud') {
 		s.start('Generating craft-cloud.yaml');
-		fs.writeFileSync(`${ROOT}/craft-cloud.yaml`, [
-			'php-version: \'8.3\'',
-			'node-version: \'22\'',
-			'npm-script: build',
-			'',
-		].join('\n'));
+		writeCraftCloudConfig(project.phpVersion);
 		s.stop('craft-cloud.yaml generated');
 	}
 

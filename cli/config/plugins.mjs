@@ -298,7 +298,7 @@ export const HOSTING_OPTIONS = [
 		label: 'Craft Cloud',
 		hint: 'Official Craft hosting',
 		packages: [
-			{ name: 'craftcms/cloud', version: '*', handle: 'cloud' },
+			{ name: 'craftcms/cloud', version: '^3.11.0', handle: null },
 		],
 	},
 	{
