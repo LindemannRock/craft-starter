@@ -1,18 +1,17 @@
 /**
- * Servd email transport prompt.
+ * Hosted email transport prompt.
  *
- * Servd doesn't support Sendmail, so if the user picks Servd hosting without
- * Postmark, they need to choose an alternative email transport. This prompt
- * offers Postmark (auto-adds the plugin), Servd SMTP, or skip.
+ * Servd and Craft Cloud do not provide a working Sendmail transport, so users
+ * must choose Postmark, SMTP, or explicitly defer production email setup.
  *
  * @copyright 2026 LindemannRock
  * @license MIT
  */
 
 import * as p from '@clack/prompts';
-import { cancel } from '../utils/cancel.mjs';
-import { promptPostmarkToken } from './postmark.mjs';
-import { THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
+import {cancel} from '../utils/cancel.mjs';
+import {promptPostmarkToken} from './postmark.mjs';
+import {THIRD_PARTY_PLUGINS} from '../config/plugins.mjs';
 
 /**
  * @returns {Promise<{
@@ -23,17 +22,19 @@ import { THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
  * }>}
  *
  */
-export async function promptServdEmail() {
-	p.log.info('Servd does not support Sendmail.\n' +
-		'Choose an email transport for password resets,\n' +
-		'form notifications, etc.');
+export async function promptHostingEmail(hostingLabel) {
+	p.log.info(
+		`${hostingLabel} does not provide a working Sendmail transport.\n` +
+			'Choose an email transport for password resets,\n' +
+			'form notifications, etc.',
+	);
 
 	const choice = await p.select({
 		message: 'How should Craft send email?',
 		options: [
-			{ value: 'postmark', label: 'Postmark (recommended)', hint: 'Add Postmark plugin + token' },
-			{ value: 'smtp', label: 'Servd SMTP (or other SMTP)', hint: 'Enter SMTP credentials' },
-			{ value: 'skip', label: 'Skip — configure manually later' },
+			{value: 'postmark', label: 'Postmark (recommended)', hint: 'Add Postmark plugin + token'},
+			{value: 'smtp', label: 'SMTP', hint: 'Enter credentials for any SMTP provider'},
+			{value: 'skip', label: 'Skip — configure manually later'},
 		],
 		initialValue: 'postmark',
 	});
@@ -42,8 +43,8 @@ export async function promptServdEmail() {
 	if (choice === 'postmark') {
 		// Auto-add the Postmark plugin to the selection
 		const postmarkPlugin = THIRD_PARTY_PLUGINS.find((pl) => pl.handle === 'postmark');
-		const postmarkToken = await promptPostmarkToken();
-		return { type: 'postmark', postmarkToken, postmarkPlugin };
+		const postmarkToken = await promptPostmarkToken({required: true});
+		return {type: 'postmark', postmarkToken, postmarkPlugin};
 	}
 
 	if (choice === 'smtp') {
@@ -52,7 +53,7 @@ export async function promptServdEmail() {
 				host: () =>
 					p.text({
 						message: 'SMTP hostname',
-						placeholder: 'smtp.servd.host',
+						placeholder: 'smtp.example.com',
 						validate: (v) => {
 							if (!v) return 'SMTP hostname is required';
 						},
@@ -84,12 +85,12 @@ export async function promptServdEmail() {
 						},
 					}),
 			},
-			{ onCancel: () => cancel() },
+			{onCancel: () => cancel()},
 		);
-		return { type: 'smtp', smtp: { ...smtp, useAuth: true } };
+		return {type: 'smtp', smtp: {...smtp, useAuth: true}};
 	}
 
 	// Skip
-	p.log.warn('Email transport skipped. Configure SMTP or Postmark manually in .env after install.');
-	return { type: 'skip' };
+	p.log.warn(`Email transport skipped. Configure SMTP or Postmark before deploying to ${hostingLabel}.`);
+	return {type: 'skip'};
 }

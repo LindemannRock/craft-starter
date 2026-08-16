@@ -24,7 +24,7 @@ import {
 } from './prompts/plugins.mjs';
 import { promptSites } from './prompts/sites.mjs';
 import { promptServdCredentials } from './prompts/servd.mjs';
-import { promptServdEmail } from './prompts/servd-email.mjs';
+import { promptHostingEmail } from './prompts/hosting-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
 import { promptTranslationCategory } from './prompts/translation-manager.mjs';
 import { promptRedis } from './prompts/redis.mjs';
@@ -114,18 +114,19 @@ async function collectEmail(state) {
 	state.smtpCredentials = null;
 
 	const hasPostmark = state.selectedTp.some((pl) => pl.handle === 'postmark');
+	const requiresProductionMail = ['servd', 'craft-cloud'].includes(state.selectedHosting.value);
 
 	if (hasPostmark) {
-		state.postmarkToken = await promptPostmarkToken();
-	} else if (state.selectedHosting.value === 'servd') {
-		const servdEmail = await promptServdEmail();
-		if (servdEmail.type === 'postmark') {
-			state.postmarkToken = servdEmail.postmarkToken;
+		state.postmarkToken = await promptPostmarkToken({ required: requiresProductionMail });
+	} else if (requiresProductionMail) {
+		const hostingEmail = await promptHostingEmail(state.selectedHosting.label);
+		if (hostingEmail.type === 'postmark') {
+			state.postmarkToken = hostingEmail.postmarkToken;
 			if (!state.selectedTp.some((pl) => pl.handle === 'postmark')) {
-				state.selectedTp.push(servdEmail.postmarkPlugin);
+				state.selectedTp.push(hostingEmail.postmarkPlugin);
 			}
-		} else if (servdEmail.type === 'smtp') {
-			state.smtpCredentials = servdEmail.smtp;
+		} else if (hostingEmail.type === 'smtp') {
+			state.smtpCredentials = hostingEmail.smtp;
 		}
 	}
 }
