@@ -64,7 +64,8 @@ describe('Cloud-safe project templates', () => {
 		const globals = fs.readFileSync(path.join(root, 'templates/_layouts/global-variables.twig'), 'utf8');
 		expect(globals).toContain("getenv('CRAFT_CLOUD_ARTIFACT_BASE_URL')");
 		expect(globals).toContain('cloud is defined');
-		expect(globals).toContain('cloud.artifactUrl()');
+		expect(globals).toContain("cloud.artifactUrl('')");
+		expect(globals).not.toContain('cloud.artifactUrl()');
 	});
 
 	it('keeps the tracked rebrand path environment-configurable', () => {

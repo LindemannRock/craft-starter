@@ -12,7 +12,7 @@
 {% set artifactBaseUrl = getenv('CRAFT_CLOUD_ARTIFACT_BASE_URL') %}
 {% if not artifactBaseUrl and cloud is defined %}
 	{# Safe here: templates run after the Craft Cloud extension has bootstrapped. #}
-	{% set artifactBaseUrl = cloud.artifactUrl() %}
+	{% set artifactBaseUrl = cloud.artifactUrl('') %}
 {% endif %}
 {% set artifactBaseUrl = (artifactBaseUrl ?: getenv('PRIMARY_SITE_URL') ?: siteUrl)|trim('/') %}
 
