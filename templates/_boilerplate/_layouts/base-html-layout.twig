@@ -6,8 +6,7 @@
 {% block headContent %}
 	{# -- Meta tags -- #}
 	{% block headMeta %}
-		<meta name="csrf-param" content="{{ craft.app.request.csrfParam }}">
-		<meta name="csrf-token" content="{{ craft.app.request.csrfToken }}">
+		{# Keep CSRF asynchronous: use csrfInput() in forms and fetch a token only when JS needs one. #}
 	{% endblock headMeta %}
 
 	{# -- Link tags -- #}
