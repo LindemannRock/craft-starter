@@ -56,7 +56,7 @@
 /* Example:
 @font-face {
 	font-family: 'Project Sans';
-	src: url('/dist/assets/fonts/ProjectSans-Regular.woff2') format('woff2');
+	src: url('../fonts/ProjectSans-Regular.woff2') format('woff2');
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;

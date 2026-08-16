@@ -9,6 +9,12 @@
 {% set siteId = currentSite.id %}
 {% set siteUrl = currentSite.baseUrl %}
 {% set siteLang = currentSite.language %}
+{% set artifactBaseUrl = getenv('CRAFT_CLOUD_ARTIFACT_BASE_URL') %}
+{% if not artifactBaseUrl and cloud is defined %}
+	{# Safe here: templates run after the Craft Cloud extension has bootstrapped. #}
+	{% set artifactBaseUrl = cloud.artifactUrl() %}
+{% endif %}
+{% set artifactBaseUrl = (artifactBaseUrl ?: getenv('PRIMARY_SITE_URL') ?: siteUrl)|trim('/') %}
 
 {# -- RTL detection (Arabic, Hebrew, Farsi, Urdu) -- #}
 {% set rtlLanguages = ['ar', 'he', 'fa', 'ur'] %}
@@ -59,6 +65,9 @@
 		isDev: isDev,
 		isStaging: isStaging,
 		isProduction: isProduction,
+	},
+	assets: {
+		artifactBaseUrl: artifactBaseUrl,
 	},
 	nav: {
 		main: mainMenuNodes,
