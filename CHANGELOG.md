@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.13.1](https://github.com/LindemannRock/craft-starter/compare/v5.13.0...v5.13.1) (2026-08-16)
+
+
+### Fixed
+
+* **cloud:** pass path to Twig artifact helper ([a1d20ef](https://github.com/LindemannRock/craft-starter/commit/a1d20efe3abf8162004d58c726f6e14c8cdce874))
+
 ## [5.13.0](https://github.com/LindemannRock/craft-starter/compare/v5.12.1...v5.13.0) - 2026-08-16
 
 
