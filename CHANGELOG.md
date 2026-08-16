@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.13.0](https://github.com/LindemannRock/craft-starter/compare/v5.12.1...v5.13.0) (2026-08-16)
+
+
+### Added
+
+* **cli:** generalize managed hosting email setup ([1e0404d](https://github.com/LindemannRock/craft-starter/commit/1e0404d1ac45805b64b3cb18ce8ec6a77d93eec7))
+* **cloud:** improve generated project configuration ([bc8b98a](https://github.com/LindemannRock/craft-starter/commit/bc8b98aa2be49577425e63b44ce1c4f98e9e57d9))
+* **gitignore:** implement stripStarterOnlyIgnores function to clean up .gitignore ([7cfa1a0](https://github.com/LindemannRock/craft-starter/commit/7cfa1a079e6f9e214ba5fc09b96f0b429b4fdac2))
+
+
+### Fixed
+
+* **cli:** remove unnecessary libc entries from package-lock.json ([93fb93b](https://github.com/LindemannRock/craft-starter/commit/93fb93bc7dc8f71242b05f533a5b0bc34cc404e7))
+* **cloud:** resolve generated assets through artifact CDN ([d414d6e](https://github.com/LindemannRock/craft-starter/commit/d414d6e43947a74ea7edb7fe6e53aa03a9951518))
+* **templates:** defer CSRF token generation ([9fcf755](https://github.com/LindemannRock/craft-starter/commit/9fcf7558afbb15ae0440850a82437629609a0883))
+
 ## [5.12.1](https://github.com/LindemannRock/craft-starter/compare/v5.12.0...v5.12.1) - 2026-08-12
 
 
