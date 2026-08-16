@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.13.1](https://github.com/LindemannRock/craft-starter/compare/v5.13.0...v5.13.1) (2026-08-16)
+## [5.13.1](https://github.com/LindemannRock/craft-starter/compare/v5.13.0...v5.13.1) - 2026-08-16
 
 
 ### Fixed
