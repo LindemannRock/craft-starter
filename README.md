@@ -259,7 +259,7 @@ craft-starter/
 | Provider | What gets installed |
 |----------|---------------------|
 | **Servd** | `servd/craft-asset-storage` + credentials prompt + optional custom asset domains + email transport fallback |
-| **Craft Cloud** | `craftcms/cloud` + `craft-cloud.yaml` generated (PHP 8.3, Node 22, `npm run build`) |
+| **Craft Cloud** | `craftcms/cloud` + `craft-cloud.yaml` using the selected PHP version, Node 22, and `npm run build`; Postmark/SMTP prompt included |
 | **None / self-hosted** | No hosting plugin added |
 
 ### Always included (core)
@@ -298,6 +298,7 @@ The installer tailors the project to your selections so you don't end up with de
 
 - **Opted in** → `rollup-plugin-critical` kept in `package.json`, ~20 Chromium apt packages added to `.ddev/config.yaml`, `.ddev/config.m1.yaml` present (native Chromium on Apple Silicon), full `critical-css.twig` partial with Nginx SSI + cookie logic, `GENERATE_CRITICAL_CSS=true` in `.env`, `make critical` works
 - **Declined** → all of the above stripped. `make prod` is the fast path; `make critical` refuses with a clear re-enable message
+- **Craft Cloud** → automatically disabled because its edge does not execute the Nginx SSI directives used by this implementation
 - **Flip-flopping** (re-running `make create` and changing your mind) is idempotent in both directions. The canonical "full" + "disabled" variants live under `cli/templates/critical/`, so opt-in works even if a project previously committed a declined state
 
 ### Sites (multi-site)
@@ -320,13 +321,13 @@ The installer tailors the project to your selections so you don't end up with de
 - **Sessions enabled** (sub-prompt, only shown when cache is on) → `REDIS_SESSION_DB=1` added to `.env`, session component switches to `yii\redis\Session` with its own Redis DB
 - **Disabled** → Craft's default file-based cache + DB-backed sessions, Redis env vars stripped from `.env`
 - **Post-install changes** → run `make redis` to enable Redis, toggle Redis sessions, finish a partial setup, or fully remove the package + DDEV add-on
-- **Servd note:** Servd auto-configures Redis for cache + sessions at deploy time, overriding your `app.php`. Your local config is for DDEV / self-hosted / Craft Cloud only
+- **Managed-host note:** Servd and Craft Cloud override cache and session components. The Redis prompt configures DDEV and self-hosted environments
 - **DB allocation:** DB 0 = cache, DB 1 = sessions. Plugins (e.g. Search Manager) manage their own DB indices
 
 ### Hosting
 
 - **Servd** → `servd/craft-asset-storage` installed, credentials + base URL prompted (or scaffolded as `# TODO:` placeholders if you don't have them yet — run `make verify` before deploy), optional custom CDN/image-transform domains, `SERVD_BASE_URL` auto-derived from project slug. Servd sub-prompt also offers Postmark/SMTP as email fallback
-- **Craft Cloud** → `craftcms/cloud` installed, `craft-cloud.yaml` generated (PHP 8.3, Node 22, `npm run build`), `CRAFT_RUN_QUEUE_AUTOMATICALLY=false` (Cloud runs its own workers)
+- **Craft Cloud** → `craftcms/cloud` installed, `craft-cloud.yaml` generated with the selected PHP version (Node 22, `npm run build`), `web/dist` ignored, critical SSI disabled, and `CRAFT_RUN_QUEUE_AUTOMATICALLY=false`. Production email is prompted because Cloud has no built-in mail service
 - **None / self-hosted** → no hosting plugin, Servd section removed from `.env`
 
 ### Email transport
@@ -339,6 +340,8 @@ Configured in project config at install time via `cli/scripts/configure-project.
 4. **Sendmail** as Craft's fallback
 
 No `mailer` component override in `config/app.php` — single source of truth in project config means the CP shows the right value and Servd's sendmail alert never fires.
+
+Servd and Craft Cloud both prompt for Postmark or generic SMTP when Postmark was not already selected. Copy the matching secret variables into the hosting dashboard. If setup is explicitly skipped, configure the mailer locally and commit the resulting Project Config before deployment.
 
 ### Auto-added plugin dependencies
 

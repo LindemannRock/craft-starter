@@ -9,6 +9,7 @@ This starter is configured for **local development with DDEV**. For staging and 
 - [ ] Commit `config/project/` — the CLI un-gitignores the generated Project Config during `make create` so plugin installation state and schema changes deploy with the code
 - [ ] Run `make prod` (or `make critical` if critical CSS is enabled) — builds frontend assets to `web/dist/`
 - [ ] Verify `storage/rebrand/` is committed — contains CP login branding (logo + site icon)
+- [ ] Verify every production asset volume uses a filesystem supported by the target host; Craft Cloud projects must use the Cloud filesystem rather than Local
 
 ## Required environment variables
 
@@ -168,12 +169,55 @@ CRAFT_ALLOW_ADMIN_CHANGES=false
 CRAFT_ALLOW_UPDATES=false
 CRAFT_DISALLOW_ROBOTS=false
 CRAFT_IS_SYSTEM_LIVE=true
+CRAFT_REBRAND_PATH=@root/storage/rebrand
 PRIMARY_SITE_URL=https://example.com
 SYSTEM_EMAIL=no-reply@example.com
+SYSTEM_EMAIL_REPLY_TO=hello@example.com
 SYSTEM_SENDER_NAME="Your Site"
 ```
 
 The `npm run build` step runs automatically during Cloud deployments (configured in `craft-cloud.yaml`). Keep `web/dist/` ignored: Cloud uploads the generated files to its artifact CDN, and the Vite configuration resolves the manifest and asset URLs from that CDN at runtime.
+
+The starter also resolves control-panel CSS, favicons, and frontend favicon assets through Cloud's build-specific artifact URL. General Config prefers `CRAFT_CLOUD_ARTIFACT_BASE_URL`, then derives the exact artifact URL from the Cloud environment and build IDs without initializing Cloud services during early bootstrap. Templates may safely fall back to `cloud.artifactUrl()` after Craft has bootstrapped. Do not add root-relative `/dist/...` references without an artifact URL or an explicit artifact rewrite.
+
+### Cloud email
+
+Craft Cloud has no built-in mail service. Copy the values for the transport selected during `make create` into every Cloud environment:
+
+```dotenv
+# Postmark
+POSTMARK_TOKEN=...
+
+# Or generic SMTP
+SMTP_HOSTNAME=smtp.example.com
+SMTP_PORT=587
+SMTP_USE_AUTH=true
+SMTP_USERNAME=...
+SMTP_PASSWORD=...
+```
+
+If email setup was skipped, configure Postmark or SMTP locally first and commit the resulting `config/project/` changes. The local Mailpit transport is not a production transport.
+
+### Cloud filesystems and assets
+
+Before uploading production assets:
+
+1. Create or convert each filesystem to the **Cloud** type locally.
+2. Give every filesystem a unique Cloud subpath and configure its Local Filesystem fallback path/URL.
+3. Commit the generated Project Config.
+4. Upload the initial library to the matching `assets/` subpath in the environment bucket, then let Craft manage it.
+
+Local filesystems do not work on Craft Cloud. The filesystem itself needs no Cloud credentials; the runtime supplies them.
+
+### Rebrand assets
+
+Set `CRAFT_REBRAND_PATH=@root/storage/rebrand` in every Cloud environment. The generated local `.env` uses the same value, and that directory is tracked, so the login logo and site icon are included in every deployment. Change the value only if a project intentionally relocates the rebrand directory.
+
+### Static caching and dynamic content
+
+The base layout does not read a CSRF token or session. Use `csrfInput()` in frontend forms and avoid `craft.app.request.csrfToken`, unconditional flash access, or personalized session content in cacheable templates. Explicitly opt dynamic pages out with `{% expires %}`, or isolate dynamic regions with Ajax. Craft Cloud ESI is available for a small number of server-rendered fragments, but is not enabled globally by this starter.
+
+Selected plugins must independently support Craft Cloud's ephemeral filesystem. The starter does not rewrite plugin behavior; complete each plugin's Cloud compatibility work before marking it Cloud-tested.
 
 ## LindemannRock plugins
 
@@ -206,9 +250,9 @@ at minimum. The build only needs Craft to boot enough to resolve asset URLs.
 
 `CRAFT_SECURITY_KEY` is empty. Set it via the hosting dashboard.
 
-### "Sending email over sendmail is disabled on Servd"
+### Sendmail is unavailable on the managed host
 
-Servd doesn't support Sendmail. Set either `POSTMARK_TOKEN` (install the Postmark plugin) or `SMTP_HOSTNAME` with SMTP credentials.
+Servd and Craft Cloud require an external transport. Set `POSTMARK_TOKEN` (with the Postmark plugin installed) or the `SMTP_*` variables matching the mailer stored in Project Config.
 
 ### Redis connection refused
 
