@@ -209,10 +209,6 @@ export function generateEnvFile({
 	if (hostingValue !== 'servd') {
 		content = removeSection(content, '# Servd Asset Storage');
 	}
-	if (hostingValue === 'craft-cloud') {
-		// Cloud runs its own queue workers
-		content = setEnvKey(content, 'CRAFT_RUN_QUEUE_AUTOMATICALLY', 'false');
-	}
 
 	// Collapse multiple blank lines left behind by removals
 	content = content.replace(/\n{3,}/g, '\n\n');

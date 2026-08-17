@@ -327,7 +327,7 @@ The installer tailors the project to your selections so you don't end up with de
 ### Hosting
 
 - **Servd** → `servd/craft-asset-storage` installed, credentials + base URL prompted (or scaffolded as `# TODO:` placeholders if you don't have them yet — run `make verify` before deploy), optional custom CDN/image-transform domains, `SERVD_BASE_URL` auto-derived from project slug. Servd sub-prompt also offers Postmark/SMTP as email fallback
-- **Craft Cloud** → `craftcms/cloud` installed, `craft-cloud.yaml` generated with the selected PHP version (Node 22, `npm run build`), `web/dist` ignored, critical SSI disabled, and `CRAFT_RUN_QUEUE_AUTOMATICALLY=false`. Production email is prompted because Cloud has no built-in mail service
+- **Craft Cloud** → `craftcms/cloud` installed, `craft-cloud.yaml` generated with the selected PHP version (Node 22, `npm run build`), `web/dist` ignored, and critical SSI disabled. `CRAFT_RUN_QUEUE_AUTOMATICALLY` remains `true` like every other generated project; the Cloud extension manages the runtime queue. Production email is prompted because Cloud has no built-in mail service
 - **None / self-hosted** → no hosting plugin, Servd section removed from `.env`
 
 ### Email transport

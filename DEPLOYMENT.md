@@ -54,7 +54,7 @@ The handle is uppercased (`en` → `_EN`). These are referenced by Craft's proje
 | `CRAFT_ALLOW_UPDATES` | `true` | `false` | `false` |
 | `CRAFT_DISALLOW_ROBOTS` | `true` | `true` | `false` |
 | `CRAFT_IS_SYSTEM_LIVE` | `true` | `true` | `true` |
-| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true` | `false` (Servd/Cloud) | `false` (Servd/Cloud) |
+| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true` | `true` | `true` |
 | `CRAFT_TIMEZONE` | `UTC` or other | same | same |
 | `PRIMARY_SITE_URL` | `https://{project}.ddev.site` | staging URL | production URL |
 
@@ -133,7 +133,7 @@ SERVD_PROJECT_SLUG=your-project-slug
 SERVD_SECURITY_KEY=your-security-key
 SERVD_BASE_URL=https://your-project-slug.files.svdcdn.com
 SERVD_ASSETS_ENVIRONMENT=staging   # or production
-CRAFT_RUN_QUEUE_AUTOMATICALLY=false
+CRAFT_RUN_QUEUE_AUTOMATICALLY=true
 ```
 
 If you configured custom asset domains during `make create`:

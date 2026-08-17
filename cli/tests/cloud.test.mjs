@@ -72,4 +72,11 @@ describe('Cloud-safe project templates', () => {
 		const envTemplate = fs.readFileSync(path.join(root, 'cli/templates/env.example'), 'utf8');
 		expect(envTemplate).toContain('CRAFT_REBRAND_PATH=@root/storage/rebrand');
 	});
+
+	it('keeps automatic queue processing enabled for every generated project', () => {
+		const envTemplate = fs.readFileSync(path.join(root, 'cli/templates/env.example'), 'utf8');
+		const envAction = fs.readFileSync(path.join(root, 'cli/actions/env.mjs'), 'utf8');
+		expect(envTemplate).toContain('CRAFT_RUN_QUEUE_AUTOMATICALLY=true');
+		expect(envAction).not.toContain("setEnvKey(content, 'CRAFT_RUN_QUEUE_AUTOMATICALLY', 'false')");
+	});
 });
