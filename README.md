@@ -296,7 +296,15 @@ Craft's built-in settings use `CRAFT_*` env vars (`CRAFT_DEV_MODE`, `CRAFT_TIMEZ
 
 The starter repository temporarily ignores `config/project/` because it does not yet ship a fixed baseline. During `make create`, the CLI removes that ignore rule before Craft generates the downstream project's configuration. Commit the generated `config/project/` directory so plugin and schema changes are applied consistently on Craft Cloud, Servd, and other deployment targets.
 
-Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (hosting, PHP/database selection, sites, Redis, plugin packages and editions, and translation category). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
+Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (Craft profile and release channel, hosting, PHP/database selection, sites, Redis, plugin packages and editions, and translation category). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
+
+### Versioned Craft profiles
+
+Framework-specific assumptions live in `cli/config/craft-profiles.mjs`: Composer requirements, PHP compatibility, DDEV type/docroot, project paths, database environment keys, core plugin handles, and plugin-install commands. Only complete profiles are exposed to the installer; currently that is `craft5` on the `stable` release channel. Once another complete profile or channel is registered, `make create` automatically asks for it before the project-specific questions.
+
+Project architecture and release stability are deliberately separate. A future `craft6` profile can describe Laravel-era paths and dependencies once it is complete, while `stable`, `beta`, or `alpha` channels can select different Composer constraints without duplicating that scaffold. Legacy plugin registry entries are treated as Craft 5-only; future entries can add per-major overrides through a `craft` map.
+
+A new Craft major becomes selectable only after its profile is complete and tested. At minimum, it must define its PHP/database compatibility, Composer packages, DDEV layout, generated paths and env template, core plugins, command adapters, project configurator, and edition inspector. Plugin and hosting entries must then opt into that major explicitly. This fail-closed approach prevents an experimental or partially ported profile from appearing in production project setup.
 
 ## What `make create` does differently based on your choices
 
