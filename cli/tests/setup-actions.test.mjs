@@ -6,7 +6,7 @@ import { updateComposer } from '../actions/composer.mjs';
 import { syncRebrandAssets } from '../actions/assets.mjs';
 import { updateDdevConfig } from '../actions/ddev.mjs';
 import { updatePackageJson } from '../actions/packageJson.mjs';
-import { buildCraftInstallCommand } from '../actions/install.mjs';
+import { buildCraftInstallCommand, cleanInstallArtifacts } from '../actions/install.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from '../actions/sites.mjs';
 import { cleanUnusedPluginConfigs, pluginInstallArgs, validatePluginEditions } from '../actions/plugins.mjs';
 import { HOSTING_OPTIONS, LR_PLUGINS, THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
@@ -116,6 +116,23 @@ describe('Craft install commands', () => {
 		expect(command).toContain('--siteName=');
 		expect(command).toContain('--siteUrl=');
 		expect(command).not.toContain('--site-name=');
+	});
+
+	it('cleans host dependency artifacts before installing inside DDEV', () => {
+		const root = tempProject();
+		for (const directory of ['node_modules', 'vendor', 'config/project']) {
+			fs.mkdirSync(path.join(root, directory), { recursive: true });
+			fs.writeFileSync(path.join(root, directory, '.stale'), 'stale');
+		}
+		for (const lockFile of ['composer.lock', 'package-lock.json']) {
+			fs.writeFileSync(path.join(root, lockFile), '{}');
+		}
+
+		cleanInstallArtifacts({ root, craftProfile: 'craft5' });
+
+		for (const artifact of ['node_modules', 'vendor', 'config/project', 'composer.lock', 'package-lock.json']) {
+			expect(fs.existsSync(path.join(root, artifact))).toBe(false);
+		}
 	});
 });
 

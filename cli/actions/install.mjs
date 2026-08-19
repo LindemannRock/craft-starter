@@ -37,6 +37,27 @@ function isCraftInstalled(craftProfile) {
 	}
 }
 
+/**
+ * Remove generated install artifacts before dependencies are resolved inside
+ * DDEV. In particular, a host-created node_modules directory can contain
+ * native packages for macOS that npm will otherwise reuse in Linux.
+ */
+export function cleanInstallArtifacts({ root = ROOT, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const projectDir = craftProjectPath(root, 'projectConfig', profile);
+
+	if (fs.existsSync(projectDir)) {
+		fs.rmSync(projectDir, { recursive: true });
+	}
+
+	for (const artifact of ['composer.lock', 'package-lock.json', 'vendor', 'node_modules']) {
+		const artifactPath = path.join(root, artifact);
+		if (fs.existsSync(artifactPath)) {
+			fs.rmSync(artifactPath, { recursive: true });
+		}
+	}
+}
+
 export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedisCache, craftProfile }) {
 	const profile = resolveCraftProfile(craftProfile);
 
@@ -52,21 +73,7 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 		// The .env file is already written by generateEnvFile() in the orchestrator.
 		{
 			msg: 'Cleaning stale artifacts',
-			fn: () => {
-				// Clear stale project config from previous runs
-				const projectDir = craftProjectPath(ROOT, 'projectConfig', profile);
-				if (fs.existsSync(projectDir)) {
-					fs.rmSync(projectDir, { recursive: true });
-				}
-
-				// Clear stale lock files (composer.json just changed)
-				for (const lockFile of ['composer.lock', 'package-lock.json']) {
-					const lockPath = path.join(ROOT, lockFile);
-					if (fs.existsSync(lockPath)) {
-						fs.rmSync(lockPath);
-					}
-				}
-			},
+			fn: () => cleanInstallArtifacts({ craftProfile: profile }),
 		},
 	];
 
