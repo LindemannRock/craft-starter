@@ -62,6 +62,11 @@ export async function promptPluginEditions(plugins) {
 }
 
 export async function promptHosting(catalog = HOSTING_OPTIONS) {
+	if (catalog.length === 0) {
+		throw new Error('No hosting options are compatible with the selected Craft profile.');
+	}
+	if (catalog.length === 1) return catalog[0];
+
 	const hosting = await p.select({
 		message: 'Hosting provider',
 		options: catalog.map((h) => ({

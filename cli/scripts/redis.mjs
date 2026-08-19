@@ -19,6 +19,7 @@ import { cancel } from '../utils/cancel.mjs';
 import { checkPrerequisites } from '../utils/preflight.mjs';
 import { run } from '../utils/run.mjs';
 import { readSetupManifest } from '../actions/setupManifest.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 import {
 	buildRedisEnableSteps,
 	buildRedisRemoveSteps,
@@ -117,6 +118,12 @@ async function main() {
 	checkPrerequisites({ retryCommand: 'make redis' });
 
 	const craft = readSetupManifest()?.craft;
+	const profile = resolveCraftProfile(craft);
+	if (!profile.features.redis) {
+		p.log.warn(`Redis management is not enabled yet for the experimental ${profile.label} profile.`);
+		p.outro('No project files were changed.');
+		process.exit(0);
+	}
 	const state = getRedisState({ craftProfile: craft, craftReleaseChannel: craft?.channel });
 	p.log.info(`Current state: ${pc.bold(stateLabel(state))}`);
 

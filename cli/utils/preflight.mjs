@@ -23,7 +23,7 @@ import { ROOT } from '../paths.mjs';
 
 const MIN_NODE_MAJOR = 22;
 
-export function checkPrerequisites({ retryCommand = 'make create' } = {}) {
+export function checkPrerequisites({ retryCommand = 'make create', requireComposer = false } = {}) {
 	const problems = [];
 
 	// -- Node version --------------------------------------------------------
@@ -57,6 +57,14 @@ export function checkPrerequisites({ retryCommand = 'make create' } = {}) {
 			name: 'DDEV is not installed',
 			detail: 'The starter uses DDEV for local development',
 			fix: 'Install: https://ddev.com/quickstart/\nmacOS: `brew install ddev/ddev/ddev`',
+		});
+	}
+
+	if (requireComposer && !commandExists('composer')) {
+		problems.push({
+			name: 'Composer is not installed on the host',
+			detail: 'The experimental Craft profile uses Composer to download its official application scaffold',
+			fix: 'Install Composer: https://getcomposer.org/download/',
 		});
 	}
 

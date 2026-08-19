@@ -56,32 +56,46 @@ export function generateEnvFile({
 
 	const siteUrlBase = `https://${project.name}.ddev.site`;
 	const siteName = project.description || project.name;
+	const applicationEnv = profile.env.application;
+	const mailEnv = profile.env.mail;
 
-	const updates = {
-		// Craft core — generated fresh each run
-		CRAFT_APP_ID: generateAppId(),
-		CRAFT_SECURITY_KEY: serializeEnvValue(generateSecurityKey()),
-
-		// Craft general config (auto-read from CRAFT_* prefix)
-		CRAFT_TIMEZONE: project.timezone,
-		CRAFT_CP_TRIGGER: project.cpTrigger || 'cms',
-
-		// System
-		SYSTEM_NAME: serializeEnvValue(siteName),
-		SYSTEM_SENDER_NAME: serializeEnvValue(siteName),
-		SYSTEM_EMAIL: serializeEnvValue(project.systemEmail),
-		SYSTEM_EMAIL_REPLY_TO: serializeEnvValue(project.noReplyEmail || project.systemEmail),
-
-		// Site URLs (dev only — staging/production are set via the hosting dashboard)
-		PRIMARY_SITE_URL: siteUrlBase,
-		PRIMARY_SITE_LANGUAGE: sites[0]?.language || project.language,
-		PRIMARY_TRANSLATION_CATEGORY: translationCategory,
-
-		// Vite dev server
-		VITE_DEV_SERVER_PUBLIC: `${siteUrlBase}:3000/`,
-		VITE_DEV_SERVER_INTERNAL: 'http://localhost:3000/',
-		CRAFT_TEST_TO_EMAIL_ADDRESS: serializeEnvValue(project.adminEmail),
+	const updates = {};
+	const setUpdate = (key, value) => {
+		if (key) updates[key] = value;
 	};
+
+	// Application identity differs between the Craft 5 Yii application and
+	// Craft 6's Laravel host, but both are described by the active profile.
+	setUpdate(applicationEnv.id, generateAppId());
+	setUpdate(applicationEnv.key, serializeEnvValue(`${applicationEnv.keyPrefix || ''}${generateSecurityKey()}`));
+	setUpdate(applicationEnv.name, serializeEnvValue(siteName));
+	setUpdate(applicationEnv.environment, 'local');
+	setUpdate(applicationEnv.debug, 'true');
+	setUpdate(applicationEnv.url, siteUrlBase);
+	setUpdate(applicationEnv.locale, sites[0]?.language || project.language);
+
+	// Craft general config remains CRAFT_* based in both supported profiles.
+	setUpdate('CRAFT_TIMEZONE', project.timezone);
+	setUpdate('CRAFT_CP_TRIGGER', project.cpTrigger || 'cms');
+
+	// Project Config and template variables.
+	setUpdate('SYSTEM_NAME', serializeEnvValue(siteName));
+	setUpdate(mailEnv.fromName, serializeEnvValue(siteName));
+	setUpdate(mailEnv.fromAddress, serializeEnvValue(project.systemEmail));
+	setUpdate(mailEnv.replyTo, serializeEnvValue(project.noReplyEmail || project.systemEmail));
+
+	// Site URLs (dev only — staging/production are set via the hosting dashboard).
+	setUpdate('PRIMARY_SITE_URL', siteUrlBase);
+	setUpdate('PRIMARY_SITE_LANGUAGE', sites[0]?.language || project.language);
+	setUpdate('PRIMARY_TRANSLATION_CATEGORY', translationCategory);
+
+	// Optional Craft 5 Vite bridge values are only written when the selected
+	// profile's template contains them.
+	if (/^VITE_DEV_SERVER_PUBLIC=/m.test(content)) {
+		setUpdate('VITE_DEV_SERVER_PUBLIC', `${siteUrlBase}:3000/`);
+		setUpdate('VITE_DEV_SERVER_INTERNAL', 'http://localhost:3000/');
+	}
+	setUpdate('CRAFT_TEST_TO_EMAIL_ADDRESS', serializeEnvValue(project.adminEmail));
 	updates[profile.env.database.driver] = database.craftDriver;
 	updates[profile.env.database.port] = database.craftPort;
 	updates[profile.env.database.schema] = database.craftSchema;
@@ -113,12 +127,13 @@ export function generateEnvFile({
 
 	// SMTP credentials (e.g. Servd SMTP or any other SMTP provider)
 	if (smtpCredentials) {
-		updates.SMTP_HOSTNAME = serializeEnvValue(smtpCredentials.host);
-		updates.SMTP_PORT = smtpCredentials.port;
-		updates.SMTP_USERNAME = serializeEnvValue(smtpCredentials.username || '');
-		updates.SMTP_PASSWORD = serializeEnvValue(smtpCredentials.password || '');
-		updates.SMTP_USE_AUTH = smtpCredentials.useAuth ? 'true' : 'false';
-		updates.SMTP_ENCRYPTION_METHOD = serializeEnvValue(smtpCredentials.encryption || '');
+		setUpdate(mailEnv.mailer, 'smtp');
+		setUpdate(mailEnv.host, serializeEnvValue(smtpCredentials.host));
+		setUpdate(mailEnv.port, smtpCredentials.port);
+		setUpdate(mailEnv.username, serializeEnvValue(smtpCredentials.username || ''));
+		setUpdate(mailEnv.password, serializeEnvValue(smtpCredentials.password || ''));
+		setUpdate(mailEnv.useAuth, smtpCredentials.useAuth ? 'true' : 'false');
+		setUpdate(mailEnv.scheme, serializeEnvValue(smtpCredentials.encryption || ''));
 	}
 
 	// Apply all scalar updates

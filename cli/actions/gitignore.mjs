@@ -16,6 +16,8 @@ import { ROOT } from '../paths.mjs';
 import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 const LOCK_FILES_SECTION_REGEX = /\n# Lock files — TEMPORARY[\s\S]*?\/package-lock\.json\n/;
+const PROJECT_CONFIG_SECTION_REGEX = /\n# Project config — TEMPORARY[\s\S]*?\/config\/(?:craft\/)?project\/\n/;
+const MANAGED_BUILD_SECTION_REGEX = /\n# Build files\n\/(?:web\/dist|public\/build)\/\n/;
 
 export function updateGitignore({ commitBuildFiles = true, craftProfile, root = ROOT } = {}) {
 	const profile = resolveCraftProfile(craftProfile);
@@ -23,6 +25,7 @@ export function updateGitignore({ commitBuildFiles = true, craftProfile, root = 
 	if (!fs.existsSync(gitignore)) return;
 	let content = fs.readFileSync(gitignore, 'utf-8');
 	content = stripStarterOnlyIgnores(content, { craftProfile: profile });
+	content = setPlatformPaths(content, { craftProfile: profile });
 	content = setBuildFilesIgnored(content, !commitBuildFiles, { craftProfile: profile });
 	// Collapse any extra blank lines left behind
 	content = content.replace(/\n{3,}/g, '\n\n');
@@ -36,13 +39,28 @@ export function updateGitignore({ commitBuildFiles = true, craftProfile, root = 
  */
 
 export function stripStarterOnlyIgnores(content, { craftProfile } = {}) {
-	const profile = resolveCraftProfile(craftProfile);
-	const projectConfig = escapeRegex(`/${profile.paths.projectConfig}/`);
-	const projectConfigSection = new RegExp(`\\n# Project config — TEMPORARY[\\s\\S]*?${projectConfig}\\n`);
+	resolveCraftProfile(craftProfile);
 	return content
 		.replace(LOCK_FILES_SECTION_REGEX, '\n')
-		.replace(projectConfigSection, '\n')
+		.replace(PROJECT_CONFIG_SECTION_REGEX, '\n')
 		.replace(/\n{3,}/g, '\n\n');
+}
+
+/** Switch generator-owned runtime and license paths to the selected architecture. */
+export function setPlatformPaths(content, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const publicPath = profile.paths.public;
+	const licenseLine = `/${profile.paths.licenseKey}`;
+
+	content = content
+		.replace(/^\/config\/(?:craft\/)?license\.key\n?/gm, '')
+		.replace(/^(# Craft CMS\n)/m, `$1${licenseLine}\n`);
+
+	for (const directory of ['assets', 'cpresources', 'cache', 'transforms']) {
+		content = content.replace(new RegExp(`^/(?:web|public)/${directory}/\\*`, 'm'), `/${publicPath}/${directory}/*`);
+	}
+
+	return content;
 }
 
 export function setBuildFilesIgnored(content, ignored, { craftProfile } = {}) {
@@ -50,8 +68,9 @@ export function setBuildFilesIgnored(content, ignored, { craftProfile } = {}) {
 	const buildLine = `/${profile.paths.build}/`;
 	const escapedBuildLine = escapeRegex(buildLine);
 	const buildFilesSection = new RegExp(`\\n# Build files\\n${escapedBuildLine}\\n`);
+	content = content.replace(MANAGED_BUILD_SECTION_REGEX, '\n');
 	if (!ignored) {
-		return content.replace(buildFilesSection, '\n');
+		return content;
 	}
 	if (buildFilesSection.test(content) || new RegExp(`^${escapedBuildLine}$`, 'm').test(content)) {
 		return content;

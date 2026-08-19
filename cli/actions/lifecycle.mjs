@@ -5,7 +5,7 @@ import path from 'path';
 import { execFileSync } from 'child_process';
 import { ROOT, CLI_DIR } from '../paths.mjs';
 import { removeRedisAddonFiles } from './redis.mjs';
-import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
+import { DEFAULT_CRAFT_PROFILE, craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 export function deleteDdevProject({ root = ROOT } = {}) {
 	try {
@@ -36,10 +36,23 @@ export function nukeRuntime({ root = ROOT, deleteDdev = true, craftProfile } = {
 		path.join(root, 'vendor'),
 		path.join(root, 'node_modules'),
 		craftProjectPath(root, 'build', profile),
-		path.join(root, 'storage', 'logs'),
-		path.join(root, 'storage', 'runtime'),
 	]) {
 		fs.rmSync(target, { recursive: true, force: true });
+	}
+	for (const directory of profile.paths.runtimeDirectories) {
+		clearRuntimeDirectory(path.join(root, directory));
+	}
+}
+
+function clearRuntimeDirectory(directory) {
+	if (!fs.existsSync(directory)) return;
+	const keepGitignore = fs.existsSync(path.join(directory, '.gitignore'));
+	if (!keepGitignore) {
+		fs.rmSync(directory, { recursive: true, force: true });
+		return;
+	}
+	for (const entry of fs.readdirSync(directory)) {
+		if (entry !== '.gitignore') fs.rmSync(path.join(directory, entry), { recursive: true, force: true });
 	}
 }
 
@@ -58,7 +71,7 @@ export function isOriginalStarterRepository({ root = ROOT } = {}) {
 
 /** Developer-only return to the committed starter scaffold. */
 export function resetStarterScaffold({ root = ROOT, craftProfile } = {}) {
-	const profile = resolveCraftProfile(craftProfile);
+	const activeProfile = resolveCraftProfile(craftProfile);
 	if (!isOriginalStarterRepository({ root })) {
 		throw new Error('starter-reset is only available in the original LindemannRock/craft-starter repository.');
 	}
@@ -70,13 +83,20 @@ export function resetStarterScaffold({ root = ROOT, craftProfile } = {}) {
 		'.gitignore',
 		'composer.json',
 		'package.json',
-		profile.paths.generalConfig,
-		profile.paths.viteConfig,
-		profile.paths.criticalPartial,
-		`${profile.paths.templates}/_layouts/global-variables.twig`,
+		'bootstrap.php',
+		'craft',
+		'config',
+		'templates',
+		'translations',
+		'web',
+		'storage/.gitignore',
 	];
 	execFileSync('git', ['restore', '--source=HEAD', '--', ...tracked], { cwd: root, stdio: 'inherit' });
+	for (const target of activeProfile.scaffold?.cleanup || []) {
+		fs.rmSync(path.join(root, target), { recursive: true, force: true });
+	}
 
+	const profile = DEFAULT_CRAFT_PROFILE;
 	resetProject({ root, deleteDdev: false, craftProfile: profile });
 	nukeRuntime({ root, deleteDdev: false, craftProfile: profile });
 	removeRedisAddonFiles({ root });

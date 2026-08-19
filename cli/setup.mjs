@@ -47,6 +47,7 @@ import {
 import { resetProject } from './actions/lifecycle.mjs';
 import { buildInstallSteps } from './actions/install.mjs';
 import { syncRebrandAssets } from './actions/assets.mjs';
+import { applyPlatformScaffold } from './actions/platform.mjs';
 import { intro, showConfigurationSummary, outro } from './ui.mjs';
 import fs from 'fs';
 import { cancel } from './utils/cancel.mjs';
@@ -73,16 +74,28 @@ async function collectSitesAndFeatures(state) {
 	state.sites = await promptSites(state.project?.description || state.project?.name, {
 		cpTrigger: state.project?.cpTrigger || 'cms',
 	});
-	const redis = await promptRedis();
-	state.useRedisCache = redis.useRedisCache;
-	state.useRedisSession = redis.useRedisSession;
-	state.useCritical = await promptCritical();
+	if (state.craftProfile.features.redis) {
+		const redis = await promptRedis();
+		state.useRedisCache = redis.useRedisCache;
+		state.useRedisSession = redis.useRedisSession;
+	} else {
+		state.useRedisCache = false;
+		state.useRedisSession = false;
+		p.log.info(`Redis setup is not enabled yet for the experimental ${state.craftProfile.label} profile.`);
+	}
+	state.useCritical = state.craftProfile.features.criticalCss ? await promptCritical() : false;
 	state.commitBuildFiles = await promptBuildFiles({ craftProfile: state.craftProfile });
 }
 
 async function collectPlugins(state) {
 	const lrCatalog = pluginsForCraftProfile(LR_PLUGINS, state.craftProfile);
 	const thirdPartyCatalog = pluginsForCraftProfile(THIRD_PARTY_PLUGINS, state.craftProfile);
+	if (!state.craftProfile.features.plugins) {
+		state.selectedLr = [];
+		state.selectedTp = [];
+		p.log.info(`Plugin selection is disabled while ${state.craftProfile.label} compatibility is being verified.`);
+		return;
+	}
 	state.selectedLr = await promptLrPlugins(lrCatalog);
 	state.selectedTp = await promptThirdPartyPlugins(thirdPartyCatalog);
 
@@ -161,7 +174,7 @@ async function main() {
 	const previousManifest = readSetupManifest();
 	const activeCraftProfile = resolveCraftProfile(previousManifest?.craft || DEFAULT_CRAFT_PROFILE);
 	const activeCraftReleaseChannel = previousManifest?.craft?.channel || activeCraftProfile.release.defaultChannel;
-	let chooseCraftPlatform = !previousManifest;
+	const chooseCraftPlatform = !previousManifest;
 
 	// Detect existing project — .env is written on first run.
 	// `make create` is scoped to first-run scaffolding only; re-runs would
@@ -181,7 +194,7 @@ async function main() {
 				{
 					value: 'reset',
 					label: 'Full reset and create again',
-					hint: 'wipe local DB + .env + generated Project Config',
+					hint: `wipe local DB + .env + generated Project Config; keep ${activeCraftProfile.label}`,
 				},
 				{ value: 'cancel', label: pc.red('Cancel') },
 			],
@@ -217,7 +230,6 @@ async function main() {
 			s.stop('Reset complete');
 
 			p.log.info('Starting fresh scaffold...');
-			chooseCraftPlatform = true;
 			// Fall through to the normal create flow below
 		}
 	}
@@ -228,6 +240,9 @@ async function main() {
 				initialChannel: activeCraftReleaseChannel,
 			})
 		: { profile: activeCraftProfile, channel: activeCraftReleaseChannel };
+	if (craftPlatform.profile.scaffold) {
+		checkPrerequisites({ requireComposer: true });
+	}
 
 	const state = {
 		craftProfile: craftPlatform.profile,
@@ -336,6 +351,12 @@ async function main() {
 	// an interrupted run can be resumed with the exact plugin editions.
 	writeSetupManifest(buildSetupManifest(state, { status: 'pending' }));
 
+	if (craftProfile.scaffold) {
+		s.start(`Materializing ${craftProfile.label} application scaffold`);
+		applyPlatformScaffold({ craftProfile });
+		s.stop(`${craftProfile.label} application scaffold ready`);
+	}
+
 	s.start('Updating composer.json');
 	updateComposer({
 		selectedLr,
@@ -349,7 +370,7 @@ async function main() {
 
 	s.start('Updating package.json');
 	const hasIconManager = [...selectedLr, ...selectedTp].some((pl) => pl.handle === 'icon-manager');
-	updatePackageJson(project, { useCritical, hasIconManager });
+	updatePackageJson(project, { useCritical, hasIconManager, craftProfile });
 	s.stop('package.json updated');
 
 	// Clear any stale DDEV registration BEFORE updating config.yaml — `ddev delete`
@@ -376,7 +397,9 @@ async function main() {
 	}
 
 	s.start('Applying critical-CSS choice');
-	const preservedCriticalPartial = applyCriticalCssChoice(useCritical, { craftProfile });
+	const preservedCriticalPartial = craftProfile.features.criticalCss
+		? applyCriticalCssChoice(useCritical, { craftProfile })
+		: null;
 	s.stop('Critical-CSS choice applied');
 	if (preservedCriticalPartial)
 		p.log.warn(`Preserved customized ${preservedCriticalPartial}; review it against the new critical-CSS choice.`);
@@ -447,7 +470,7 @@ async function main() {
 	for (const translation of preservedTranslations) p.log.warn(`Preserved customized ${translation}.`);
 
 	// Copy CP rebrand assets (login logo + site icon)
-	syncRebrandAssets({ craftProfile, overwrite: true });
+	if (craftProfile.features.rebrandAssets) syncRebrandAssets({ craftProfile, overwrite: true });
 
 	// Write sites config for the PHP project config script to read
 	const tmpDir = `${ROOT}/cli/tmp`;

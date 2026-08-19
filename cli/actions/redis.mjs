@@ -90,7 +90,7 @@ export function deleteRedisEnvironment({ root = ROOT } = {}) {
 
 /** Detect complete, disabled, and mixed/partial Redis installations. */
 export function getRedisState({ root = ROOT, craftProfile, craftReleaseChannel } = {}) {
-	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
+	const redisPackage = requireRedisPackage(craftProfile, craftReleaseChannel);
 	const envPath = path.join(root, '.env');
 	const composerPath = path.join(root, 'composer.json');
 	const env = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
@@ -130,7 +130,7 @@ export function getRedisState({ root = ROOT, craftProfile, craftReleaseChannel }
 
 /** Commands needed to enable or repair infrastructure for the detected state. */
 export function buildRedisEnableSteps(state, { craftProfile, craftReleaseChannel } = {}) {
-	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
+	const redisPackage = requireRedisPackage(craftProfile, craftReleaseChannel);
 	const steps = [];
 	if (!state.addonInstalled) {
 		steps.push({ msg: 'Installing DDEV Redis add-on', cmd: 'ddev add-on get ddev/ddev-redis' });
@@ -147,7 +147,7 @@ export function buildRedisEnableSteps(state, { craftProfile, craftReleaseChannel
 
 /** Commands needed after `.env` has been deactivated during full removal. */
 export function buildRedisRemoveSteps(state, { craftProfile, craftReleaseChannel } = {}) {
-	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
+	const redisPackage = requireRedisPackage(craftProfile, craftReleaseChannel);
 	const steps = [];
 	if (state.packageInstalled) {
 		steps.push({ msg: 'Starting DDEV', cmd: 'ddev start' });
@@ -161,6 +161,14 @@ export function buildRedisRemoveSteps(state, { craftProfile, craftReleaseChannel
 		steps.push({ msg: 'Restarting DDEV without Redis', cmd: 'ddev restart' });
 	}
 	return steps;
+}
+
+function requireRedisPackage(craftProfile, craftReleaseChannel) {
+	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
+	if (!redisPackage) {
+		throw new Error('Redis management is not supported by the selected Craft profile yet.');
+	}
+	return redisPackage;
 }
 
 /** Remove only files owned by the official DDEV Redis add-on. */

@@ -69,7 +69,7 @@ export function pluginInstallArgs({ handle, edition }, { craftProfile } = {}) {
 	const profile = resolveCraftProfile(craftProfile);
 	const args = ['exec', ...profile.commands.pluginInstall, handle];
 	if (edition) args.push(edition);
-	args.push('--interactive=0');
+	args.push(profile.commands.installOptions.nonInteractive);
 	return args;
 }
 

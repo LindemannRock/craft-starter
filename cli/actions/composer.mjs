@@ -26,6 +26,10 @@ export function updateComposer(
 	const composer = JSON.parse(fs.readFileSync(composerPath, 'utf-8'));
 	const profile = resolveCraftProfile(craftProfile);
 	const platform = composerConfigForCraftProfile(profile, craftReleaseChannel);
+	// A separate framework scaffold owns its Composer application metadata.
+	// The default Craft 5 profile keeps existing scripts/autoload additions
+	// intact when a project is reset and created again.
+	if (profile.scaffold) applyProjectComposer(composer, platform.project);
 
 	composer.require ??= {};
 	composer['require-dev'] ??= {};
@@ -46,7 +50,7 @@ export function updateComposer(
 	Object.assign(composer['require-dev'], platform.requireDev);
 
 	// Optional infrastructure
-	if (useRedisCache) {
+	if (useRedisCache && platform.redis) {
 		composer.require[platform.redis.name] = platform.redis.version;
 	}
 
@@ -62,4 +66,26 @@ export function updateComposer(
 	}
 
 	fs.writeFileSync(composerPath, JSON.stringify(composer, null, '\t') + '\n');
+}
+
+function applyProjectComposer(composer, project) {
+	setOrDelete(composer, 'autoload', normalizeAutoload(project.autoload));
+	setOrDelete(composer, 'autoload-dev', normalizeAutoload(project.autoloadDev));
+	setOrDelete(composer, 'scripts', project.scripts ? structuredClone(project.scripts) : null);
+	setOrDelete(composer, 'extra', project.extra ? structuredClone(project.extra) : null);
+
+	composer.config ??= {};
+	composer.config['allow-plugins'] = { ...project.allowPlugins };
+	composer.config['sort-packages'] = true;
+	composer.config['optimize-autoloader'] = true;
+}
+
+function normalizeAutoload(value) {
+	if (!value) return null;
+	return { 'psr-4': { ...value.psr4 } };
+}
+
+function setOrDelete(target, key, value) {
+	if (value === null) delete target[key];
+	else target[key] = value;
 }

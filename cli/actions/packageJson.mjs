@@ -10,17 +10,21 @@ import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
 import { OPTIONAL_DEV_DEPENDENCIES } from '../config/packages.mjs';
+import { allManagedFrontendPackages, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 export function updatePackageJson(
 	{ name, description },
-	{ useCritical = true, hasIconManager = false, root = ROOT } = {},
+	{ useCritical = true, hasIconManager = false, craftProfile, root = ROOT } = {},
 ) {
+	const profile = resolveCraftProfile(craftProfile);
 	const pkgPath = path.join(root, 'package.json');
 	const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 	pkg.name = name;
 	pkg.description = description || '';
 
 	pkg.devDependencies ??= {};
+	for (const packageName of allManagedFrontendPackages()) delete pkg.devDependencies[packageName];
+	Object.assign(pkg.devDependencies, profile.frontend.devDependencies);
 
 	toggleDevDep(pkg, 'rollup-plugin-critical', useCritical);
 	toggleDevDep(pkg, 'svgo', hasIconManager);

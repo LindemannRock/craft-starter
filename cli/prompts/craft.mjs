@@ -1,9 +1,8 @@
 /**
  * Select the Craft platform and release channel.
  *
- * With only one complete profile/channel this returns immediately, keeping
- * today's setup flow unchanged. Adding another complete entry to the profile
- * registry automatically exposes the relevant early setup prompt.
+ * Multiple profiles are selected before project-specific questions. An
+ * experimental profile requires a second explicit confirmation.
  */
 
 import * as p from '@clack/prompts';
@@ -31,6 +30,13 @@ export async function promptCraftPlatform({ initialProfile = DEFAULT_CRAFT_PROFI
 		});
 		if (p.isCancel(profileId)) cancel();
 		profile = resolveCraftProfile(profileId);
+	}
+	if (profile.experimental) {
+		const confirmed = await p.confirm({
+			message: `${profile.label} is experimental and may fail during setup. Continue?`,
+			initialValue: false,
+		});
+		if (p.isCancel(confirmed) || !confirmed) cancel('Experimental Craft setup cancelled.');
 	}
 
 	const channels = Object.entries(profile.release.channels);

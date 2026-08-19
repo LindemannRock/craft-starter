@@ -312,5 +312,6 @@ export const HOSTING_OPTIONS = [
 		label: 'None / Self-hosted',
 		hint: 'No hosting plugin',
 		packages: [],
+		craft: { 6: {} },
 	},
 ];

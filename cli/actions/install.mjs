@@ -31,7 +31,7 @@ function isCraftInstalled(craftProfile) {
 		})
 			.toString()
 			.trim();
-		return /^\d+\./.test(out);
+		return /\d+\./.test(out);
 	} catch {
 		return false;
 	}
@@ -39,8 +39,6 @@ function isCraftInstalled(craftProfile) {
 
 export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedisCache, craftProfile }) {
 	const profile = resolveCraftProfile(craftProfile);
-	const siteName = project.description || project.name;
-	const siteUrl = `https://${project.name}.ddev.site`;
 
 	const pluginPlan = [
 		...profile.plugins.coreHandles.map((handle) => ({ handle })),
@@ -88,15 +86,7 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 			msg: 'Installing Craft CMS',
 			fn: async () => {
 				if (isCraftInstalled(profile)) return 'skipped';
-				await run(
-					`ddev exec ${profile.commands.projectInstall.join(' ')}` +
-						` --interactive=0` +
-						` --email=${shellEscape(project.adminEmail)}` +
-						` --password=${shellEscape(project.adminPassword)}` +
-						` --site-name=${shellEscape(siteName)}` +
-						` --site-url=${shellEscape(siteUrl)}` +
-						` --language=${shellEscape(project.language)}`,
-				);
+				await run(buildCraftInstallCommand(project, { craftProfile: profile }));
 			},
 		},
 		{
@@ -115,4 +105,20 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 	);
 
 	return steps;
+}
+
+export function buildCraftInstallCommand(project, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const options = profile.commands.installOptions;
+	const siteName = project.description || project.name;
+	const siteUrl = `https://${project.name}.ddev.site`;
+	return (
+		`ddev exec ${profile.commands.projectInstall.join(' ')}` +
+		` ${options.nonInteractive}` +
+		` --email=${shellEscape(project.adminEmail)}` +
+		` --password=${shellEscape(project.adminPassword)}` +
+		` ${options.siteName}=${shellEscape(siteName)}` +
+		` ${options.siteUrl}=${shellEscape(siteUrl)}` +
+		` --language=${shellEscape(project.language)}`
+	);
 }

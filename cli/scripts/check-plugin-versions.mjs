@@ -53,7 +53,9 @@ const allPackages = [
 		source: 'core-dev',
 		channel: 'stable',
 	})),
-	{ name: platform.redis.name, version: platform.redis.version, source: 'core-optional', channel: 'stable' },
+	...(platform.redis
+		? [{ name: platform.redis.name, version: platform.redis.version, source: 'core-optional', channel: 'stable' }]
+		: []),
 	...lrPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: 'lr', channel: 'stable' })),
 	...thirdPartyPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: '3rd-party', channel: 'stable' })),
 	...hostingOptions.flatMap((h) =>

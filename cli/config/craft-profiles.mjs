@@ -3,8 +3,8 @@
  *
  * Generator code should read framework-specific dependencies, paths, and env
  * keys from this module rather than branching on a Craft major version. Only
- * complete profiles belong in CRAFT_PROFILES; an experimental future profile
- * can therefore never appear in `make create` accidentally.
+ * complete profiles belong in CRAFT_PROFILES. Experimental profiles must be
+ * explicitly labelled and keep unverified capabilities disabled.
  */
 
 import path from 'path';
@@ -16,6 +16,13 @@ export const CRAFT_PROFILES = Object.freeze({
 		id: 'craft5',
 		major: 5,
 		label: 'Craft CMS 5',
+		experimental: false,
+		features: Object.freeze({
+			plugins: true,
+			redis: true,
+			criticalCss: true,
+			rebrandAssets: true,
+		}),
 		release: Object.freeze({
 			defaultChannel: 'stable',
 			channels: Object.freeze({
@@ -84,6 +91,11 @@ export const CRAFT_PROFILES = Object.freeze({
 			setupKeys: Object.freeze(['php', 'craft', 'setup/keys']),
 			update: Object.freeze(['php', 'craft', 'update']),
 			resaveEntries: Object.freeze(['php', 'craft', 'resave/entries']),
+			installOptions: Object.freeze({
+				nonInteractive: '--interactive=0',
+				siteName: '--site-name',
+				siteUrl: '--site-url',
+			}),
 		}),
 		plugins: Object.freeze({
 			coreHandles: Object.freeze(['ckeditor', 'vite']),
@@ -101,10 +113,34 @@ export const CRAFT_PROFILES = Object.freeze({
 			criticalPartial: 'templates/_boilerplate/_partials/critical-css.twig',
 			translations: 'translations',
 			rebrand: 'storage/rebrand',
+			licenseKey: 'config/license.key',
+			runtimeDirectories: Object.freeze(['storage/logs', 'storage/runtime']),
 			envTemplate: 'cli/templates/env.example',
 			translationTemplate: 'cli/templates/translations/site.php',
 		}),
 		env: Object.freeze({
+			application: Object.freeze({
+				id: 'CRAFT_APP_ID',
+				key: 'CRAFT_SECURITY_KEY',
+				keyPrefix: '',
+				name: null,
+				environment: null,
+				debug: null,
+				url: null,
+				locale: null,
+			}),
+			mail: Object.freeze({
+				mailer: null,
+				host: 'SMTP_HOSTNAME',
+				port: 'SMTP_PORT',
+				username: 'SMTP_USERNAME',
+				password: 'SMTP_PASSWORD',
+				scheme: 'SMTP_ENCRYPTION_METHOD',
+				useAuth: 'SMTP_USE_AUTH',
+				fromAddress: 'SYSTEM_EMAIL',
+				fromName: 'SYSTEM_SENDER_NAME',
+				replyTo: 'SYSTEM_EMAIL_REPLY_TO',
+			}),
 			database: Object.freeze({
 				driver: 'CRAFT_DB_DRIVER',
 				server: 'CRAFT_DB_SERVER',
@@ -127,6 +163,257 @@ export const CRAFT_PROFILES = Object.freeze({
 				'yiisoft/yii2-shell': '^2.0.6',
 			}),
 			redis: Object.freeze({ name: 'yiisoft/yii2-redis', version: '^2.1.2' }),
+			project: Object.freeze({
+				autoload: Object.freeze({ psr4: Object.freeze({ 'modules\\': 'modules/' }) }),
+				autoloadDev: null,
+				scripts: null,
+				extra: null,
+				allowPlugins: Object.freeze({
+					'craftcms/plugin-installer': true,
+					'php-http/discovery': true,
+					'yiisoft/yii2-composer': true,
+				}),
+			}),
+		}),
+		frontend: Object.freeze({
+			devDependencies: Object.freeze({}),
+		}),
+		scaffold: null,
+	}),
+	craft6: Object.freeze({
+		id: 'craft6',
+		major: 6,
+		label: 'Craft CMS 6',
+		experimental: true,
+		features: Object.freeze({
+			plugins: false,
+			redis: false,
+			criticalCss: false,
+			rebrandAssets: false,
+		}),
+		release: Object.freeze({
+			defaultChannel: 'alpha',
+			channels: Object.freeze({
+				alpha: Object.freeze({
+					label: 'Alpha (experimental)',
+					hint: 'Scaffolding tests only — not for production',
+					composerRequire: Object.freeze({ 'craftcms/cms': '^6.0.0-alpha.16' }),
+				}),
+			}),
+		}),
+		php: Object.freeze({
+			default: '8.5',
+			options: Object.freeze([{ value: '8.5', label: '8.5', hint: 'Craft 6 alpha requirement' }]),
+		}),
+		database: Object.freeze({
+			default: 'mysql',
+			options: Object.freeze([
+				{
+					value: 'mysql',
+					label: 'MySQL 8.4',
+					hint: 'Craft 6 recommended local database',
+					ddevType: 'mysql',
+					ddevVersion: '8.4',
+					craftDriver: 'mysql',
+					craftPort: '3306',
+					craftSchema: '',
+				},
+				{
+					value: 'postgres',
+					label: 'PostgreSQL 18',
+					hint: 'Latest stable PostgreSQL',
+					ddevType: 'postgres',
+					ddevVersion: '18',
+					craftDriver: 'pgsql',
+					craftPort: '5432',
+					craftSchema: 'public',
+				},
+			]),
+		}),
+		ddev: Object.freeze({
+			projectType: 'laravel',
+			docroot: 'public',
+			uploadDirs: Object.freeze(['public/assets', 'storage']),
+		}),
+		commands: Object.freeze({
+			pluginInstall: Object.freeze(['php', 'craft', 'plugin:install']),
+			editionInspector: Object.freeze(['php', 'cli/scripts/inspect-plugin-editions-v6.php']),
+			projectConfigurator: Object.freeze(['php', 'cli/scripts/configure-project-v6.php']),
+			schemaVersion: Object.freeze(['php', 'cli/scripts/project-config-value-v6.php', 'system.schemaVersion']),
+			projectInstall: Object.freeze(['php', 'craft', 'install']),
+			projectUp: Object.freeze(['php', 'craft', 'up', '--no-interaction']),
+			setupKeys: Object.freeze(['php', 'artisan', 'key:generate']),
+			update: Object.freeze(['php', 'craft', 'update']),
+			resaveEntries: Object.freeze(['php', 'craft', 'resave:entries']),
+			installOptions: Object.freeze({
+				nonInteractive: '--no-interaction',
+				siteName: '--siteName',
+				siteUrl: '--siteUrl',
+			}),
+		}),
+		plugins: Object.freeze({
+			coreHandles: Object.freeze([]),
+		}),
+		paths: Object.freeze({
+			public: 'public',
+			build: 'public/build',
+			assets: 'public/assets',
+			templates: 'resources/views',
+			craftConfig: 'config/craft',
+			pluginConfig: 'config/craft',
+			generalConfig: 'config/craft/general.php',
+			viteConfig: 'vite.config.mjs',
+			projectConfig: 'config/craft/project',
+			criticalPartial: 'resources/views/_boilerplate/_partials/critical-css.twig',
+			translations: 'lang',
+			rebrand: 'storage/rebrand',
+			licenseKey: 'config/craft/license.key',
+			runtimeDirectories: Object.freeze([
+				'bootstrap/cache',
+				'storage/framework/cache/data',
+				'storage/framework/sessions',
+				'storage/framework/views',
+				'storage/inertia-devtools',
+				'storage/logs',
+				'storage/runtime',
+			]),
+			envTemplate: 'cli/templates/platforms/craft6/env.example',
+			translationTemplate: 'cli/templates/translations/site.php',
+		}),
+		env: Object.freeze({
+			application: Object.freeze({
+				id: null,
+				key: 'APP_KEY',
+				keyPrefix: 'base64:',
+				name: 'APP_NAME',
+				environment: 'APP_ENV',
+				debug: 'APP_DEBUG',
+				url: 'APP_URL',
+				locale: 'APP_LOCALE',
+			}),
+			mail: Object.freeze({
+				mailer: 'MAIL_MAILER',
+				host: 'MAIL_HOST',
+				port: 'MAIL_PORT',
+				username: 'MAIL_USERNAME',
+				password: 'MAIL_PASSWORD',
+				scheme: 'MAIL_SCHEME',
+				useAuth: null,
+				fromAddress: 'MAIL_FROM_ADDRESS',
+				fromName: 'MAIL_FROM_NAME',
+				replyTo: null,
+			}),
+			database: Object.freeze({
+				driver: 'DB_CONNECTION',
+				server: 'DB_HOST',
+				port: 'DB_PORT',
+				database: 'DB_DATABASE',
+				user: 'DB_USERNAME',
+				password: 'DB_PASSWORD',
+				schema: 'DB_SEARCH_PATH',
+				tablePrefix: 'DB_PREFIX',
+			}),
+		}),
+		composer: Object.freeze({
+			require: Object.freeze({
+				'laravel/framework': '^13.8',
+				'laravel/tinker': '^3.0',
+			}),
+			requireDev: Object.freeze({}),
+			redis: null,
+			project: Object.freeze({
+				autoload: Object.freeze({
+					psr4: Object.freeze({
+						'App\\': 'app/',
+						'Database\\Factories\\': 'database/factories/',
+						'Database\\Seeders\\': 'database/seeders/',
+					}),
+				}),
+				autoloadDev: Object.freeze({ psr4: Object.freeze({ 'Tests\\': 'tests/' }) }),
+				scripts: Object.freeze({
+					'post-autoload-dump': Object.freeze([
+						'Illuminate\\Foundation\\ComposerScripts::postAutoloadDump',
+						'@php artisan package:discover --ansi',
+						'@php artisan craft:setup:publish --ansi',
+					]),
+					'post-update-cmd': Object.freeze(['@php artisan vendor:publish --tag=laravel-assets --ansi --force']),
+					'pre-package-uninstall': Object.freeze(['Illuminate\\Foundation\\ComposerScripts::prePackageUninstall']),
+				}),
+				extra: Object.freeze({ laravel: Object.freeze({ 'dont-discover': Object.freeze([]) }) }),
+				allowPlugins: Object.freeze({
+					'craftcms/plugin-installer': true,
+					'php-http/discovery': true,
+				}),
+			}),
+		}),
+		frontend: Object.freeze({
+			devDependencies: Object.freeze({ 'laravel-vite-plugin': '^3.0.0' }),
+		}),
+		scaffold: Object.freeze({
+			package: 'craftcms/craft',
+			version: '6.0.0-alpha.2',
+			moves: Object.freeze([
+				Object.freeze(['templates', 'resources/views']),
+				Object.freeze(['web', 'public']),
+				Object.freeze(['translations', 'lang']),
+				Object.freeze(['config/routes.php', 'config/craft/routes.php']),
+				Object.freeze(['config/license.key', 'config/craft/license.key']),
+			]),
+			remove: Object.freeze([
+				'bootstrap.php',
+				'config/app.web.php',
+				'config/general.php',
+				'config/vite.php',
+				'public/dist',
+			]),
+			copy: Object.freeze([
+				'app',
+				'bootstrap',
+				'database',
+				'routes',
+				'storage',
+				'artisan',
+				'craft',
+				'phpunit.xml',
+				'config/app.php',
+				'config/auth.php',
+				'config/cache.php',
+				'config/database.php',
+				'config/filesystems.php',
+				'config/logging.php',
+				'config/mail.php',
+				'config/queue.php',
+				'config/services.php',
+				'config/session.php',
+				'public/.htaccess',
+				'public/index.php',
+				'public/robots.txt',
+			]),
+			overlay: 'cli/templates/platforms/craft6/overlay',
+			cleanup: Object.freeze([
+				'app',
+				'bootstrap',
+				'database',
+				'routes',
+				'artisan',
+				'phpunit.xml',
+				'public',
+				'resources',
+				'lang',
+				'config/craft',
+				'config/auth.php',
+				'config/cache.php',
+				'config/database.php',
+				'config/filesystems.php',
+				'config/logging.php',
+				'config/mail.php',
+				'config/queue.php',
+				'config/services.php',
+				'config/session.php',
+				'storage/app',
+				'storage/framework',
+				'storage/inertia-devtools',
+			]),
 		}),
 	}),
 });
@@ -135,6 +422,11 @@ const REQUIRED_PROFILE_KEYS = [
 	'id',
 	'major',
 	'label',
+	'experimental',
+	'features.plugins',
+	'features.redis',
+	'features.criticalCss',
+	'features.rebrandAssets',
 	'release.defaultChannel',
 	'php.default',
 	'php.options',
@@ -152,6 +444,9 @@ const REQUIRED_PROFILE_KEYS = [
 	'commands.setupKeys',
 	'commands.update',
 	'commands.resaveEntries',
+	'commands.installOptions.nonInteractive',
+	'commands.installOptions.siteName',
+	'commands.installOptions.siteUrl',
 	'plugins.coreHandles',
 	'paths.public',
 	'paths.build',
@@ -165,6 +460,8 @@ const REQUIRED_PROFILE_KEYS = [
 	'paths.criticalPartial',
 	'paths.translations',
 	'paths.rebrand',
+	'paths.licenseKey',
+	'paths.runtimeDirectories',
 	'paths.envTemplate',
 	'paths.translationTemplate',
 	'env.database.driver',
@@ -177,8 +474,8 @@ const REQUIRED_PROFILE_KEYS = [
 	'env.database.tablePrefix',
 	'composer.require',
 	'composer.requireDev',
-	'composer.redis.name',
-	'composer.redis.version',
+	'composer.project',
+	'frontend.devDependencies',
 ];
 
 export function validateCraftProfile(profile) {
@@ -258,7 +555,8 @@ export function composerConfigForCraftProfile(value = DEFAULT_CRAFT_PROFILE_ID, 
 	return {
 		require: { ...profile.composer.require, ...release.composerRequire },
 		requireDev: { ...profile.composer.requireDev },
-		redis: { ...profile.composer.redis },
+		redis: profile.composer.redis ? { ...profile.composer.redis } : null,
+		project: profile.composer.project,
 	};
 }
 
@@ -286,11 +584,17 @@ export const pluginsForCraftProfile = catalogForCraftProfile;
 
 export function allManagedPlatformPackages() {
 	return new Set(
-		Object.values(CRAFT_PROFILES).flatMap((profile) => [
-			...Object.keys(profile.composer.require),
-			...Object.keys(profile.composer.requireDev),
-			profile.composer.redis.name,
-			...Object.values(profile.release.channels).flatMap((release) => Object.keys(release.composerRequire)),
-		]),
+		Object.values(CRAFT_PROFILES)
+			.flatMap((profile) => [
+				...Object.keys(profile.composer.require),
+				...Object.keys(profile.composer.requireDev),
+				profile.composer.redis?.name,
+				...Object.values(profile.release.channels).flatMap((release) => Object.keys(release.composerRequire)),
+			])
+			.filter(Boolean),
 	);
+}
+
+export function allManagedFrontendPackages() {
+	return new Set(Object.values(CRAFT_PROFILES).flatMap((profile) => Object.keys(profile.frontend.devDependencies)));
 }

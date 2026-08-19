@@ -2,20 +2,15 @@
 
 {# -- General global variables -- #}
 {% set element = (category ?? entry ?? null) %}
-{% set lang = craft.app.language[:2] %}
+{% set lang = currentSite.language[:2] %}
 
 {# -- Site and language variables -- #}
 {% set siteHandle = currentSite.handle %}
 {% set siteId = currentSite.id %}
 {% set siteUrl = currentSite.baseUrl %}
 {% set siteLang = currentSite.language %}
-{% set artifactBaseUrl = getenv('CRAFT_CLOUD_ARTIFACT_BASE_URL') %}
-{% if not artifactBaseUrl and cloud is defined %}
-	{# Safe here: templates run after the Craft Cloud extension has bootstrapped. #}
-	{% set artifactBaseUrl = cloud.artifactUrl('') %}
-{% endif %}
-{% set artifactBaseUrl = (artifactBaseUrl ?: getenv('PRIMARY_SITE_URL') ?: siteUrl)|trim('/') %}
-{% set buildBaseUrl = artifactBaseUrl ~ '/dist' %}
+{% set artifactBaseUrl = (getenv('PRIMARY_SITE_URL') ?: siteUrl)|trim('/') %}
+{% set buildBaseUrl = artifactBaseUrl ~ '/build' %}
 
 {# -- RTL detection (Arabic, Hebrew, Farsi, Urdu) -- #}
 {% set rtlLanguages = ['ar', 'he', 'fa', 'ur'] %}
@@ -25,11 +20,11 @@
 {% set siteName = getenv('PRIMARY_SITE_NAME_' ~ siteHandle|upper) ?: getenv('SYSTEM_NAME') ?: currentSite.name %}
 
 {# -- Multi-site: all sites and other sites for language switcher -- #}
-{% set allSites = craft.app.sites.allSites %}
+{% set allSites = app('CraftCms\\Cms\\Site\\Sites').allSites %}
 {% set otherSites = allSites|filter(s => s.id != currentSite.id) %}
 
 {# -- URL segments -- #}
-{% set segments = craft.app.request.segments %}
+{% set segments = app('request').segments %}
 {% set fullPath = segments|join('/') %}
 
 {# -- Environment detection -- #}
@@ -39,49 +34,48 @@
 {% set isProduction = environment == 'production' %}
 
 {# -- Navigation queries (centralized for performance) -- #}
-{# Guarded so templates don't crash on fresh install. Create 'main' and 'footer' nav handles in the CP, or replace with your own. #}
 {% set mainMenuNodes = [] %}
 {% set footerNav = [] %}
-{% if craft.app.plugins.isPluginInstalled('navigation') %}
+{% if plugin('navigation') %}
 	{% set mainMenuNodes = craft.navigation.nodes('main').level(1).all() ?? [] %}
 	{% set footerNav = craft.navigation.nodes('footer').level(1).with(['children']).all() ?? [] %}
 {% endif %}
 
-{# -- Translation category -- #}
 {% set primaryTranslationCategory = getenv('PRIMARY_TRANSLATION_CATEGORY') ?: 'site' %}
 {% set formTranslationCategory = 'formie' %}
 
-{# -- Global variables object (available in all templates) -- #}
-{% set _globals = {
-	site: {
-		name: siteName,
-		handle: siteHandle,
-		lang: siteLang,
-		isRtl: isRtl,
-		url: siteUrl,
-		allSites: allSites,
-		otherSites: otherSites,
-	},
-	env: {
-		isDev: isDev,
-		isStaging: isStaging,
-		isProduction: isProduction,
-	},
-	assets: {
-		artifactBaseUrl: artifactBaseUrl,
-		buildBaseUrl: buildBaseUrl,
-	},
-	nav: {
-		main: mainMenuNodes,
-		footer: footerNav,
-	},
-	translation: {
-		primary: primaryTranslationCategory,
-	},
-	breadcrumbDefaults: {
-		hideBreadcrumbs: false,
-	},
-} %}
+{%
+	set _globals = {
+		site: {
+			name: siteName,
+			handle: siteHandle,
+			lang: siteLang,
+			isRtl: isRtl,
+			url: siteUrl,
+			allSites: allSites,
+			otherSites: otherSites,
+		},
+		env: {
+			isDev: isDev,
+			isStaging: isStaging,
+			isProduction: isProduction,
+		},
+		assets: {
+			artifactBaseUrl: artifactBaseUrl,
+			buildBaseUrl: buildBaseUrl,
+		},
+		nav: {
+			main: mainMenuNodes,
+			footer: footerNav,
+		},
+		translation: {
+			primary: primaryTranslationCategory,
+		},
+		breadcrumbDefaults: {
+			hideBreadcrumbs: false,
+		},
+	}
+%}
 
 {% endapply %}
 {% block htmlPage %}{% endblock %}
