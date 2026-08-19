@@ -15,13 +15,7 @@ import path from 'path';
 import { ROOT } from '../paths.mjs';
 import { REDIS_PACKAGE } from '../config/plugins.mjs';
 
-export const REDIS_ENV_KEYS = [
-	'REDIS_HOST',
-	'REDIS_PORT',
-	'REDIS_PASSWORD',
-	'REDIS_DATABASE',
-	'REDIS_SESSION_DB',
-];
+export const REDIS_ENV_KEYS = ['REDIS_HOST', 'REDIS_PORT', 'REDIS_PASSWORD', 'REDIS_DATABASE', 'REDIS_SESSION_DB'];
 
 const REDIS_DEFAULTS = {
 	REDIS_HOST: 'redis',
@@ -63,16 +57,11 @@ export function configureRedisEnvironment(content, { useSessions = false } = {})
 	const values = {};
 	for (const [key, fallback] of Object.entries(REDIS_DEFAULTS)) {
 		const current = readEnvValue(content, key);
-		values[key] = key === 'REDIS_PASSWORD'
-			? (current ?? fallback)
-			: (hasValue(current) ? current : fallback);
+		values[key] = key === 'REDIS_PASSWORD' ? (current ?? fallback) : hasValue(current) ? current : fallback;
 	}
 
 	const currentSessionDb = readEnvValue(content, 'REDIS_SESSION_DB');
-	const lines = [
-		'# Redis',
-		...Object.entries(values).map(([key, value]) => `${key}=${value}`),
-	];
+	const lines = ['# Redis', ...Object.entries(values).map(([key, value]) => `${key}=${value}`)];
 	if (useSessions) {
 		lines.push(`REDIS_SESSION_DB=${hasValue(currentSessionDb) ? currentSessionDb : '1'}`);
 	}
@@ -169,4 +158,16 @@ export function buildRedisRemoveSteps(state) {
 		steps.push({ msg: 'Restarting DDEV without Redis', cmd: 'ddev restart' });
 	}
 	return steps;
+}
+
+/** Remove only files owned by the official DDEV Redis add-on. */
+export function removeRedisAddonFiles({ root = ROOT } = {}) {
+	const candidates = [
+		path.join(root, '.ddev', 'docker-compose.redis.yaml'),
+		path.join(root, '.ddev', 'addon-metadata', 'redis'),
+		path.join(root, '.ddev', 'redis'),
+	];
+	for (const candidate of candidates) {
+		fs.rmSync(candidate, { recursive: true, force: true });
+	}
 }

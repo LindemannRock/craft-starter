@@ -22,7 +22,10 @@ const PLUGINS_FILE = path.join(__dirname, '../config/plugins.mjs');
 
 async function searchPackagist(query) {
 	try {
-		const res = await fetch(`https://packagist.org/search.json?q=${encodeURIComponent(query)}&type=craft-plugin&per_page=15`, { signal: AbortSignal.timeout(15_000) });
+		const res = await fetch(
+			`https://packagist.org/search.json?q=${encodeURIComponent(query)}&type=craft-plugin&per_page=15`,
+			{ signal: AbortSignal.timeout(15_000) },
+		);
 		if (!res.ok) return [];
 		const data = await res.json();
 		return data.results || [];
@@ -38,7 +41,13 @@ async function getPackageDetails(name) {
 		const data = await res.json();
 		const versions = data.packages?.[name] || [];
 		const stable = versions
-			.filter((v) => !v.version.includes('dev') && !v.version.includes('alpha') && !v.version.includes('beta') && !v.version.includes('RC'))
+			.filter(
+				(v) =>
+					!v.version.includes('dev') &&
+					!v.version.includes('alpha') &&
+					!v.version.includes('beta') &&
+					!v.version.includes('RC'),
+			)
 			.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
 		return stable[0] || null;
 	} catch {
@@ -55,7 +64,8 @@ function extractHandle(extra, packageName) {
 	// Normalize so the prompt validator (`^[a-z0-9-]+$`) accepts it without
 	// forcing the user to retype — e.g. `vendor/Foo_Bar` → `foo-bar`.
 	return packageName
-		.split('/').pop()
+		.split('/')
+		.pop()
 		.replace(/^craft-/i, '')
 		.toLowerCase()
 		.replace(/[^a-z0-9-]+/g, '-')
@@ -76,7 +86,9 @@ async function fetchPluginConfig(sourceUrl, ref) {
 	const paths = ['src/config.php', 'src/config/config.php'];
 	for (const p of paths) {
 		try {
-			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`, { signal: AbortSignal.timeout(15_000) });
+			const res = await fetch(`https://raw.githubusercontent.com/${repo}/${ref}/${p}`, {
+				signal: AbortSignal.timeout(15_000),
+			});
 			if (res.ok) {
 				const text = await res.text();
 				if (text.startsWith('<?php')) return text;
@@ -86,6 +98,53 @@ async function fetchPluginConfig(sourceUrl, ref) {
 		}
 	}
 	return null;
+}
+
+/**
+ * Best-effort edition discovery from the plugin class declared by Composer.
+ * Runtime installation performs a second, authoritative check.
+ */
+async function discoverPluginEditions(details) {
+	const sourceUrl = details.source?.url;
+	const ref = details.source?.reference;
+	const className = details.extra?.class || details.extra?.['craft-plugin']?.class;
+	const psr4 = details.autoload?.['psr-4'];
+	if (!sourceUrl?.includes('github.com') || !ref || !className || !psr4) return [];
+
+	const namespace = Object.keys(psr4)
+		.sort((a, b) => b.length - a.length)
+		.find((prefix) => className.startsWith(prefix));
+	if (!namespace) return [];
+
+	const sourceDir = String(psr4[namespace]).replace(/^\.\//, '').replace(/\/$/, '');
+	const classPath = className.slice(namespace.length).replaceAll('\\', '/');
+	const sourcePath = [sourceDir, `${classPath}.php`].filter(Boolean).join('/');
+	const match = sourceUrl.match(/github\.com\/([^/]+\/[^/.]+)/);
+	if (!match) return [];
+
+	try {
+		const response = await fetch(`https://raw.githubusercontent.com/${match[1]}/${ref}/${sourcePath}`, {
+			signal: AbortSignal.timeout(15_000),
+		});
+		if (!response.ok) return [];
+		const source = await response.text();
+		const body = source.match(/function\s+editions\s*\(\s*\)\s*:\s*array\s*\{[\s\S]*?return\s*\[([\s\S]*?)\];/i)?.[1];
+		if (!body) return [];
+
+		const editions = [];
+		for (const token of body.split(',')) {
+			const literal = token.match(/['"]([a-z0-9_-]+)['"]/i)?.[1];
+			const constant = token
+				.match(/EDITION_([A-Z0-9_]+)/)?.[1]
+				?.toLowerCase()
+				.replaceAll('_', '-');
+			const value = literal || constant;
+			if (value && !editions.includes(value)) editions.push(value);
+		}
+		return editions.length > 1 ? editions : [];
+	} catch {
+		return [];
+	}
 }
 
 p.intro(pc.bgCyan(pc.black(' Add Plugin to Registry ')));
@@ -111,12 +170,16 @@ while (true) {
 	const rawResults = await searchPackagist(query);
 	const results = rawResults.filter((r) => !allExisting.includes(r.name));
 	const filtered = rawResults.length - results.length;
-	s.stop(`Found ${results.length} new result${results.length === 1 ? '' : 's'}${filtered > 0 ? ` (${filtered} already in registry)` : ''}`);
+	s.stop(
+		`Found ${results.length} new result${results.length === 1 ? '' : 's'}${filtered > 0 ? ` (${filtered} already in registry)` : ''}`,
+	);
 
 	if (results.length === 0) {
-		p.log.warn(rawResults.length > 0
-			? 'All matching packages are already registered.'
-			: 'No Craft plugins found. Try a different search term.');
+		p.log.warn(
+			rawResults.length > 0
+				? 'All matching packages are already registered.'
+				: 'No Craft plugins found. Try a different search term.',
+		);
 		continue;
 	}
 
@@ -157,7 +220,9 @@ const suggestedConstraint = `^${parts[0]}.${parts[1]}`;
 
 // Auto-detect list from vendor prefix
 const list = packageName.startsWith('lindemannrock/') ? 'lr' : 'tp';
-p.log.info(`Latest: ${pc.green(latestVersion)}  Handle: ${pc.cyan(handle || '(unknown)')}  List: ${pc.cyan(list === 'lr' ? 'LR Plugins' : 'Third-party')}`);
+p.log.info(
+	`Latest: ${pc.green(latestVersion)}  Handle: ${pc.cyan(handle || '(unknown)')}  List: ${pc.cyan(list === 'lr' ? 'LR Plugins' : 'Third-party')}`,
+);
 
 // Confirm / edit details
 const pluginHandle = await p.text({
@@ -174,8 +239,18 @@ if (p.isCancel(pluginHandle)) process.exit(0);
 
 const label = await p.text({
 	message: 'Display label',
-	placeholder: packageName.split('/').pop().replace(/craft-/i, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-	defaultValue: packageName.split('/').pop().replace(/craft-/i, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+	placeholder: packageName
+		.split('/')
+		.pop()
+		.replace(/craft-/i, '')
+		.replace(/-/g, ' ')
+		.replace(/\b\w/g, (c) => c.toUpperCase()),
+	defaultValue: packageName
+		.split('/')
+		.pop()
+		.replace(/craft-/i, '')
+		.replace(/-/g, ' ')
+		.replace(/\b\w/g, (c) => c.toUpperCase()),
 });
 if (p.isCancel(label)) process.exit(0);
 
@@ -192,6 +267,46 @@ const version = await p.text({
 	defaultValue: suggestedConstraint,
 });
 if (p.isCancel(version)) process.exit(0);
+
+s.start('Checking Craft plugin editions');
+const discoveredEditions = await discoverPluginEditions(details);
+s.stop(
+	discoveredEditions.length > 1 ? `Found editions: ${discoveredEditions.join(', ')}` : 'No multiple editions detected',
+);
+
+let editions = discoveredEditions;
+if (editions.length === 0) {
+	const editionInput = await p.text({
+		message: 'Edition handles (comma-separated; leave empty for a single-edition plugin)',
+		placeholder: 'standard, pro',
+		validate: (value) => {
+			if (!value) return;
+			const values = value
+				.split(',')
+				.map((item) => item.trim())
+				.filter(Boolean);
+			if (values.some((item) => !/^[a-z0-9-]+$/.test(item))) return 'Use lowercase edition handles separated by commas';
+			if (new Set(values).size !== values.length) return 'Edition handles must be unique';
+		},
+	});
+	if (p.isCancel(editionInput)) process.exit(0);
+	editions = editionInput
+		? editionInput
+				.split(',')
+				.map((item) => item.trim())
+				.filter(Boolean)
+		: [];
+}
+
+let defaultEdition = null;
+if (editions.length > 1) {
+	defaultEdition = await p.select({
+		message: 'Default edition',
+		options: editions.map((edition) => ({ value: edition, label: editionLabel(edition) })),
+		initialValue: editions[0],
+	});
+	if (p.isCancel(defaultEdition)) process.exit(0);
+}
 
 const hasConfig = await p.confirm({
 	message: 'Does this plugin need a config file in config/?',
@@ -233,9 +348,7 @@ const needsIpSalt = await p.confirm({
 });
 if (p.isCancel(needsIpSalt)) process.exit(0);
 
-const ipSaltEnv = needsIpSalt
-	? (pluginHandle || handle).toUpperCase().replace(/-/g, '_') + '_IP_SALT'
-	: null;
+const ipSaltEnv = needsIpSalt ? (pluginHandle || handle).toUpperCase().replace(/-/g, '_') + '_IP_SALT' : null;
 
 // Build the entry
 const entry = {
@@ -246,11 +359,19 @@ const entry = {
 	hint: hint || '',
 	config: configFile || null,
 	...(ipSaltEnv ? { ipSaltEnv } : {}),
+	...(editions.length > 1
+		? {
+				editions: editions.map((edition) => ({ value: edition, label: editionLabel(edition) })),
+				defaultEdition,
+			}
+		: {}),
 };
 
 // Show preview
 p.note(
-	Object.entries(entry).map(([k, v]) => `${pc.bold(k)}: ${v === null ? pc.dim('null') : v}`).join('\n'),
+	Object.entries(entry)
+		.map(([k, v]) => `${pc.bold(k)}: ${v === null ? pc.dim('null') : v}`)
+		.join('\n'),
 	'New plugin entry',
 );
 
@@ -274,7 +395,7 @@ const entryStr = `\t{
 \t\tversion: '${entry.version}',
 \t\tlabel: ${JSON.stringify(entry.label)},
 \t\thint: ${JSON.stringify(entry.hint)},
-\t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},${entry.ipSaltEnv ? `\n\t\tipSaltEnv: '${entry.ipSaltEnv}',` : ''}
+\t\tconfig: ${entry.config ? `'${entry.config}'` : 'null'},${entry.ipSaltEnv ? `\n\t\tipSaltEnv: '${entry.ipSaltEnv}',` : ''}${entry.editions ? `\n\t\teditions: ${JSON.stringify(entry.editions)},\n\t\tdefaultEdition: '${entry.defaultEdition}',` : ''}
 \t},`;
 
 // Find the alphabetical insertion point so the registry file stays sorted.
@@ -290,9 +411,7 @@ if (successor) {
 	// then walk back to the `\t{` that opens it.
 	const successorEscaped = successor.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	const blockOpenRegex = new RegExp(
-		`(\\n\\t\\{\\n` +
-		`(?:\\t\\t[^\\n]*\\n)*?` +
-		`\\t\\tvalue:\\s*['"]${successorEscaped}['"])`,
+		`(\\n\\t\\{\\n` + `(?:\\t\\t[^\\n]*\\n)*?` + `\\t\\tvalue:\\s*['"]${successorEscaped}['"])`,
 	);
 	if (blockOpenRegex.test(content)) {
 		content = content.replace(blockOpenRegex, (_match, block) => `\n${entryStr}${block}`);
@@ -305,12 +424,17 @@ if (successor) {
 }
 
 function appendAtEnd(content, list, entryStr) {
-	const insertPattern = list === 'lr'
-		? /(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m
-		: /(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m;
+	const insertPattern =
+		list === 'lr'
+			? /(export const LR_PLUGINS = \[[\s\S]*?)(^\];)/m
+			: /(export const THIRD_PARTY_PLUGINS = \[[\s\S]*?)(^\];)/m;
 	// Function replacer so any `$` inside label/hint is treated literally, not as
 	// a back-reference pattern like `$&` / `$1`.
 	return content.replace(insertPattern, (_match, before, close) => `${before}${entryStr}\n${close}`);
+}
+
+function editionLabel(edition) {
+	return edition.replace(/(^|-)(\w)/g, (_match, dash, letter) => `${dash ? ' ' : ''}${letter.toUpperCase()}`);
 }
 
 fs.writeFileSync(PLUGINS_FILE, content);

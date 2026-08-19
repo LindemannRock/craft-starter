@@ -29,6 +29,38 @@ export function urlPrefixFromHandle(handle) {
 	return handle.replace(/_/g, '-');
 }
 
+export function normalizeUrlPrefix(value) {
+	return String(value || '')
+		.replace(/^\/+|\/+$/g, '')
+		.toLowerCase();
+}
+
+export function validateSiteUrlPrefix(value, { usedPrefixes = new Set(), cpTrigger = 'cms' } = {}) {
+	const normalized = normalizeUrlPrefix(value);
+	if (normalized && !/^[a-z0-9-]+$/.test(normalized)) return 'Lowercase letters, numbers, and hyphens only';
+	if (normalized.length > 32) return 'Max 32 characters';
+	if (normalized === normalizeUrlPrefix(cpTrigger))
+		return `Prefix "${normalized}" conflicts with the control-panel trigger`;
+	if (usedPrefixes.has(normalized)) {
+		return normalized
+			? `Prefix "${normalized}" is already used by another site`
+			: 'A root site with an empty prefix already exists';
+	}
+}
+
+export function getSiteUrlConflicts(sites, cpTrigger = 'cms') {
+	const seen = new Set();
+	const conflicts = [];
+	for (const site of sites) {
+		const prefix = normalizeUrlPrefix(site.urlPrefix);
+		if (prefix === normalizeUrlPrefix(cpTrigger)) conflicts.push(`Site "${site.handle}" conflicts with /${cpTrigger}`);
+		if (seen.has(prefix)) conflicts.push(`Site "${site.handle}" duplicates ${prefix ? `/${prefix}/` : 'the root URL'}`);
+		seen.add(prefix);
+	}
+	if (![...seen].includes('')) conflicts.push('Exactly one site must use the root URL');
+	return conflicts;
+}
+
 /**
  * Derive a short switcher label from a locale code.
  * Uses native-script language names and preserves the region code when present.
@@ -50,7 +82,7 @@ function capitalizeFirst(value) {
 	return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value;
 }
 
-export async function promptSites(projectName) {
+export async function promptSites(projectName, { cpTrigger = 'cms' } = {}) {
 	const count = await p.select({
 		message: 'How many sites?',
 		options: [
@@ -66,6 +98,7 @@ export async function promptSites(projectName) {
 
 	const sites = [];
 	const usedHandles = new Set();
+	const usedPrefixes = new Set();
 
 	for (let i = 0; i < count; i++) {
 		const num = i + 1;
@@ -79,9 +112,9 @@ export async function promptSites(projectName) {
 			source: async (input) => {
 				if (!input) return COMMON_LANGUAGES.slice(0, 10);
 				const lower = input.toLowerCase();
-				return ALL_LANGUAGES
-					.filter((l) => l.name.toLowerCase().includes(lower) || l.value.toLowerCase().includes(lower))
-					.slice(0, 15);
+				return ALL_LANGUAGES.filter(
+					(l) => l.name.toLowerCase().includes(lower) || l.value.toLowerCase().includes(lower),
+				).slice(0, 15);
 			},
 		}).catch((err) => {
 			if (isPromptCancel(err)) cancel();
@@ -97,7 +130,8 @@ export async function promptSites(projectName) {
 			initialValue: suggestedHandle,
 			validate: (v) => {
 				if (!v) return 'Handle is required';
-				if (!isValidSiteHandle(v)) return 'Start with a lowercase letter; use lowercase letters, numbers, and underscores only';
+				if (!isValidSiteHandle(v))
+					return 'Start with a lowercase letter; use lowercase letters, numbers, and underscores only';
 				if (v.length > 32) return 'Max 32 characters';
 				if (usedHandles.has(v)) return `Handle "${v}" is already used by another site`;
 			},
@@ -109,11 +143,7 @@ export async function promptSites(projectName) {
 			message: `Site ${num} — URL prefix`,
 			placeholder: isFirst ? '(empty = root site)' : urlPrefixFromHandle(handle),
 			initialValue: isFirst ? '' : urlPrefixFromHandle(handle),
-			validate: (v) => {
-				if (!v) return; // empty = root site, allowed
-				if (!/^[a-z0-9-]+$/.test(v)) return 'Lowercase letters, numbers, and hyphens only';
-				if (v.length > 32) return 'Max 32 characters';
-			},
+			validate: (v) => validateSiteUrlPrefix(v, { usedPrefixes, cpTrigger }),
 		});
 		if (p.isCancel(urlPrefix)) cancel();
 
@@ -144,7 +174,9 @@ export async function promptSites(projectName) {
 		if (p.isCancel(label)) cancel();
 
 		usedHandles.add(handle);
-		sites.push({ handle, language, urlPrefix: urlPrefix || '', name: name || projectName, label: label || handle });
+		const normalizedPrefix = normalizeUrlPrefix(urlPrefix);
+		usedPrefixes.add(normalizedPrefix);
+		sites.push({ handle, language, urlPrefix: normalizedPrefix, name: name || projectName, label: label || handle });
 	}
 
 	// Validate: exactly one root site (empty URL prefix). When the user picked
@@ -156,18 +188,6 @@ export async function promptSites(projectName) {
 		p.log.warn(`No root site (empty URL prefix). Auto-fixed: "${sites[0].handle}" is now the root site.`);
 		const ok = await p.confirm({ message: 'Continue with this fix?', initialValue: true });
 		if (p.isCancel(ok) || !ok) cancel('Cancelled — re-run and set one site with an empty URL prefix.');
-	} else if (rootSites.length > 1) {
-		const kept = rootSites[0].handle;
-		const changed = [];
-		for (let i = 1; i < sites.length; i++) {
-			if (sites[i].urlPrefix === '') {
-				sites[i].urlPrefix = urlPrefixFromHandle(sites[i].handle);
-				changed.push(sites[i].handle);
-			}
-		}
-		p.log.warn(`Multiple root sites found. Auto-fixed: "${kept}" kept as root; ${changed.map((h) => `"${h}"`).join(', ')} get their handle as prefix.`);
-		const ok = await p.confirm({ message: 'Continue with this fix?', initialValue: true });
-		if (p.isCancel(ok) || !ok) cancel('Cancelled — re-run and set exactly one site with an empty URL prefix.');
 	}
 
 	return sites;

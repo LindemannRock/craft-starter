@@ -25,8 +25,11 @@ import { shellEscape } from '../utils/validate.mjs';
 function isCraftInstalled() {
 	try {
 		const out = execSync('ddev exec php craft project-config/get system.schemaVersion', {
-			cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'],
-		}).toString().trim();
+			cwd: ROOT,
+			stdio: ['ignore', 'pipe', 'ignore'],
+		})
+			.toString()
+			.trim();
 		return /^\d+\./.test(out);
 	} catch {
 		return false;
@@ -37,11 +40,11 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 	const siteName = project.description || project.name;
 	const siteUrl = `https://${project.name}.ddev.site`;
 
-	const pluginHandles = [
-		...CORE_PLUGIN_HANDLES,
-		...selectedLr.map((pl) => pl.handle).filter(Boolean),
-		...selectedTp.map((pl) => pl.handle).filter(Boolean),
-		...selectedHosting.packages.map((pkg) => pkg.handle).filter(Boolean),
+	const pluginPlan = [
+		...CORE_PLUGIN_HANDLES.map((handle) => ({ handle })),
+		...selectedLr.filter((plugin) => plugin.handle),
+		...selectedTp.filter((plugin) => plugin.handle),
+		...selectedHosting.packages.filter((plugin) => plugin.handle),
 	];
 
 	const steps = [
@@ -75,25 +78,28 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 	steps.push(
 		{ msg: 'Starting DDEV environment', cmd: 'ddev start' },
 		{ msg: 'Installing PHP dependencies', cmd: 'ddev composer install --no-interaction --quiet' },
-		{ msg: 'Installing Node dependencies', cmd: 'ddev exec -- npm install --include=optional --legacy-peer-deps --silent' },
+		{
+			msg: 'Installing Node dependencies',
+			cmd: 'ddev exec -- npm install --include=optional --legacy-peer-deps --silent',
+		},
 		{
 			msg: 'Installing Craft CMS',
 			fn: async () => {
 				if (isCraftInstalled()) return 'skipped';
 				await run(
 					`ddev exec php craft install` +
-					` --interactive=0` +
-					` --email=${shellEscape(project.adminEmail)}` +
-					` --password=${shellEscape(project.adminPassword)}` +
-					` --site-name=${shellEscape(siteName)}` +
-					` --site-url=${shellEscape(siteUrl)}` +
-					` --language=${shellEscape(project.language)}`,
+						` --interactive=0` +
+						` --email=${shellEscape(project.adminEmail)}` +
+						` --password=${shellEscape(project.adminPassword)}` +
+						` --site-name=${shellEscape(siteName)}` +
+						` --site-url=${shellEscape(siteUrl)}` +
+						` --language=${shellEscape(project.language)}`,
 				);
 			},
 		},
 		{
-			msg: `Activating ${pluginHandles.length} plugin${pluginHandles.length === 1 ? '' : 's'}`,
-			fn: () => activatePlugins(pluginHandles),
+			msg: `Activating ${pluginPlan.length} plugin${pluginPlan.length === 1 ? '' : 's'}`,
+			fn: () => activatePlugins(pluginPlan),
 		},
 		{ msg: 'Applying project config', cmd: 'ddev exec php craft up --interactive=0' },
 		// Email transport — runs AFTER craft up so the PHP script boots a
@@ -103,6 +109,7 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 			msg: 'Configuring email transport',
 			fn: () => configureEmailTransport(),
 		},
+		{ msg: 'Building frontend assets', cmd: 'ddev exec env GENERATE_CRITICAL_CSS=false npm run build' },
 	);
 
 	return steps;

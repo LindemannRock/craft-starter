@@ -43,14 +43,13 @@ export function generateEnvFile({
 	selectedLr = [],
 	selectedTp = [],
 	selectedHosting = {},
+	translationCategory = 'site',
 	database = DEFAULT_DATABASE,
 }) {
 	// Start from a clean copy of the source template, stripping the internal header.
 	// Normalize CRLF → LF defensively so a template accidentally saved with Windows
 	// line endings doesn't leave stray `\r` chars that some .env parsers mishandle.
-	let content = fs.readFileSync(ENV_SOURCE, 'utf-8')
-		.replace(/\r\n/g, '\n')
-		.replace(HEADER_BLOCK_REGEX, '');
+	let content = fs.readFileSync(ENV_SOURCE, 'utf-8').replace(/\r\n/g, '\n').replace(HEADER_BLOCK_REGEX, '');
 
 	const siteUrlBase = `https://${project.name}.ddev.site`;
 	const siteName = project.description || project.name;
@@ -58,25 +57,27 @@ export function generateEnvFile({
 	const updates = {
 		// Craft core — generated fresh each run
 		CRAFT_APP_ID: generateAppId(),
-		CRAFT_SECURITY_KEY: quoted(generateSecurityKey()),
+		CRAFT_SECURITY_KEY: serializeEnvValue(generateSecurityKey()),
 
 		// Craft general config (auto-read from CRAFT_* prefix)
 		CRAFT_TIMEZONE: project.timezone,
 		CRAFT_CP_TRIGGER: project.cpTrigger || 'cms',
 
 		// System
-		SYSTEM_NAME: quoted(siteName),
-		SYSTEM_SENDER_NAME: quoted(siteName),
-		SYSTEM_EMAIL: project.systemEmail,
-		SYSTEM_EMAIL_REPLY_TO: project.noReplyEmail || project.systemEmail,
+		SYSTEM_NAME: serializeEnvValue(siteName),
+		SYSTEM_SENDER_NAME: serializeEnvValue(siteName),
+		SYSTEM_EMAIL: serializeEnvValue(project.systemEmail),
+		SYSTEM_EMAIL_REPLY_TO: serializeEnvValue(project.noReplyEmail || project.systemEmail),
 
 		// Site URLs (dev only — staging/production are set via the hosting dashboard)
 		PRIMARY_SITE_URL: siteUrlBase,
+		PRIMARY_SITE_LANGUAGE: sites[0]?.language || project.language,
+		PRIMARY_TRANSLATION_CATEGORY: translationCategory,
 
 		// Vite dev server
 		VITE_DEV_SERVER_PUBLIC: `${siteUrlBase}:3000/`,
 		VITE_DEV_SERVER_INTERNAL: 'http://localhost:3000/',
-		CRAFT_TEST_TO_EMAIL_ADDRESS: project.adminEmail,
+		CRAFT_TEST_TO_EMAIL_ADDRESS: serializeEnvValue(project.adminEmail),
 
 		// Database
 		CRAFT_DB_DRIVER: database.craftDriver,
@@ -92,31 +93,31 @@ export function generateEnvFile({
 	if (servdCredentials) {
 		if (servdCredentials.placeholder) {
 			updates.SERVD_PROJECT_SLUG = '# TODO: from Servd dashboard → Project Settings → Assets';
-			updates.SERVD_SECURITY_KEY = '# TODO: from Servd dashboard → Project Settings → Assets';
 			updates.SERVD_BASE_URL = '# TODO: https://{slug}.files.svdcdn.com once slug is set';
 		} else {
-			updates.SERVD_PROJECT_SLUG = servdCredentials.slug;
-			updates.SERVD_SECURITY_KEY = servdCredentials.key;
+			updates.SERVD_PROJECT_SLUG = serializeEnvValue(servdCredentials.slug);
+			updates.SERVD_SECURITY_KEY = serializeEnvValue(servdCredentials.key);
 			updates.SERVD_BASE_URL = `https://${servdCredentials.slug}.files.svdcdn.com`;
 			if (servdCredentials.cdnUrl) {
-				updates.SERVD_CDN_URL_PATTERN = `'${servdCredentials.cdnUrl}'`;
-				updates.SERVD_IMAGE_TRANSFORM_URL_PATTERN = `'${servdCredentials.imageTransformUrl}'`;
+				updates.SERVD_CDN_URL_PATTERN = serializeEnvValue(servdCredentials.cdnUrl);
+				updates.SERVD_IMAGE_TRANSFORM_URL_PATTERN = serializeEnvValue(servdCredentials.imageTransformUrl);
 			}
 		}
 	}
 
 	// Postmark token
 	if (postmarkToken) {
-		updates.POSTMARK_TOKEN = postmarkToken;
+		updates.POSTMARK_TOKEN = serializeEnvValue(postmarkToken);
 	}
 
 	// SMTP credentials (e.g. Servd SMTP or any other SMTP provider)
 	if (smtpCredentials) {
-		updates.SMTP_HOSTNAME = smtpCredentials.host;
+		updates.SMTP_HOSTNAME = serializeEnvValue(smtpCredentials.host);
 		updates.SMTP_PORT = smtpCredentials.port;
-		updates.SMTP_USERNAME = smtpCredentials.username;
-		updates.SMTP_PASSWORD = quoted(smtpCredentials.password);
+		updates.SMTP_USERNAME = serializeEnvValue(smtpCredentials.username || '');
+		updates.SMTP_PASSWORD = serializeEnvValue(smtpCredentials.password || '');
 		updates.SMTP_USE_AUTH = smtpCredentials.useAuth ? 'true' : 'false';
+		updates.SMTP_ENCRYPTION_METHOD = serializeEnvValue(smtpCredentials.encryption || '');
 	}
 
 	// Apply all scalar updates
@@ -130,15 +131,15 @@ export function generateEnvFile({
 	// Generate IP salts for selected LR plugins that need them
 	for (const pl of allPlugins) {
 		if (pl.ipSaltEnv) {
-			content = setEnvKey(content, pl.ipSaltEnv, quoted(generateIpSalt()));
+			content = setEnvKey(content, pl.ipSaltEnv, serializeEnvValue(generateIpSalt()));
 		}
 	}
 
 	// Generate Formie REST API keys if plugin is selected
 	if (allPlugins.some((pl) => pl.handle === 'formie-rest-api')) {
-		content = setEnvKey(content, 'FORMIE_API_KEY', quoted(generateApiKey('sk_live')));
-		content = setEnvKey(content, 'FORMIE_API_KEY_LIMITED', quoted(generateApiKey('sk_limited')));
-		content = setEnvKey(content, 'FORMIE_API_KEY_TEST', quoted(generateApiKey('sk_test')));
+		content = setEnvKey(content, 'FORMIE_API_KEY', serializeEnvValue(generateApiKey('sk_live')));
+		content = setEnvKey(content, 'FORMIE_API_KEY_LIMITED', serializeEnvValue(generateApiKey('sk_limited')));
+		content = setEnvKey(content, 'FORMIE_API_KEY_TEST', serializeEnvValue(generateApiKey('sk_test')));
 	}
 
 	// Remove template site block — we dynamically append all site blocks below
@@ -152,8 +153,8 @@ export function generateEnvFile({
 		const url = site.urlPrefix ? `${siteUrlBase}/${site.urlPrefix}/` : `${siteUrlBase}/`;
 		siteLines.push(`# Site: ${site.handle}`);
 		siteLines.push(`PRIMARY_SITE_URL_${h}=${url}`);
-		siteLines.push(`PRIMARY_SITE_NAME_${h}=${quoted(site.name)}`);
-		siteLines.push(`PRIMARY_SITE_LABEL_${h}=${quoted(site.label)}`);
+		siteLines.push(`PRIMARY_SITE_NAME_${h}=${serializeEnvValue(site.name)}`);
+		siteLines.push(`PRIMARY_SITE_LABEL_${h}=${serializeEnvValue(site.label)}`);
 		siteLines.push('');
 	}
 	// Insert site blocks after PRIMARY_SITE_URL line.
@@ -161,18 +162,12 @@ export function generateEnvFile({
 	// urlPrefix) that could contain `$` chars which `String.replace` would otherwise
 	// interpret as replacement patterns (`$&`, `$1`, etc.).
 	const siteBlock = siteLines.join('\n');
-	content = content.replace(
-		/(PRIMARY_SITE_URL=[^\n]*\n)/,
-		(_match, primaryLine) => `${primaryLine}\n${siteBlock}`,
-	);
+	content = content.replace(/(PRIMARY_SITE_URL=[^\n]*\n)/, (_match, primaryLine) => `${primaryLine}\n${siteBlock}`);
 	if (!useRedisCache) {
 		content = removeSection(content, '# Redis');
 	} else if (useRedisSession) {
 		// Append session DB index after the Redis block
-		content = content.replace(
-			/(REDIS_DATABASE=\d+)/,
-			(_match, line) => `${line}\nREDIS_SESSION_DB=1`,
-		);
+		content = content.replace(/(REDIS_DATABASE=\d+)/, (_match, line) => `${line}\nREDIS_SESSION_DB=1`);
 	}
 
 	if (!useCritical) {
@@ -261,6 +256,14 @@ export function setEnvKey(content, key, value) {
  * Wrap a value in double quotes for .env files (use for values with spaces or special chars).
  *
  */
-export function quoted(value) {
-	return `"${String(value).replace(/"/g, '\\"')}"`;
+export function serializeEnvValue(value) {
+	const escaped = String(value)
+		.replace(/\\/g, '\\\\')
+		.replace(/"/g, '\\"')
+		.replace(/\$/g, '\\$')
+		.replace(/\r/g, '\\r')
+		.replace(/\n/g, '\\n');
+	return `"${escaped}"`;
 }
+
+export const quoted = serializeEnvValue;

@@ -25,16 +25,32 @@ const VITE_CONFIG_CRITICAL_LINES = `    'criticalPath' => $distDir . '/criticalc
 `;
 
 export function applyCriticalCssChoice(useCritical) {
-	writePartial(useCritical);
+	const preserved = writePartial(useCritical);
 	patchViteConfig(useCritical);
+	return preserved;
 }
 
 function writePartial(useCritical) {
 	const source = useCritical ? ENABLED_PARTIAL : DISABLED_PARTIAL;
 	if (!fs.existsSync(source)) return;
 	const content = fs.readFileSync(source, 'utf-8');
+	if (fs.existsSync(CRITICAL_PARTIAL)) {
+		const current = fs.readFileSync(CRITICAL_PARTIAL, 'utf-8');
+		const canonical = [ENABLED_PARTIAL, DISABLED_PARTIAL]
+			.filter((candidate) => fs.existsSync(candidate))
+			.flatMap((candidate) => {
+				const managed = fs.readFileSync(candidate, 'utf-8');
+				const legacy = managed.replace(
+					'{# Managed by Craft Starter. Customized files are preserved during reconfiguration. #}\n',
+					'',
+				);
+				return [managed, legacy];
+			});
+		if (!canonical.includes(current)) return path.relative(ROOT, CRITICAL_PARTIAL);
+	}
 	fs.mkdirSync(path.dirname(CRITICAL_PARTIAL), { recursive: true });
 	fs.writeFileSync(CRITICAL_PARTIAL, content);
+	return null;
 }
 
 function patchViteConfig(useCritical) {

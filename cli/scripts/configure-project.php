@@ -60,15 +60,19 @@ if ($postmarkToken && class_exists('craftcms\\postmark\\Adapter')) {
     echo "Configured Postmark email transport\n";
 } elseif ($smtpHost) {
     // 2. Generic SMTP (Servd SMTP, Mailgun, custom)
+    $useAuthentication = filter_var(getenv('SMTP_USE_AUTH') ?: 'false', FILTER_VALIDATE_BOOL);
+    $encryptionMethod = trim((string) getenv('SMTP_ENCRYPTION_METHOD'));
     $email['transportType'] = 'craft\\mail\\transportadapters\\Smtp';
     $email['transportSettings'] = [
         'host' => '$SMTP_HOSTNAME',
         'port' => '$SMTP_PORT',
-        'useAuthentication' => true,
-        'username' => '$SMTP_USERNAME',
-        'password' => '$SMTP_PASSWORD',
-        'encryptionMethod' => 'tls',
+        'useAuthentication' => $useAuthentication,
+        'encryptionMethod' => $encryptionMethod !== '' ? $encryptionMethod : null,
     ];
+    if ($useAuthentication) {
+        $email['transportSettings']['username'] = '$SMTP_USERNAME';
+        $email['transportSettings']['password'] = '$SMTP_PASSWORD';
+    }
     echo "Configured SMTP email transport (host: {$smtpHost})\n";
 } elseif ($mailpitHost) {
     // 3. Mailpit — safe dev default (never sends real emails)
@@ -154,8 +158,6 @@ if (file_exists($sitesJsonPath)) {
         }
     }
 
-    // Clean up temp file
-    unlink($sitesJsonPath);
     $siteCount = count($sitesConfig);
     echo "Multi-site configuration complete ({$siteCount} site" . ($siteCount === 1 ? '' : 's') . ")\n";
 }
@@ -165,5 +167,11 @@ if (file_exists($sitesJsonPath)) {
 // methods explicitly so both the DB and YAML files get updated.
 $projectConfig->saveModifiedConfigData();
 $projectConfig->writeYamlFiles(true);
+
+// Recovery input is removed only after both project-config persistence steps
+// succeed. A failed write can therefore be retried with `make create`.
+if (isset($sitesJsonPath) && file_exists($sitesJsonPath)) {
+    unlink($sitesJsonPath);
+}
 
 echo "Project config updated successfully.\n";

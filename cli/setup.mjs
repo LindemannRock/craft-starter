@@ -17,12 +17,8 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { LR_PLUGINS, THIRD_PARTY_PLUGINS } from './config/plugins.mjs';
 import { promptProject } from './prompts/project.mjs';
-import {
-	promptLrPlugins,
-	promptThirdPartyPlugins,
-	promptHosting,
-} from './prompts/plugins.mjs';
-import { promptSites } from './prompts/sites.mjs';
+import { promptLrPlugins, promptThirdPartyPlugins, promptHosting, promptPluginEditions } from './prompts/plugins.mjs';
+import { getSiteUrlConflicts, promptSites } from './prompts/sites.mjs';
 import { promptServdCredentials } from './prompts/servd.mjs';
 import { promptHostingEmail } from './prompts/hosting-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
@@ -36,10 +32,18 @@ import { updateDdevConfig } from './actions/ddev.mjs';
 import { setPhpVersion } from './actions/php.mjs';
 import { applyCriticalCssChoice } from './actions/critical.mjs';
 import { updateGitignore } from './actions/gitignore.mjs';
-import { applyCraftCloudDefaults, writeCraftCloudConfig } from './actions/cloud.mjs';
+import { applyCraftCloudDefaults, reconcileCraftCloudConfig } from './actions/cloud.mjs';
 import { generateEnvFile } from './actions/env.mjs';
-import { writePluginConfigs, cleanUnusedPluginConfigs } from './actions/plugins.mjs';
+import { writePluginConfigs, cleanUnusedPluginConfigs, syncLrBaseConfig } from './actions/plugins.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from './actions/sites.mjs';
+import { removeRedisAddonFiles } from './actions/redis.mjs';
+import {
+	buildSetupManifest,
+	markSetupComplete,
+	readSetupManifest,
+	writeSetupManifest,
+} from './actions/setupManifest.mjs';
+import { resetProject } from './actions/lifecycle.mjs';
 import { buildInstallSteps } from './actions/install.mjs';
 import { intro, showConfigurationSummary, outro } from './ui.mjs';
 import fs from 'fs';
@@ -57,7 +61,9 @@ async function collectProject(state) {
 }
 
 async function collectSitesAndFeatures(state) {
-	state.sites = await promptSites(state.project?.description || state.project?.name);
+	state.sites = await promptSites(state.project?.description || state.project?.name, {
+		cpTrigger: state.project?.cpTrigger || 'cms',
+	});
 	const redis = await promptRedis();
 	state.useRedisCache = redis.useRedisCache;
 	state.useRedisSession = redis.useRedisSession;
@@ -89,12 +95,17 @@ async function collectPlugins(state) {
 			p.log.info('SMS Manager auto-added — required by Formie SMS');
 		}
 	}
+
+	state.selectedLr = await promptPluginEditions(state.selectedLr);
+	state.selectedTp = await promptPluginEditions(state.selectedTp);
 }
 
 async function collectPluginConfig(state) {
 	state.translationCategory = null;
 
-	const hasTranslationManager = [...state.selectedLr, ...state.selectedTp].some((pl) => pl.handle === 'translation-manager');
+	const hasTranslationManager = [...state.selectedLr, ...state.selectedTp].some(
+		(pl) => pl.handle === 'translation-manager',
+	);
 	if (hasTranslationManager) {
 		state.translationCategory = await promptTranslationCategory();
 	}
@@ -136,6 +147,7 @@ async function main() {
 
 	// Bail out early with a clear message if Docker/DDEV/Node aren't ready
 	checkPrerequisites();
+	const previousManifest = readSetupManifest();
 
 	// Detect existing project — .env is written on first run.
 	// `make create` is scoped to first-run scaffolding only; re-runs would
@@ -143,12 +155,21 @@ async function main() {
 	// to the right tool based on intent.
 	if (fs.existsSync(`${ROOT}/.env`)) {
 		p.log.warn('A project already exists in this directory (.env found).');
+		const isPending = previousManifest?.status === 'pending';
 		const action = await p.select({
 			message: 'What would you like to do?',
 			options: [
-				{ value: 'install', label: 'Resync ' + pc.dim('(make install)'),      hint: 'idempotent — preserves .env / composer.json / lock files' },
-				{ value: 'reset',   label: 'Start over ' + pc.dim('(make reset)'),    hint: 'wipe DB + .env + config/project, keep vendor/node_modules' },
-				{ value: 'cancel',  label: pc.red('Cancel') },
+				{
+					value: 'install',
+					label: (isPending ? 'Resume setup ' : 'Reinstall existing project ') + pc.dim('(make install)'),
+					hint: 'preserves project definition and source',
+				},
+				{
+					value: 'reset',
+					label: 'Full reset and create again',
+					hint: 'wipe local DB + .env + generated Project Config',
+				},
+				{ value: 'cancel', label: pc.red('Cancel') },
 			],
 		});
 		if (p.isCancel(action) || action === 'cancel') cancel();
@@ -162,25 +183,23 @@ async function main() {
 
 		if (action === 'reset') {
 			// Explicit confirm — list exactly what's destroyed so there's no surprise
-			p.log.warn('This will permanently:\n' +
-				'  • delete the DDEV project + database\n' +
-				'  • delete .env (admin credentials, site URLs, all custom values)\n' +
-				'  • delete config/project/ (Craft project config)\n' +
-				'  • delete craft-cloud.yaml (if present)\n' +
-				'Kept: vendor/, node_modules/, composer.lock, package-lock.json');
+			p.log.warn(
+				'This will permanently:\n' +
+					'  • delete the DDEV project + database\n' +
+					'  • delete .env (admin credentials, site URLs, all custom values)\n' +
+					'  • delete config/project/ (Craft project config)\n' +
+					'  • delete incomplete temporary recovery files\n' +
+					'Kept: all project source, translations, lockfiles, and the non-secret setup manifest',
+			);
 			const confirmed = await p.confirm({
 				message: 'Proceed with reset?',
 				initialValue: false,
 			});
 			if (p.isCancel(confirmed) || !confirmed) cancel('Cancelled.');
 
-			const { execSync } = await import('child_process');
 			const s = p.spinner();
 			s.start('Resetting project');
-			try { execSync('ddev delete -Oy', { cwd: ROOT, stdio: 'ignore' }); } catch { /* DDEV may not be running */ }
-			fs.rmSync(`${ROOT}/.env`, { force: true });
-			fs.rmSync(`${ROOT}/config/project`, { recursive: true, force: true });
-			fs.rmSync(`${ROOT}/craft-cloud.yaml`, { force: true });
+			resetProject();
 			s.stop('Reset complete');
 
 			p.log.info('Starting fresh scaffold...');
@@ -219,7 +238,37 @@ async function main() {
 		});
 
 		if (p.isCancel(action) || action === 'cancel') cancel();
-		if (action === 'install') break;
+		if (action === 'install') {
+			const siteConflicts = getSiteUrlConflicts(state.sites, state.project.cpTrigger || 'cms');
+			if (siteConflicts.length > 0) {
+				p.log.error(
+					`Resolve these site URL conflicts before installation:\n${siteConflicts.map((conflict) => `  • ${conflict}`).join('\n')}`,
+				);
+				continue;
+			}
+			const selectedPackages = new Set([...state.selectedLr, ...state.selectedTp].map((plugin) => plugin.value));
+			const removedPlugins = (previousManifest?.plugins || []).filter(
+				(plugin) => !selectedPackages.has(plugin.package),
+			);
+			if (removedPlugins.length > 0) {
+				p.log.warn(
+					'The following previously selected plugins will be removed from composer.json:\n' +
+						removedPlugins
+							.map((plugin) => `  • ${plugin.handle}${plugin.edition ? ` (${plugin.edition})` : ''}`)
+							.join('\n'),
+				);
+				const removeConfirmed = await p.confirm({
+					message: 'Explicitly remove these plugins from the regenerated project?',
+					initialValue: false,
+				});
+				if (p.isCancel(removeConfirmed)) cancel();
+				if (!removeConfirmed) {
+					p.log.info('Plugin removal cancelled. Edit plugin selection and add them back to continue.');
+					continue;
+				}
+			}
+			break;
+		}
 
 		// Edit a single section then loop back to the summary
 		if (action === 'project') await collectProject(state);
@@ -236,11 +285,29 @@ async function main() {
 		}
 	}
 
-	const { project, sites, database, useRedisCache, useRedisSession, useCritical, commitBuildFiles, selectedLr, selectedTp, selectedHosting,
-		servdCredentials, postmarkToken, smtpCredentials, translationCategory } = state;
+	const {
+		project,
+		sites,
+		database,
+		useRedisCache,
+		useRedisSession,
+		useCritical,
+		commitBuildFiles,
+		selectedLr,
+		selectedTp,
+		selectedHosting,
+		servdCredentials,
+		postmarkToken,
+		smtpCredentials,
+		translationCategory,
+	} = state;
 
 	// -- Apply file changes --------------------------------------------------
 	const s = p.spinner();
+
+	// Persist all non-secret choices before mutating or installing anything so
+	// an interrupted run can be resumed with the exact plugin editions.
+	writeSetupManifest(buildSetupManifest(state, { status: 'pending' }));
 
 	s.start('Updating composer.json');
 	updateComposer({ selectedLr, selectedTp, selectedHosting, useRedisCache });
@@ -258,11 +325,15 @@ async function main() {
 	try {
 		const { execSync } = await import('child_process');
 		execSync('ddev delete -Oy', { cwd: ROOT, stdio: 'ignore' });
-	} catch { /* no project to delete — fresh install */ }
+	} catch {
+		/* no project to delete — fresh install */
+	}
 
 	s.start('Updating DDEV config');
-	updateDdevConfig(project, { useCritical, database });
+	const preservedDdevSidecar = updateDdevConfig(project, { useCritical, database });
 	s.stop('DDEV config updated');
+	if (preservedDdevSidecar)
+		p.log.warn(`Preserved customized ${preservedDdevSidecar}; remove it manually to fully disable Chromium wiring.`);
 
 	if (project.phpVersion) {
 		s.start(`Pinning PHP ${project.phpVersion}`);
@@ -271,74 +342,71 @@ async function main() {
 	}
 
 	s.start('Applying critical-CSS choice');
-	applyCriticalCssChoice(useCritical);
+	const preservedCriticalPartial = applyCriticalCssChoice(useCritical);
 	s.stop('Critical-CSS choice applied');
+	if (preservedCriticalPartial)
+		p.log.warn(`Preserved customized ${preservedCriticalPartial}; review it against the new critical-CSS choice.`);
 
 	s.start('Updating .gitignore');
 	updateGitignore({ commitBuildFiles });
 	s.stop('.gitignore updated');
-	p.log.info('composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).');
+	p.log.info(
+		'composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).',
+	);
 
 	s.start('Generating .env');
-	generateEnvFile({ project, sites, servdCredentials, postmarkToken, smtpCredentials, useRedisCache, useRedisSession, useCritical, selectedLr, selectedTp, selectedHosting, database });
+	generateEnvFile({
+		project,
+		sites,
+		servdCredentials,
+		postmarkToken,
+		smtpCredentials,
+		useRedisCache,
+		useRedisSession,
+		useCritical,
+		selectedLr,
+		selectedTp,
+		selectedHosting,
+		translationCategory,
+		database,
+	});
 	s.stop('.env generated');
 
-	if (selectedHosting.value === 'craft-cloud') {
-		s.start('Generating craft-cloud.yaml');
-		writeCraftCloudConfig(project.phpVersion);
-		s.stop('craft-cloud.yaml generated');
+	s.start('Reconciling hosting and Redis files');
+	const preservedCloudConfig = reconcileCraftCloudConfig({
+		enabled: selectedHosting.value === 'craft-cloud',
+		phpVersion: project.phpVersion,
+	});
+	if (!useRedisCache) removeRedisAddonFiles();
+	s.stop('Hosting and Redis files reconciled');
+	if (preservedCloudConfig) {
+		p.log.warn(
+			selectedHosting.value === 'craft-cloud'
+				? `Preserved customized ${preservedCloudConfig}; verify its PHP/build settings manually.`
+				: `Preserved customized ${preservedCloudConfig}; remove it manually if Craft Cloud is no longer used.`,
+		);
 	}
 
 	s.start('Writing plugin configs');
 	const allSelected = [...selectedLr, ...selectedTp];
 	writePluginConfigs(allSelected);
-	cleanUnusedPluginConfigs([...LR_PLUGINS, ...THIRD_PARTY_PLUGINS], allSelected);
-
-	// Always include lindemannrock-base config when any LR plugin is selected
-	if (selectedLr.length > 0) {
-		const baseSrc = `${ROOT}/cli/templates/plugins/lindemannrock-base.php`;
-		const baseDest = `${ROOT}/config/lindemannrock-base.php`;
-		if (fs.existsSync(baseSrc) && !fs.existsSync(baseDest)) {
-			fs.copyFileSync(baseSrc, baseDest);
-		}
-	}
-
-	// Patch Translation Manager config with prompted category + primary site language
-	if (translationCategory) {
-		const tmConfig = `${ROOT}/config/translation-manager.php`;
-		if (fs.existsSync(tmConfig)) {
-			let content = fs.readFileSync(tmConfig, 'utf-8');
-			content = content.replace(
-				"'translationCategory' => 'messages'",
-				`'translationCategory' => '${translationCategory}'`,
-			);
-			const primaryLang = sites[0]?.language?.split('-')[0] || 'en';
-			content = content.replace(
-				"'sourceLanguage' => 'en'",
-				`'sourceLanguage' => '${primaryLang}'`,
-			);
-			fs.writeFileSync(tmConfig, content);
-		}
-
-		// Patch global-variables.twig to use the prompted category
-		if (translationCategory !== 'site') {
-			const globalVars = `${ROOT}/templates/_layouts/global-variables.twig`;
-			if (fs.existsSync(globalVars)) {
-				let content = fs.readFileSync(globalVars, 'utf-8');
-				content = content.replace(
-					"{% set primaryTranslationCategory = 'site' %}",
-					`{% set primaryTranslationCategory = '${translationCategory}' %}`,
-				);
-				fs.writeFileSync(globalVars, content);
-			}
-		}
-	}
+	const preservedPluginConfigs = cleanUnusedPluginConfigs([...LR_PLUGINS, ...THIRD_PARTY_PLUGINS], allSelected);
+	const preservedBaseConfig = syncLrBaseConfig(selectedLr.length > 0);
 	s.stop('Plugin configs written');
+	for (const config of [...preservedPluginConfigs, preservedBaseConfig].filter(Boolean)) {
+		p.log.warn(`Preserved customized ${config}; it is no longer selected.`);
+	}
 
 	s.start('Scaffolding translations');
-	scaffoldTranslations(sites, translationCategory || 'site');
-	cleanUnusedTranslations(sites);
+	const category = translationCategory || 'site';
+	scaffoldTranslations(sites, category);
+	const preservedTranslations = cleanUnusedTranslations(sites, {
+		previousSites: previousManifest?.sites || [],
+		previousCategory: previousManifest?.translationCategory || 'site',
+		category,
+	});
 	s.stop('Translations scaffolded');
+	for (const translation of preservedTranslations) p.log.warn(`Preserved customized ${translation}.`);
 
 	// Copy CP rebrand assets (login logo + site icon)
 	const rebrandSrc = `${ROOT}/cli/templates/rebrand`;
@@ -357,10 +425,7 @@ async function main() {
 		// or vice versa) flips correctly. Matches any digit argument.
 		const generalPath = `${ROOT}/config/general.php`;
 		let general = fs.readFileSync(generalPath, 'utf-8');
-		general = general.replace(
-			/->defaultWeekStartDay\(\d+\)/,
-			`->defaultWeekStartDay(${project.weekStartDay})`,
-		);
+		general = general.replace(/->defaultWeekStartDay\(\d+\)/, `->defaultWeekStartDay(${project.weekStartDay})`);
 		fs.writeFileSync(generalPath, general);
 	}
 
@@ -389,10 +454,13 @@ async function main() {
 		} catch (err) {
 			s.error(step.msg);
 			p.log.error(err.message);
-			p.cancel('Installation failed. Fix the error above and re-run: make install');
+			p.cancel('Installation failed. Fix the error above and re-run: make create → Resume setup');
 			process.exit(1);
 		}
 	}
+
+	markSetupComplete();
+	fs.rmSync(`${ROOT}/cli/tmp`, { recursive: true, force: true });
 
 	const hasPlaceholders = Boolean(servdCredentials?.placeholder);
 	outro({ project, useCritical, hasPlaceholders });

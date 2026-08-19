@@ -8,25 +8,14 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import { ROOT } from '../paths.mjs';
+import { OPTIONAL_DEV_DEPENDENCIES } from '../config/packages.mjs';
 
-/**
- * Read the pinned version of a devDependency from the last git-committed
- * package.json. Falls back to whatever's in the working copy (or undefined).
- * Keeps the CLI in sync with the committed baseline without hardcoding.
- */
-function committedDevDep(name) {
-	try {
-		const raw = execSync('git show HEAD:package.json', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString();
-		return JSON.parse(raw).devDependencies?.[name];
-	} catch {
-		return undefined;
-	}
-}
-
-export function updatePackageJson({ name, description }, { useCritical = true, hasIconManager = false } = {}) {
-	const pkgPath = path.join(ROOT, 'package.json');
+export function updatePackageJson(
+	{ name, description },
+	{ useCritical = true, hasIconManager = false, root = ROOT } = {},
+) {
+	const pkgPath = path.join(root, 'package.json');
 	const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 	pkg.name = name;
 	pkg.description = description || '';
@@ -41,10 +30,7 @@ export function updatePackageJson({ name, description }, { useCritical = true, h
 
 function toggleDevDep(pkg, name, keep) {
 	if (keep) {
-		const version = pkg.devDependencies[name]
-			|| committedDevDep(name)
-			|| '*';
-		pkg.devDependencies[name] = version;
+		pkg.devDependencies[name] = OPTIONAL_DEV_DEPENDENCIES[name];
 	} else {
 		delete pkg.devDependencies[name];
 	}

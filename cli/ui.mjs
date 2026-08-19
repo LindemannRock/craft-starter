@@ -13,7 +13,19 @@ export function intro() {
 	p.intro(pc.bgCyan(pc.black(' LindemannRock — Craft CMS Starter ')));
 }
 
-export function showConfigurationSummary({ project, sites, database, useRedisCache, useRedisSession, useCritical, commitBuildFiles, selectedLr, selectedTp, selectedHosting }) {
+export function showConfigurationSummary({
+	project,
+	sites,
+	database,
+	useRedisCache,
+	useRedisSession,
+	useCritical,
+	commitBuildFiles,
+	selectedLr,
+	selectedTp,
+	selectedHosting,
+}) {
+	const localBaseUrl = `https://${project.name}.ddev.site`;
 	const rows = [
 		['Project', project.name],
 		['Site name', project.description],
@@ -23,13 +35,21 @@ export function showConfigurationSummary({ project, sites, database, useRedisCac
 		['Week starts', project.weekStartDay === 0 ? 'Sunday' : 'Monday'],
 		['Admin', project.adminEmail],
 		['System email', project.systemEmail],
-		['Sites', sites.map((s) => `${s.handle} (${s.language})`).join(', ')],
+		[
+			'Sites',
+			sites
+				.map(
+					(s) =>
+						`${s.handle} (${s.language}) → ${s.urlPrefix ? `${localBaseUrl}/${s.urlPrefix}/` : `${localBaseUrl}/`}`,
+				)
+				.join(', '),
+		],
 		['Database', database?.label || 'MySQL 8.0'],
 		['Cache', useRedisCache ? (useRedisSession ? 'Redis (cache + sessions)' : 'Redis (cache only)') : 'File (default)'],
 		['Critical CSS', useCritical ? 'Yes (run make critical)' : 'No'],
 		['Build files', commitBuildFiles ? 'Track web/dist' : 'Ignore web/dist'],
-		['LR Plugins', selectedLr.length ? selectedLr.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
-		['Plugins', selectedTp.length ? selectedTp.map((pl) => pl.autoAdded ? `${pl.label} (req. by ${pl.autoAdded})` : pl.label).join(', ') : 'None'],
+		['LR Plugins', selectedLr.length ? selectedLr.map(pluginSummary).join(', ') : 'None'],
+		['Plugins', selectedTp.length ? selectedTp.map(pluginSummary).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],
 	];
 
@@ -47,12 +67,20 @@ export function showConfigurationSummary({ project, sites, database, useRedisCac
 	const valueWidth = Math.max(30, Math.min(80, terminalWidth - boxOverhead - indentLength));
 
 	p.note(
-		rows.map(([label, value]) => {
-			const wrapped = wrapValue(value, valueWidth, indent);
-			return `${pc.bold(label.padEnd(labelWidth))}  ${wrapped}`;
-		}).join('\n'),
+		rows
+			.map(([label, value]) => {
+				const wrapped = wrapValue(value, valueWidth, indent);
+				return `${pc.bold(label.padEnd(labelWidth))}  ${wrapped}`;
+			})
+			.join('\n'),
 		'Configuration',
 	);
+}
+
+function pluginSummary(plugin) {
+	const edition = plugin.edition ? ` [${plugin.edition}]` : '';
+	const dependency = plugin.autoAdded ? ` (req. by ${plugin.autoAdded})` : '';
+	return `${plugin.label}${edition}${dependency}`;
 }
 
 /**
@@ -103,9 +131,7 @@ export function outro({ project, useCritical, hasPlaceholders }) {
 	const siteUrl = `https://${project.name}.ddev.site`;
 	const cpUrl = `${siteUrl}/${project.cpTrigger || 'cms'}`;
 
-	const criticalLine = useCritical
-		? `  ${pc.bold('make critical')}  Production build + critical CSS (slow)\n`
-		: '';
+	const criticalLine = useCritical ? `  ${pc.bold('make critical')}  Production build + critical CSS (slow)\n` : '';
 
 	const verifyLine = hasPlaceholders
 		? `  ${pc.bold('make verify')}    ${pc.yellow('Check .env for unfilled placeholders before deploy')}\n`
@@ -113,17 +139,18 @@ export function outro({ project, useCritical, hasPlaceholders }) {
 
 	console.log('');
 	p.outro(
-		pc.green(pc.bold('Project ready!')) + '\n\n' +
-		`  ${pc.bold('Site')}     ${pc.cyan(siteUrl)}\n` +
-		`  ${pc.bold('Admin')}    ${pc.cyan(cpUrl)}\n` +
-		`  ${pc.bold('Login')}    ${project.adminEmail}\n\n` +
-		`  ${pc.dim('Common commands:')}\n` +
-		`  ${pc.bold('make dev')}       Start Vite dev server (HMR)\n` +
-		`  ${pc.bold('make prod')}      Production build (fast)\n` +
-		criticalLine +
-		verifyLine +
-		`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
-		`  ${pc.bold('make reset')}     Wipe DB + .env, re-run setup\n` +
-		`  ${pc.bold('make help')}      See all available commands\n`
+		pc.green(pc.bold('Project ready!')) +
+			'\n\n' +
+			`  ${pc.bold('Site')}     ${pc.cyan(siteUrl)}\n` +
+			`  ${pc.bold('Admin')}    ${pc.cyan(cpUrl)}\n` +
+			`  ${pc.bold('Login')}    ${project.adminEmail}\n\n` +
+			`  ${pc.dim('Common commands:')}\n` +
+			`  ${pc.bold('make dev')}       Start Vite dev server (HMR)\n` +
+			`  ${pc.bold('make prod')}      Production build (fast)\n` +
+			criticalLine +
+			verifyLine +
+			`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
+			`  ${pc.bold('make reset')}     Wipe DB + .env, re-run setup\n` +
+			`  ${pc.bold('make help')}      See all available commands\n`,
 	);
 }

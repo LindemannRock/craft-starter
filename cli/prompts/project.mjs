@@ -116,7 +116,7 @@ export async function promptProject() {
 	}).catch(handlePromptError);
 
 	// PHP version — pinned in both .ddev/config.yaml and composer.json platform.
-	// Craft 5.9+ supports PHP 8.2 through 8.5; this starter defaults to 8.3.
+	// Supported Craft/PHP combinations are centralized in config/php.mjs.
 	const phpVersion = await p.select({
 		message: 'PHP version',
 		options: PHP_VERSION_OPTIONS,

@@ -47,7 +47,7 @@
 {% endif %}
 
 {# -- Translation category -- #}
-{% set primaryTranslationCategory = 'site' %}
+{% set primaryTranslationCategory = getenv('PRIMARY_TRANSLATION_CATEGORY') ?: 'site' %}
 {% set formTranslationCategory = 'formie' %}
 
 {# -- Global variables object (available in all templates) -- #}

@@ -132,6 +132,11 @@ export const LR_PLUGINS = [
 		hint: 'Search analytics + synonyms',
 		config: null,
 		ipSaltEnv: 'SEARCH_MANAGER_IP_SALT',
+		editions: [
+			{ value: 'standard', label: 'Standard' },
+			{ value: 'pro', label: 'Pro' },
+		],
+		defaultEdition: 'standard',
 	},
 	{
 		value: 'lindemannrock/craft-shortlink-manager',
@@ -186,9 +191,14 @@ export const THIRD_PARTY_PLUGINS = [
 		value: 'craftcms/commerce',
 		handle: 'commerce',
 		version: '^5.7.1',
-		label: "Commerce",
-		hint: "E-commerce platform",
+		label: 'Commerce',
+		hint: 'E-commerce platform',
 		config: null,
+		editions: [
+			{ value: 'pro', label: 'Pro' },
+			{ value: 'enterprise', label: 'Enterprise' },
+		],
+		defaultEdition: 'pro',
 	},
 	{
 		value: 'mmikkel/cp-clearcache',
@@ -202,8 +212,8 @@ export const THIRD_PARTY_PLUGINS = [
 		value: 'putyourlightson/craft-datastar',
 		handle: 'datastar',
 		version: '^1.0.2',
-		label: "Datastar",
-		hint: "A reactive hypermedia framework for Craft.",
+		label: 'Datastar',
+		hint: 'A reactive hypermedia framework for Craft.',
 		config: null,
 	},
 	{
@@ -226,9 +236,15 @@ export const THIRD_PARTY_PLUGINS = [
 		value: 'solspace/craft-freeform',
 		handle: 'freeform',
 		version: '^5.15.22',
-		label: "Freeform",
-		hint: "Form builder",
+		label: 'Freeform',
+		hint: 'Form builder',
 		config: null,
+		editions: [
+			{ value: 'express', label: 'Express' },
+			{ value: 'lite', label: 'Lite' },
+			{ value: 'pro', label: 'Pro' },
+		],
+		defaultEdition: 'express',
 	},
 	{
 		value: 'spacecatninja/imager-x',
@@ -237,6 +253,11 @@ export const THIRD_PARTY_PLUGINS = [
 		label: 'Imager X',
 		hint: 'Image transforms',
 		config: 'imager-x.php',
+		editions: [
+			{ value: 'lite', label: 'Lite' },
+			{ value: 'pro', label: 'Pro' },
+		],
+		defaultEdition: 'lite',
 	},
 	{
 		value: 'verbb/navigation',
@@ -289,17 +310,13 @@ export const HOSTING_OPTIONS = [
 		value: 'servd',
 		label: 'Servd',
 		hint: 'Craft CMS hosting',
-		packages: [
-			{ name: 'servd/craft-asset-storage', version: '^4.2.6', handle: 'servd-asset-storage' },
-		],
+		packages: [{ name: 'servd/craft-asset-storage', version: '^4.2.6', handle: 'servd-asset-storage' }],
 	},
 	{
 		value: 'craft-cloud',
 		label: 'Craft Cloud',
 		hint: 'Official Craft hosting',
-		packages: [
-			{ name: 'craftcms/cloud', version: '^3.11.0', handle: null },
-		],
+		packages: [{ name: 'craftcms/cloud', version: '^3.11.0', handle: null }],
 	},
 	{
 		value: 'none',

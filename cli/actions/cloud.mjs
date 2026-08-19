@@ -7,7 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ROOT} from '../paths.mjs';
+import { ROOT } from '../paths.mjs';
 
 /**
  * Cloud builds the frontend and publishes webroot files to its artifact CDN.
@@ -30,9 +30,35 @@ export function applyCraftCloudDefaults(state) {
 }
 
 export function craftCloudConfig(phpVersion = '8.3') {
-	return [`php-version: '${phpVersion}'`, "node-version: '22'", 'npm-script: build', ''].join('\n');
+	return [
+		'# Managed by Craft Starter',
+		`php-version: '${phpVersion}'`,
+		"node-version: '22'",
+		'npm-script: build',
+		'',
+	].join('\n');
 }
 
-export function writeCraftCloudConfig(phpVersion) {
-	fs.writeFileSync(path.join(ROOT, 'craft-cloud.yaml'), craftCloudConfig(phpVersion));
+export function reconcileCraftCloudConfig({ enabled, phpVersion, root = ROOT }) {
+	const configPath = path.join(root, 'craft-cloud.yaml');
+	if (enabled) {
+		if (fs.existsSync(configPath)) {
+			const existing = fs.readFileSync(configPath, 'utf-8');
+			const legacyGenerated = /^php-version: '[^']+'\nnode-version: '22'\nnpm-script: build\n$/;
+			if (!existing.startsWith('# Managed by Craft Starter\n') && !legacyGenerated.test(existing)) {
+				return path.relative(root, configPath);
+			}
+		}
+		fs.writeFileSync(configPath, craftCloudConfig(phpVersion));
+		return null;
+	}
+	if (!fs.existsSync(configPath)) return null;
+
+	const content = fs.readFileSync(configPath, 'utf-8');
+	const legacyGenerated = /^php-version: '[^']+'\nnode-version: '22'\nnpm-script: build\n$/;
+	if (content.startsWith('# Managed by Craft Starter\n') || legacyGenerated.test(content)) {
+		fs.rmSync(configPath);
+		return null;
+	}
+	return path.relative(root, configPath);
 }

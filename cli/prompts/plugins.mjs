@@ -41,6 +41,26 @@ export async function promptThirdPartyPlugins() {
 	return THIRD_PARTY_PLUGINS.filter((pl) => selected.includes(pl.value));
 }
 
+/** Ask for a Craft edition before installation for plugins that expose more than one. */
+export async function promptPluginEditions(plugins) {
+	const resolved = [];
+	for (const plugin of plugins) {
+		if (!plugin.editions || plugin.editions.length < 2) {
+			resolved.push(plugin);
+			continue;
+		}
+
+		const edition = await p.select({
+			message: `${plugin.label} edition`,
+			options: plugin.editions,
+			initialValue: plugin.edition || plugin.defaultEdition || plugin.editions[0].value,
+		});
+		if (p.isCancel(edition)) cancel();
+		resolved.push({ ...plugin, edition });
+	}
+	return resolved;
+}
+
 export async function promptHosting() {
 	const hosting = await p.select({
 		message: 'Hosting provider',
