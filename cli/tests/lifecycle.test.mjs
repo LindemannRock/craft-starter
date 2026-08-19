@@ -64,4 +64,20 @@ describe('project lifecycle', () => {
 			expect(fs.existsSync(path.join(root, preserved))).toBe(true);
 		}
 	});
+
+	it('clears Craft 6 Laravel runtime files while preserving tracked placeholders', () => {
+		const root = fixture();
+		for (const directory of ['public/build', 'bootstrap/cache', 'storage/framework/views']) {
+			fs.mkdirSync(path.join(root, directory), { recursive: true });
+			fs.writeFileSync(path.join(root, directory, '.gitignore'), '*\n!.gitignore\n');
+			fs.writeFileSync(path.join(root, directory, 'runtime.php'), 'generated');
+		}
+
+		nukeRuntime({ root, deleteDdev: false, craftProfile: 'craft6' });
+		expect(fs.existsSync(path.join(root, 'public/build'))).toBe(false);
+		for (const directory of ['bootstrap/cache', 'storage/framework/views']) {
+			expect(fs.existsSync(path.join(root, directory, '.gitignore'))).toBe(true);
+			expect(fs.existsSync(path.join(root, directory, 'runtime.php'))).toBe(false);
+		}
+	});
 });

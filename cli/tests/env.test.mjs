@@ -1,6 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
-import { setEnvKey, quoted, removeSection, serializeEnvValue } from '../actions/env.mjs';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { generateEnvFile, setEnvKey, quoted, removeSection, serializeEnvValue } from '../actions/env.mjs';
 import { getDatabaseOption } from '../config/databases.mjs';
+
+const tempDirs = [];
+
+afterEach(() => {
+	for (const directory of tempDirs.splice(0)) fs.rmSync(directory, { recursive: true, force: true });
+});
 
 describe('setEnvKey', () => {
 	it('replaces an existing key', () => {
@@ -116,5 +125,69 @@ describe('database options', () => {
 		expect(postgres.craftSchema).toBe('public');
 		expect(postgres.ddevType).toBe('postgres');
 		expect(postgres.ddevVersion).toBe('16');
+	});
+});
+
+describe('profile-aware environment generation', () => {
+	it('writes Laravel application, database, and mail variables for Craft 6', () => {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'craft-env-v6-'));
+		tempDirs.push(root);
+		const templatePath = path.join(root, 'cli/templates/platforms/craft6/env.example');
+		fs.mkdirSync(path.dirname(templatePath), { recursive: true });
+		fs.writeFileSync(
+			templatePath,
+			[
+				'APP_NAME=',
+				'APP_ENV=',
+				'APP_KEY=',
+				'APP_DEBUG=',
+				'APP_URL=',
+				'APP_LOCALE=',
+				'CRAFT_TIMEZONE=',
+				'CRAFT_CP_TRIGGER=',
+				'SYSTEM_NAME=',
+				'DB_CONNECTION=',
+				'DB_PORT=',
+				'DB_SEARCH_PATH=',
+				'PRIMARY_SITE_URL=',
+				'PRIMARY_SITE_LANGUAGE=',
+				'PRIMARY_TRANSLATION_CATEGORY=',
+				'MAIL_FROM_ADDRESS=',
+				'MAIL_FROM_NAME=',
+				'CRAFT_TEST_TO_EMAIL_ADDRESS=',
+				'',
+			].join('\n'),
+		);
+		generateEnvFile({
+			root,
+			craftProfile: 'craft6',
+			project: {
+				name: 'demo',
+				description: 'Demo Site',
+				timezone: 'Africa/Cairo',
+				cpTrigger: 'cms',
+				language: 'en-US',
+				systemEmail: 'hello@example.com',
+				noReplyEmail: '',
+				adminEmail: 'admin@example.com',
+			},
+			sites: [{ handle: 'en', language: 'en-US', name: 'Demo', label: 'English', urlPrefix: '' }],
+			database: {
+				craftDriver: 'mysql',
+				craftPort: '3306',
+				craftSchema: '',
+			},
+			selectedHosting: { value: 'none' },
+			useRedisCache: false,
+		});
+
+		const env = fs.readFileSync(path.join(root, '.env'), 'utf-8');
+		expect(env).toMatch(/^APP_KEY="base64:[^"]+"$/m);
+		expect(env).toContain('APP_NAME="Demo Site"');
+		expect(env).toContain('APP_URL=https://demo.ddev.site');
+		expect(env).toContain('DB_CONNECTION=mysql');
+		expect(env).toContain('MAIL_FROM_ADDRESS="hello@example.com"');
+		expect(env).not.toContain('CRAFT_APP_ID=');
+		expect(env).not.toContain('CRAFT_SECURITY_KEY=');
 	});
 });

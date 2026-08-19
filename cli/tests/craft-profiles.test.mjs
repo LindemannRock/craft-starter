@@ -9,14 +9,12 @@ import {
 	resolvePluginForCraftProfile,
 	validateCraftProfile,
 } from '../config/craft-profiles.mjs';
-import { promptCraftPlatform } from '../prompts/craft.mjs';
-
 describe('Craft platform profiles', () => {
-	it('enables only complete profiles', () => {
-		expect(Object.keys(CRAFT_PROFILES)).toEqual(['craft5']);
+	it('enables only complete profiles and keeps Craft 5 as the default', () => {
+		expect(Object.keys(CRAFT_PROFILES)).toEqual(['craft5', 'craft6']);
 		expect(resolveCraftProfile().id).toBe('craft5');
-		expect(() => resolveCraftProfile(6)).toThrow(/Unsupported Craft profile/);
-		expect(() => resolveCraftProfile({ profile: 'craft6', major: 5 })).toThrow(/Unsupported Craft profile/);
+		expect(resolveCraftProfile(6)).toMatchObject({ id: 'craft6', experimental: true });
+		expect(() => resolveCraftProfile(7)).toThrow(/Unsupported Craft profile/);
 		expect(() => validateCraftProfile({ id: 'craft-x' })).toThrow(/Incomplete Craft profile/);
 	});
 
@@ -46,10 +44,37 @@ describe('Craft platform profiles', () => {
 		expect(() => resolveCraftRelease('craft5', 'alpha')).toThrow(/Unsupported Craft CMS 5 release channel/);
 	});
 
-	it('skips platform questions while only one complete option exists', async () => {
-		await expect(promptCraftPlatform()).resolves.toMatchObject({
-			profile: { id: 'craft5' },
-			channel: 'stable',
+	it('describes the experimental Craft 6 Laravel scaffold', () => {
+		const profile = resolveCraftProfile(6);
+		expect(profile.ddev).toMatchObject({ projectType: 'laravel', docroot: 'public' });
+		expect(profile.php).toMatchObject({ default: '8.5' });
+		expect(profile.paths).toMatchObject({
+			build: 'public/build',
+			templates: 'resources/views',
+			generalConfig: 'config/craft/general.php',
+			projectConfig: 'config/craft/project',
+		});
+		expect(profile.commands.installOptions).toEqual({
+			nonInteractive: '--no-interaction',
+			siteName: '--siteName',
+			siteUrl: '--siteUrl',
+		});
+		expect(profile.commands.schemaVersion).toEqual([
+			'php',
+			'cli/scripts/project-config-value-v6.php',
+			'system.schemaVersion',
+		]);
+		expect(profile.features).toEqual({
+			plugins: false,
+			redis: false,
+			criticalCss: false,
+			rebrandAssets: false,
+		});
+		expect(profile.scaffold.copy).toContain('storage');
+		expect(profile.scaffold.cleanup).toContain('resources');
+		expect(composerConfigForCraftProfile(profile, 'alpha')).toMatchObject({
+			require: { 'craftcms/cms': '^6.0.0-alpha.16', 'laravel/framework': '^13.8' },
+			redis: null,
 		});
 	});
 

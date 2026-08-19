@@ -6,6 +6,7 @@ import { updateComposer } from '../actions/composer.mjs';
 import { syncRebrandAssets } from '../actions/assets.mjs';
 import { updateDdevConfig } from '../actions/ddev.mjs';
 import { updatePackageJson } from '../actions/packageJson.mjs';
+import { buildCraftInstallCommand } from '../actions/install.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from '../actions/sites.mjs';
 import { cleanUnusedPluginConfigs, pluginInstallArgs, validatePluginEditions } from '../actions/plugins.mjs';
 import { HOSTING_OPTIONS, LR_PLUGINS, THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
@@ -29,6 +30,8 @@ describe('generator-owned dependencies', () => {
 			JSON.stringify({
 				require: { 'acme/custom-package': '^1.0', 'verbb/formie': '^3.0' },
 				'require-dev': { 'acme/dev-tool': '^2.0' },
+				autoload: { 'psr-4': { 'Acme\\': 'src/' } },
+				scripts: { test: 'php test.php' },
 			}),
 		);
 		updateComposer(
@@ -44,6 +47,8 @@ describe('generator-owned dependencies', () => {
 		expect(composer.require['acme/custom-package']).toBe('^1.0');
 		expect(composer.require['verbb/formie']).toBeUndefined();
 		expect(composer['require-dev']['acme/dev-tool']).toBe('^2.0');
+		expect(composer.autoload['psr-4']).toEqual({ 'Acme\\': 'src/' });
+		expect(composer.scripts).toEqual({ test: 'php test.php' });
 	});
 
 	it('uses pinned optional frontend versions without Git history', () => {
@@ -53,6 +58,64 @@ describe('generator-owned dependencies', () => {
 		const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf-8'));
 		expect(pkg.devDependencies['rollup-plugin-critical']).toBe('^1.0.15');
 		expect(pkg.devDependencies.svgo).toBe('^4.0.0');
+	});
+
+	it('switches Composer and frontend architecture for Craft 6', () => {
+		const root = tempProject();
+		fs.writeFileSync(
+			path.join(root, 'composer.json'),
+			JSON.stringify({
+				require: { 'craftcms/cms': '^5', 'nystudio107/craft-vite': '^5' },
+				'require-dev': { 'craftcms/generator': '^2' },
+			}),
+		);
+		fs.writeFileSync(
+			path.join(root, 'package.json'),
+			JSON.stringify({ devDependencies: { vite: '^8', 'rollup-plugin-critical': '^1' } }),
+		);
+		const hosting = { value: 'none', packages: [] };
+		updateComposer(
+			{
+				selectedLr: [],
+				selectedTp: [],
+				selectedHosting: hosting,
+				useRedisCache: false,
+				craftProfile: 'craft6',
+				craftReleaseChannel: 'alpha',
+			},
+			{ root },
+		);
+		updatePackageJson({ name: 'demo', description: 'Demo' }, { root, craftProfile: 'craft6', useCritical: false });
+
+		const composer = JSON.parse(fs.readFileSync(path.join(root, 'composer.json'), 'utf-8'));
+		const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf-8'));
+		expect(composer.require).toMatchObject({
+			'craftcms/cms': '^6.0.0-alpha.16',
+			'laravel/framework': '^13.8',
+		});
+		expect(composer.require['nystudio107/craft-vite']).toBeUndefined();
+		expect(composer.autoload['psr-4']).toMatchObject({ 'App\\': 'app/' });
+		expect(composer.scripts['post-autoload-dump']).toContain('@php artisan craft:setup:publish --ansi');
+		expect(pkg.devDependencies['laravel-vite-plugin']).toBe('^3.0.0');
+		expect(pkg.devDependencies['rollup-plugin-critical']).toBeUndefined();
+	});
+});
+
+describe('Craft install commands', () => {
+	const project = {
+		name: 'demo',
+		description: 'Demo Site',
+		adminEmail: 'admin@example.com',
+		adminPassword: 'password123',
+		language: 'en-US',
+	};
+
+	it('uses Symfony option names for Craft 6', () => {
+		const command = buildCraftInstallCommand(project, { craftProfile: 'craft6' });
+		expect(command).toContain('php craft install --no-interaction');
+		expect(command).toContain('--siteName=');
+		expect(command).toContain('--siteUrl=');
+		expect(command).not.toContain('--site-name=');
 	});
 });
 
@@ -84,6 +147,15 @@ describe('generated DDEV sidecars', () => {
 		expect(config).toContain('type: craftcms');
 		expect(config).toContain('docroot: web');
 		expect(config).toContain('upload_dirs:\n    - web/assets\n    - storage\n');
+	});
+
+	it('applies the Craft 6 Laravel DDEV layout', () => {
+		const paths = prepareDdevProject('managed: true\n');
+		updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: false, craftProfile: 'craft6' });
+		const config = fs.readFileSync(path.join(paths.root, '.ddev/config.yaml'), 'utf-8');
+		expect(config).toContain('type: laravel');
+		expect(config).toContain('docroot: public');
+		expect(config).toContain('upload_dirs:\n    - public/assets\n    - storage\n');
 	});
 
 	it('preserves a customized sidecar when critical CSS is disabled', () => {

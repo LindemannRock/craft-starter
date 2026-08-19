@@ -80,7 +80,7 @@ describe('setup manifest', () => {
 			JSON.stringify({
 				schemaVersion: 1,
 				status: 'complete',
-				craft: { profile: 'craft6', major: 6, channel: 'alpha' },
+				craft: { profile: 'craft7', major: 7, channel: 'alpha' },
 			}),
 		);
 		expect(() => readSetupManifest({ root })).toThrow(/Unsupported Craft profile/);
