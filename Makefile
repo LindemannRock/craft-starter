@@ -70,7 +70,7 @@ endef
 ##@ Setup & install
 
 create: ## Interactive setup (prompts → install Craft + plugins end-to-end)
-	@cd cli && npm install --silent 2>/dev/null && cd ..
+	@cd cli && npm ci --silent 2>/dev/null && cd ..
 	@node cli/setup.mjs
 
 install: ## Install or re-sync the project (idempotent — safe to run anytime)
