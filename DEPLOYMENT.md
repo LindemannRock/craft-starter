@@ -15,18 +15,18 @@ This starter is configured for **local development with DDEV**. For staging and 
 
 These must be set for any non-local environment. Missing values will crash Craft on boot.
 
-| Variable | Description |
-|----------|-------------|
-| `CRAFT_APP_ID` | Unique Craft app ID — generate with `php craft setup/app-id` |
+| Variable             | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `CRAFT_APP_ID`       | Unique Craft app ID — generate with `php craft setup/app-id`      |
 | `CRAFT_SECURITY_KEY` | Craft security key — generate with `php craft setup/security-key` |
-| `CRAFT_ENVIRONMENT` | `staging` or `production` |
-| `CRAFT_DB_SERVER` | Database host |
-| `CRAFT_DB_DATABASE` | Database name |
-| `CRAFT_DB_USER` | Database user |
-| `CRAFT_DB_PASSWORD` | Database password |
-| `PRIMARY_SITE_URL` | Public site URL (e.g. `https://example.com`) |
-| `SYSTEM_EMAIL` | Outgoing email address |
-| `SYSTEM_NAME` | Site name shown in emails and CP |
+| `CRAFT_ENVIRONMENT`  | `staging` or `production`                                         |
+| `CRAFT_DB_SERVER`    | Database host                                                     |
+| `CRAFT_DB_DATABASE`  | Database name                                                     |
+| `CRAFT_DB_USER`      | Database user                                                     |
+| `CRAFT_DB_PASSWORD`  | Database password                                                 |
+| `PRIMARY_SITE_URL`   | Public site URL (e.g. `https://example.com`)                      |
+| `SYSTEM_EMAIL`       | Outgoing email address                                            |
+| `SYSTEM_NAME`        | Site name shown in emails and CP                                  |
 
 ### Multi-site projects
 
@@ -46,17 +46,17 @@ The handle is uppercased (`en` → `_EN`). These are referenced by Craft's proje
 
 ## Values that change per environment
 
-| Variable | Dev | Staging | Production |
-|----------|-----|---------|------------|
-| `CRAFT_ENVIRONMENT` | `dev` | `staging` | `production` |
-| `CRAFT_DEV_MODE` | `true` | `false` | `false` |
-| `CRAFT_ALLOW_ADMIN_CHANGES` | `true` | `false` | `false` |
-| `CRAFT_ALLOW_UPDATES` | `true` | `false` | `false` |
-| `CRAFT_DISALLOW_ROBOTS` | `true` | `true` | `false` |
-| `CRAFT_IS_SYSTEM_LIVE` | `true` | `true` | `true` |
-| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true` | `true` | `true` |
-| `CRAFT_TIMEZONE` | `UTC` or other | same | same |
-| `PRIMARY_SITE_URL` | `https://{project}.ddev.site` | staging URL | production URL |
+| Variable                        | Dev                           | Staging     | Production     |
+| ------------------------------- | ----------------------------- | ----------- | -------------- |
+| `CRAFT_ENVIRONMENT`             | `dev`                         | `staging`   | `production`   |
+| `CRAFT_DEV_MODE`                | `true`                        | `false`     | `false`        |
+| `CRAFT_ALLOW_ADMIN_CHANGES`     | `true`                        | `false`     | `false`        |
+| `CRAFT_ALLOW_UPDATES`           | `true`                        | `false`     | `false`        |
+| `CRAFT_DISALLOW_ROBOTS`         | `true`                        | `true`      | `false`        |
+| `CRAFT_IS_SYSTEM_LIVE`          | `true`                        | `true`      | `true`         |
+| `CRAFT_RUN_QUEUE_AUTOMATICALLY` | `true`                        | `true`      | `true`         |
+| `CRAFT_TIMEZONE`                | `UTC` or other                | same        | same           |
+| `PRIMARY_SITE_URL`              | `https://{project}.ddev.site` | staging URL | production URL |
 
 ## Security headers
 
@@ -102,6 +102,7 @@ POSTMARK_TOKEN=your-server-api-token
 SMTP_HOSTNAME=smtp.example.com
 SMTP_PORT=587
 SMTP_USE_AUTH=true
+SMTP_ENCRYPTION_METHOD=tls
 SMTP_USERNAME=your-username
 SMTP_PASSWORD=your-password
 ```
@@ -192,6 +193,7 @@ POSTMARK_TOKEN=...
 SMTP_HOSTNAME=smtp.example.com
 SMTP_PORT=587
 SMTP_USE_AUTH=true
+SMTP_ENCRYPTION_METHOD=tls
 SMTP_USERNAME=...
 SMTP_PASSWORD=...
 ```

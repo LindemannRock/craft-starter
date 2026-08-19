@@ -67,15 +67,16 @@ make create
 
 `make create` will:
 
-1. Prompt you for project details, sites, database, features (Redis, critical CSS), plugins, hosting, and email transport
+1. Prompt you for project details, sites, database, features (Redis, critical CSS), plugins and their editions, hosting, and email transport
 2. Let you review the full configuration and jump back to edit any section
-3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, plugin configs, and translation scaffolding; make generated Project Config and lockfiles trackable
+3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, `.craft-starter.json`, plugin configs, and translation scaffolding; make generated Project Config and lockfiles trackable
 4. Strip or keep conditional code based on your choices (critical CSS deps, hosting-specific env sections, unused plugin env vars)
 5. Start DDEV (plus the Redis add-on if enabled)
 6. Run Composer + NPM installs
 7. Install Craft CMS with your credentials (non-interactive, idempotent)
-8. Activate all selected plugins
+8. Verify each plugin's real edition list and activate the explicitly selected editions
 9. Apply and write Project Config, including plugin installation state, sites, and your email transport choice
+10. Build the frontend and mark the resumable setup manifest complete
 
 When it finishes you'll see the site URL, CP URL, login, and a hint about which commands to run next (`make dev`, `make prod`, `make critical` if enabled).
 
@@ -85,90 +86,95 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 
 ### Setup & install
 
-| Command                    | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `make create`              | Interactive setup (end-to-end: prompts → install → ready)  |
-| `make install`             | Install or re-sync the project (idempotent — needs `.env`) |
-| `make start`               | `ddev start` + Vite dev server                             |
-| `make keys`                | Generate Craft security key + app ID into `.env`           |
-| `make npm-install`         | Run `npm install` inside DDEV                              |
-| `make redis`               | Enable, configure, repair, or remove Redis                 |
+| Command            | Description                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `make create`      | Interactive setup (end-to-end: prompts → install → ready)                                             |
+| `make install`     | Rebuild or re-sync an existing project from `.env`, lockfiles, Project Config, and the setup manifest |
+| `make start`       | `ddev start` + Vite dev server                                                                        |
+| `make keys`        | Generate Craft security key + app ID into `.env`                                                      |
+| `make npm-install` | Run `npm install` inside DDEV                                                                         |
+| `make redis`       | Enable, configure, repair, or remove Redis                                                            |
 
 ### Development
 
-| Command                    | Alias  | Description                                       |
-| -------------------------- | ------ | ------------------------------------------------- |
-| `make dev`                 |        | Start Vite dev server (HMR)                       |
-| `make test`                |        | Run CLI unit tests (vitest — no DDEV needed)      |
-| `make prod`                |        | Production build (fast — skips critical CSS)      |
-| `make critical`            |        | Production build + critical CSS (slow — spawns Chromium per page). Only available if you opted in to critical CSS during `make create` |
-| `make favicons`            |        | Generate favicons from `src/img/favicon.svg`      |
-| `make format`              | `fmt`  | Format everything with Prettier                   |
-| `make kill-vite`           | `kv`   | Kill stuck Vite processes                         |
-| `make launch`              | `l`    | Launch the site in your browser                   |
-| `make tableplus`           | `tp`   | Launch TablePlus                                  |
-| `make mailpit`             | `mp`   | Launch Mailpit                                    |
+| Command          | Alias | Description                                                                                                                            |
+| ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `make dev`       |       | Start Vite dev server (HMR)                                                                                                            |
+| `make test`      |       | Run CLI unit tests (vitest — no DDEV needed)                                                                                           |
+| `make prod`      |       | Production build (fast — skips critical CSS)                                                                                           |
+| `make critical`  |       | Production build + critical CSS (slow — spawns Chromium per page). Only available if you opted in to critical CSS during `make create` |
+| `make favicons`  |       | Generate favicons from `src/img/favicon.svg`                                                                                           |
+| `make format`    | `fmt` | Format everything with Prettier                                                                                                        |
+| `make kill-vite` | `kv`  | Kill stuck Vite processes                                                                                                              |
+| `make launch`    | `l`   | Launch the site in your browser                                                                                                        |
+| `make tableplus` | `tp`  | Launch TablePlus                                                                                                                       |
+| `make mailpit`   | `mp`  | Launch Mailpit                                                                                                                         |
 
 ### Device testing (Tailscale)
 
-| Command                    | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `make share`               | Share the site over your Tailnet (test device needs Tailscale) |
-| `make funnel`              | Share the site publicly via Tailscale Funnel (no Tailscale on test device) |
+| Command       | Description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| `make share`  | Share the site over your Tailnet (test device needs Tailscale)             |
+| `make funnel` | Share the site publicly via Tailscale Funnel (no Tailscale on test device) |
 
 ### Maintenance
 
 Three commands open interactive pickers so you don't have to remember sub-target names. Direct sub-targets are still callable (documented under each picker below).
 
-| Command                 | Description                                                |
-| ----------------------- | ---------------------------------------------------------- |
-| `make up`               | Apply project config + run pending migrations              |
-| `make update`           | Interactive picker — Craft / Composer / Frontend / CLI / All |
-| `make registry`         | Maintain the plugin list offered by `make create` (check / update / add / remove / fetch) |
-| `make db`               | Database picker — pull from Servd / export / import        |
-| `make verify`           | Scan `.env` for unfilled `# TODO:` placeholders (run before deploy) |
-| `make php-version`      | Set PHP version across `.ddev/config.yaml` + `composer.json` (8.2–8.5; interactive, or `VERSION=8.5`) |
-| `make clean`            | Remove vendor & node_modules then reinstall                |
-| `make clean-logs`       | Remove `storage/logs/*.log`                                |
-| `make reindex-search`   | Rebuild the search index                                   |
+| Command               | Description                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `make up`             | Apply project config + run pending migrations                                                         |
+| `make update`         | Interactive picker — Craft / Composer / Frontend / CLI / All                                          |
+| `make registry`       | Maintain the plugin list offered by `make create` (check / update / add / remove / fetch)             |
+| `make db`             | Database picker — pull from Servd / export / import                                                   |
+| `make verify`         | Scan `.env` for unfilled `# TODO:` placeholders (run before deploy)                                   |
+| `make php-version`    | Set PHP version across `.ddev/config.yaml` + `composer.json` (8.2–8.5; interactive, or `VERSION=8.5`) |
+| `make clean`          | Remove vendor & node_modules then reinstall                                                           |
+| `make clean-logs`     | Remove `storage/logs/*.log`                                                                           |
+| `make reindex-search` | Rebuild the search index                                                                              |
 
 #### `make update` sub-targets (hidden from help, still callable)
 
-| Command                 | Description                                                |
-| ----------------------- | ---------------------------------------------------------- |
-| `make update-craft`     | `craft update all` — Craft CMS + plugins via Craft's updater |
-| `make update-composer`  | `composer update` — latest matching versions              |
-| `make update-npm`       | Frontend packages in project `node_modules/` (via `npm-check`) |
-| `make update-cli`       | CLI scaffolding packages in `cli/node_modules/`           |
+| Command                | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| `make update-craft`    | `craft update all` — Craft CMS + plugins via Craft's updater   |
+| `make update-composer` | `composer update` — latest matching versions                   |
+| `make update-npm`      | Frontend packages in project `node_modules/` (via `npm-check`) |
+| `make update-cli`      | CLI scaffolding packages in `cli/node_modules/`                |
 
 Tip: pick "Craft CMS + plugins" in the picker to see a checklist of available updates (Craft + each plugin) — uncheck anything you want to skip. Selecting all runs `craft update all`; partial selections run `craft update <handle>` for each chosen package.
 
 #### `make registry` sub-targets (hidden)
 
-| Command                       | Description                                    |
-| ----------------------------- | ---------------------------------------------- |
-| `make registry-plugins-check` | Compare registry versions against Packagist   |
-| `make registry-plugins-update`| Apply version bumps (confirms major bumps)    |
-| `make registry-plugins-add`   | Search Packagist + add a plugin to the registry |
-| `make registry-plugins-remove`| Remove a plugin from the registry (optionally deletes config template) |
-| `make registry-plugins-fetch` | Pull default `config.php` from each plugin's GitHub repo |
+| Command                        | Description                                                               |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `make registry-plugins-check`  | Compare registry versions against Packagist                               |
+| `make registry-plugins-update` | Apply version bumps (confirms major bumps)                                |
+| `make registry-plugins-add`    | Search Packagist, detect Craft editions, and add a plugin to the registry |
+| `make registry-plugins-remove` | Remove a plugin from the registry (optionally deletes config template)    |
+| `make registry-plugins-fetch`  | Pull default `config.php` from each plugin's GitHub repo                  |
 
 #### `make db` sub-targets (hidden)
 
-| Command                          | Description                                    |
-| -------------------------------- | ---------------------------------------------- |
-| `make db-pull`                   | Pull from Servd (Servd hosting only — hidden from picker when not installed) |
-| `make db-export [file=path]`     | Export local DB (default: `db.sql.gz`)        |
-| `make db-import [file=path]`     | Import a SQL dump (default: `db.sql.gz`)      |
+| Command                      | Description                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `make db-pull`               | Pull from Servd (Servd hosting only — hidden from picker when not installed) |
+| `make db-export [file=path]` | Export local DB (default: `db.sql.gz`)                                       |
+| `make db-import [file=path]` | Import a SQL dump (default: `db.sql.gz`)                                     |
 
 The `db-export` picker asks whether it's a disposable working dump (`.sql.gz`, git-ignored) or a seed DB (`.sql.gzip`, committed) and sets the extension accordingly.
 
 ### Destructive (asks for confirmation)
 
-| Command                    | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `make reset`               | Wipe the database + `.env` (keeps vendor/node_modules)     |
-| `make nuke`                | Destroy DDEV + vendor + node_modules + dist + config/project + .env |
+| Command              | Description                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `make reset`         | Wipe local DB + `.env` + generated Project Config; preserve source and setup choices                    |
+| `make nuke`          | Remove local runtime/dependencies; preserve `.env`, Project Config, source, translations, and lockfiles |
+| `make starter-reset` | Original starter repo only: restore its committed scaffold for generator testing                        |
+
+After `make nuke`, run `make install` to rebuild the same project. Running `make create` while `.env` exists offers **Reinstall existing project** or **Full reset and create again**. A failed creation is recorded as pending and the first option becomes **Resume setup**.
+
+`make reset` is a deliberate new-project reset: it removes the local database, `.env`, and generated Project Config but leaves project source untouched. `make starter-reset` is more destructive and refuses to run outside the original `LindemannRock/craft-starter` Git repository.
 
 ## After `make create`
 
@@ -217,50 +223,50 @@ craft-starter/
 
 ### LindemannRock (opt-in during `make create`)
 
-| Plugin | Purpose |
-|--------|---------|
-| [Code Highlighter](https://github.com/LindemannRock/craft-code-highlighter) | Syntax highlighting (Prism.js) |
-| [Component Manager](https://github.com/LindemannRock/craft-component-manager) | Advanced component management |
-| [Formie Paragraph](https://github.com/LindemannRock/craft-formie-paragraph-field) | Multi-line paragraph field for Formie |
-| [Formie Rating](https://github.com/LindemannRock/craft-formie-rating-field) | Star/emoji/numeric rating for Formie |
-| [Formie REST API](https://github.com/LindemannRock/craft-formie-rest-api) | REST + GraphQL API for Formie |
-| [Formie SMS](https://github.com/LindemannRock/craft-formie-sms) | SMS notifications for Formie (auto-adds SMS Manager) |
-| [Icon Manager](https://github.com/LindemannRock/craft-icon-manager) | SVG + icon font management (auto-adds `svgo` devDependency for advanced SVG optimization) |
-| [Logging Library](https://github.com/LindemannRock/craft-logging-library) | Centralized logging |
-| [Redirect Manager](https://github.com/LindemannRock/craft-redirect-manager) | Auto-redirects + privacy-preserving analytics |
-| [Report Manager](https://github.com/LindemannRock/craft-report-manager) | Report generation + analytics |
-| [Search Manager](https://github.com/LindemannRock/craft-search-manager) | Search analytics + synonyms |
-| [Shortlink Manager](https://github.com/LindemannRock/craft-shortlink-manager) | Short links with QR codes + analytics |
-| [Smartlink Manager](https://github.com/LindemannRock/craft-smartlink-manager) | Device-aware smart links |
-| [SMS Manager](https://github.com/LindemannRock/craft-sms-manager) | SMS gateway (multi-provider) |
-| [Translation Manager](https://github.com/LindemannRock/craft-translation-manager) | Translation management (prompts for category name, default `messages`) |
+| Plugin                                                                            | Purpose                                                                                   |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [Code Highlighter](https://github.com/LindemannRock/craft-code-highlighter)       | Syntax highlighting (Prism.js)                                                            |
+| [Component Manager](https://github.com/LindemannRock/craft-component-manager)     | Advanced component management                                                             |
+| [Formie Paragraph](https://github.com/LindemannRock/craft-formie-paragraph-field) | Multi-line paragraph field for Formie                                                     |
+| [Formie Rating](https://github.com/LindemannRock/craft-formie-rating-field)       | Star/emoji/numeric rating for Formie                                                      |
+| [Formie REST API](https://github.com/LindemannRock/craft-formie-rest-api)         | REST + GraphQL API for Formie                                                             |
+| [Formie SMS](https://github.com/LindemannRock/craft-formie-sms)                   | SMS notifications for Formie (auto-adds SMS Manager)                                      |
+| [Icon Manager](https://github.com/LindemannRock/craft-icon-manager)               | SVG + icon font management (auto-adds `svgo` devDependency for advanced SVG optimization) |
+| [Logging Library](https://github.com/LindemannRock/craft-logging-library)         | Centralized logging                                                                       |
+| [Redirect Manager](https://github.com/LindemannRock/craft-redirect-manager)       | Auto-redirects + privacy-preserving analytics                                             |
+| [Report Manager](https://github.com/LindemannRock/craft-report-manager)           | Report generation + analytics                                                             |
+| [Search Manager](https://github.com/LindemannRock/craft-search-manager)           | Search analytics + synonyms                                                               |
+| [Shortlink Manager](https://github.com/LindemannRock/craft-shortlink-manager)     | Short links with QR codes + analytics                                                     |
+| [Smartlink Manager](https://github.com/LindemannRock/craft-smartlink-manager)     | Device-aware smart links                                                                  |
+| [SMS Manager](https://github.com/LindemannRock/craft-sms-manager)                 | SMS gateway (multi-provider)                                                              |
+| [Translation Manager](https://github.com/LindemannRock/craft-translation-manager) | Translation management (prompts for category name, default `messages`)                    |
 
 ### Third-party (opt-in during `make create`)
 
-| Plugin | Purpose |
-|--------|---------|
-| [Cloudflare](https://putyourlightson.com/plugins/cloudflare) | Purge Cloudflare cache from Craft |
-| [Commerce](https://craftcms.com/commerce) | E-commerce platform |
-| [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache) | Clear cache from CP toolbar |
-| [Expanded Singles](https://github.com/verbb/expanded-singles) | Singles as direct sidebar links |
-| [Formie](https://verbb.io/craft-plugins/formie) | Form builder (auto-added when any Formie addon is selected) |
-| [Freeform](https://solspace.com/craft/freeform) | Form builder |
-| [Imager X](https://plugins.craftcms.com/imager-x) | Image transforms |
-| [Navigation](https://verbb.io/craft-plugins/navigation) | Navigation management |
-| [Postmark](https://github.com/craftcms/postmark) | Email transport |
-| [Scout](https://plugins.craftcms.com/scout) | Search indexing (Algolia, Elasticsearch, etc.) |
-| [SEOmatic](https://nystudio107.com/plugins/seomatic) | SEO management |
-| [Sprig](https://putyourlightson.com/plugins/sprig) | Reactive Twig components |
+| Plugin                                                        | Purpose                                                     |
+| ------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Cloudflare](https://putyourlightson.com/plugins/cloudflare)  | Purge Cloudflare cache from Craft                           |
+| [Commerce](https://craftcms.com/commerce)                     | E-commerce platform                                         |
+| [CP Clear Cache](https://plugins.craftcms.com/cp-clearcache)  | Clear cache from CP toolbar                                 |
+| [Expanded Singles](https://github.com/verbb/expanded-singles) | Singles as direct sidebar links                             |
+| [Formie](https://verbb.io/craft-plugins/formie)               | Form builder (auto-added when any Formie addon is selected) |
+| [Freeform](https://solspace.com/craft/freeform)               | Form builder                                                |
+| [Imager X](https://plugins.craftcms.com/imager-x)             | Image transforms                                            |
+| [Navigation](https://verbb.io/craft-plugins/navigation)       | Navigation management                                       |
+| [Postmark](https://github.com/craftcms/postmark)              | Email transport                                             |
+| [Scout](https://plugins.craftcms.com/scout)                   | Search indexing (Algolia, Elasticsearch, etc.)              |
+| [SEOmatic](https://nystudio107.com/plugins/seomatic)          | SEO management                                              |
+| [Sprig](https://putyourlightson.com/plugins/sprig)            | Reactive Twig components                                    |
 
 > Updating the list: run `make registry` → _Update versions_ to pull latest from Packagist (major bumps prompt for confirmation). Add new plugins with `make registry` → _Add a plugin_.
 
 ### Hosting
 
-| Provider | What gets installed |
-|----------|---------------------|
-| **Servd** | `servd/craft-asset-storage` + credentials prompt + optional custom asset domains + email transport fallback |
-| **Craft Cloud** | `craftcms/cloud` + `craft-cloud.yaml` using the selected PHP version, Node 22, and `npm run build`; Postmark/SMTP prompt included |
-| **None / self-hosted** | No hosting plugin added |
+| Provider               | What gets installed                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Servd**              | `servd/craft-asset-storage` + credentials prompt + optional custom asset domains + email transport fallback                       |
+| **Craft Cloud**        | `craftcms/cloud` + `craft-cloud.yaml` using the selected PHP version, Node 22, and `npm run build`; Postmark/SMTP prompt included |
+| **None / self-hosted** | No hosting plugin added                                                                                                           |
 
 ### Always included (core)
 
@@ -290,6 +296,8 @@ Craft's built-in settings use `CRAFT_*` env vars (`CRAFT_DEV_MODE`, `CRAFT_TIMEZ
 
 The starter repository temporarily ignores `config/project/` because it does not yet ship a fixed baseline. During `make create`, the CLI removes that ignore rule before Craft generates the downstream project's configuration. Commit the generated `config/project/` directory so plugin and schema changes are applied consistently on Craft Cloud, Servd, and other deployment targets.
 
+Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (hosting, PHP/database selection, sites, Redis, plugin packages and editions, and translation category). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
+
 ## What `make create` does differently based on your choices
 
 The installer tailors the project to your selections so you don't end up with dead dependencies or unused config. Noteworthy conditional behaviors:
@@ -311,8 +319,8 @@ The installer tailors the project to your selections so you don't end up with de
 
 ### Translation Manager (LR plugin)
 
-- Prompts for a **translation category** (default `messages`). Patches `config/translation-manager.php` and rewrites `templates/_layouts/global-variables.twig` so `{% set primaryTranslationCategory = '...' %}` uses your chosen value
-- Sets `sourceLanguage` in the plugin config to your primary site's language
+- Prompts for a **translation category** (default `messages`) and writes it to `PRIMARY_TRANSLATION_CATEGORY`
+- The Translation Manager config and Twig globals read that env value; `PRIMARY_SITE_LANGUAGE` supplies the exact primary language ID
 - AI API keys (OpenAI, Gemini, Anthropic) read via `App::env()` — kept out of hard-coded config
 
 ### Redis
@@ -335,13 +343,13 @@ The installer tailors the project to your selections so you don't end up with de
 Configured in project config at install time via `cli/scripts/configure-project.php`, picked in this order:
 
 1. **Postmark** if `POSTMARK_TOKEN` set + plugin installed
-2. **Generic SMTP** if `SMTP_HOSTNAME` set
+2. **Generic SMTP** if `SMTP_HOSTNAME` set; authentication and TLS/SSL/none follow the setup choices
 3. **Mailpit** (DDEV local) as dev default
 4. **Sendmail** as Craft's fallback
 
 No `mailer` component override in `config/app.php` — single source of truth in project config means the CP shows the right value and Servd's sendmail alert never fires.
 
-Servd and Craft Cloud both prompt for Postmark or generic SMTP when Postmark was not already selected. Copy the matching secret variables into the hosting dashboard. If setup is explicitly skipped, configure the mailer locally and commit the resulting Project Config before deployment.
+Servd and Craft Cloud both prompt for Postmark or generic SMTP when Postmark was not already selected. SMTP asks separately about authentication and TLS, SSL, or no encryption; credentials are requested only when authentication is enabled. Copy the matching variables into the hosting dashboard. If setup is explicitly skipped, configure the mailer locally and commit the resulting Project Config before deployment.
 
 ### Auto-added plugin dependencies
 
@@ -351,14 +359,14 @@ Servd and Craft Cloud both prompt for Postmark or generic SMTP when Postmark was
 
 ## Testing
 
-The CLI ships with unit tests for its pure utility functions — no DDEV or Craft install needed.
+The CLI ships with fast fixture tests for utilities, setup state, plugin editions, translation scaffolding, dependency reconciliation, and project teardown — no DDEV or Craft install needed.
 
 ```bash
-make test              # single run (41 tests, ~200ms)
+make test              # fast unit + lifecycle fixture suite
 cd cli && npx vitest   # watch mode (re-runs on save)
 ```
 
-Tests cover: `setEnvKey` (including `$`-pattern safety), `shellEscape`, `isValidEmail`, `quoted`, `removeSection`, `redactSecrets`, and all crypto generators. Located in `cli/tests/`.
+Release/manual validation additionally exercises the full DDEV lifecycle: create, nuke, install, reset, and create again with changed hosting/Redis/plugin choices.
 
 When contributing changes to `cli/utils/` or `cli/actions/`, run `make test` before pushing.
 
@@ -427,12 +435,12 @@ The starter ships with a [release-please](https://github.com/googleapis/release-
 
 ### Writing commits that produce good changelogs
 
-| Commit prefix | Bump | Example |
-|---------------|------|---------|
-| `feat:` | minor | `feat(cli): add critical CSS opt-in prompt` |
-| `fix:` | patch | `fix(Makefile): tailscale targets don't propagate exit codes` |
-| `feat!:` / `BREAKING CHANGE:` in body | major | `feat!: drop PHP 8.2 support` |
-| `chore:` / `docs:` / `refactor:` / `test:` | none | (no release, shows in changelog under "Other" if scoped) |
+| Commit prefix                              | Bump  | Example                                                       |
+| ------------------------------------------ | ----- | ------------------------------------------------------------- |
+| `feat:`                                    | minor | `feat(cli): add critical CSS opt-in prompt`                   |
+| `fix:`                                     | patch | `fix(Makefile): tailscale targets don't propagate exit codes` |
+| `feat!:` / `BREAKING CHANGE:` in body      | major | `feat!: drop PHP 8.2 support`                                 |
+| `chore:` / `docs:` / `refactor:` / `test:` | none  | (no release, shows in changelog under "Other" if scoped)      |
 
 Scopes (`feat(cli):`, `fix(Makefile):`) group related changes in the generated CHANGELOG and make release notes easier to scan. The starter's own history is a live example — see [commit log](https://github.com/LindemannRock/craft-starter/commits/main).
 
