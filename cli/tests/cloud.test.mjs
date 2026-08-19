@@ -1,25 +1,33 @@
 import fs from 'fs';
 import path from 'path';
-import {describe, expect, it} from 'vitest';
-import {fileURLToPath} from 'url';
-import {applyCraftCloudDefaults, craftCloudConfig} from '../actions/cloud.mjs';
-import {HOSTING_OPTIONS} from '../config/plugins.mjs';
+import os from 'os';
+import { afterEach, describe, expect, it } from 'vitest';
+import { fileURLToPath } from 'url';
+import { applyCraftCloudDefaults, craftCloudConfig, reconcileCraftCloudConfig } from '../actions/cloud.mjs';
+import { HOSTING_OPTIONS } from '../config/plugins.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const tempDirs = [];
+
+afterEach(() => {
+	for (const directory of tempDirs.splice(0)) fs.rmSync(directory, { recursive: true, force: true });
+});
 
 describe('Craft Cloud scaffolding', () => {
 	it('uses the PHP version selected for the project', () => {
-		expect(craftCloudConfig('8.5')).toBe("php-version: '8.5'\nnode-version: '22'\nnpm-script: build\n");
+		expect(craftCloudConfig('8.5')).toBe(
+			"# Managed by Craft Starter\nphp-version: '8.5'\nnode-version: '22'\nnpm-script: build\n",
+		);
 	});
 
 	it('uses a stable Cloud extension constraint without treating it as a Craft plugin', () => {
 		const cloud = HOSTING_OPTIONS.find((option) => option.value === 'craft-cloud');
-		expect(cloud.packages).toEqual([{name: 'craftcms/cloud', version: '^3.11.0', handle: null}]);
+		expect(cloud.packages).toEqual([{ name: 'craftcms/cloud', version: '^3.11.0', handle: null }]);
 	});
 
 	it('disables Nginx SSI critical CSS and committed build output on Cloud', () => {
 		const state = {
-			selectedHosting: {value: 'craft-cloud'},
+			selectedHosting: { value: 'craft-cloud' },
 			useCritical: true,
 			commitBuildFiles: true,
 		};
@@ -33,7 +41,7 @@ describe('Craft Cloud scaffolding', () => {
 
 	it('does not alter choices for other hosts', () => {
 		const state = {
-			selectedHosting: {value: 'servd'},
+			selectedHosting: { value: 'servd' },
 			useCritical: true,
 			commitBuildFiles: true,
 		};
@@ -41,6 +49,18 @@ describe('Craft Cloud scaffolding', () => {
 		expect(applyCraftCloudDefaults(state)).toEqual([]);
 		expect(state.useCritical).toBe(true);
 		expect(state.commitBuildFiles).toBe(true);
+	});
+
+	it('removes only a generated Cloud config when the host changes', () => {
+		const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'craft-cloud-test-'));
+		tempDirs.push(fixture);
+		fs.writeFileSync(path.join(fixture, 'craft-cloud.yaml'), craftCloudConfig('8.4'));
+		expect(reconcileCraftCloudConfig({ enabled: false, root: fixture })).toBeNull();
+		expect(fs.existsSync(path.join(fixture, 'craft-cloud.yaml'))).toBe(false);
+
+		fs.writeFileSync(path.join(fixture, 'craft-cloud.yaml'), "php-version: '8.5'\ncustom: true\n");
+		expect(reconcileCraftCloudConfig({ enabled: false, root: fixture })).toBe('craft-cloud.yaml');
+		expect(fs.existsSync(path.join(fixture, 'craft-cloud.yaml'))).toBe(true);
 	});
 });
 

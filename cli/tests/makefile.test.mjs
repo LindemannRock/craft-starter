@@ -21,4 +21,17 @@ describe('Makefile setup', () => {
 		expect(packageJson.devDependencies.yaml).toBe('^2.9.0');
 		expect(lock.packages['node_modules/yaml']?.version).toBe('2.9.0');
 	});
+
+	it('does not infer plugin installation state from the human-readable Craft table', () => {
+		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
+		expect(makefile).not.toContain('plugin/list --installed');
+		expect(makefile).toContain('node cli/scripts/install-plugins.mjs');
+	});
+
+	it('delegates destructive lifecycle commands to the tested script', () => {
+		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
+		expect(makefile).toContain('node cli/scripts/lifecycle.mjs reset');
+		expect(makefile).toContain('node cli/scripts/lifecycle.mjs nuke');
+		expect(makefile).not.toContain('git checkout');
+	});
 });

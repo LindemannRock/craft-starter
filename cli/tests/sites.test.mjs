@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { defaultLabel, isValidSiteHandle, urlPrefixFromHandle } from '../prompts/sites.mjs';
+import {
+	defaultLabel,
+	getSiteUrlConflicts,
+	isValidSiteHandle,
+	normalizeUrlPrefix,
+	urlPrefixFromHandle,
+	validateSiteUrlPrefix,
+} from '../prompts/sites.mjs';
 
 describe('defaultLabel', () => {
 	it('uses native language names for plain language codes', () => {
@@ -32,5 +39,29 @@ describe('urlPrefixFromHandle', () => {
 	it('keeps generated prefixes URL-safe when handles use underscores', () => {
 		expect(urlPrefixFromHandle('en_us')).toBe('en-us');
 		expect(urlPrefixFromHandle('arabic')).toBe('arabic');
+	});
+});
+
+describe('site URL prefixes', () => {
+	it('normalizes surrounding slashes and case for comparisons', () => {
+		expect(normalizeUrlPrefix('/FR/')).toBe('fr');
+	});
+
+	it('rejects duplicate, root, and control-panel collisions', () => {
+		expect(validateSiteUrlPrefix('fr', { usedPrefixes: new Set(['fr']) })).toMatch(/already used/);
+		expect(validateSiteUrlPrefix('', { usedPrefixes: new Set(['']) })).toMatch(/root site/);
+		expect(validateSiteUrlPrefix('cms', { cpTrigger: 'cms' })).toMatch(/control-panel/);
+	});
+
+	it('revalidates final URLs when the control-panel trigger changes', () => {
+		expect(
+			getSiteUrlConflicts(
+				[
+					{ handle: 'english', urlPrefix: '' },
+					{ handle: 'french', urlPrefix: 'fr' },
+				],
+				'fr',
+			),
+		).toEqual(['Site "french" conflicts with /fr']);
 	});
 });

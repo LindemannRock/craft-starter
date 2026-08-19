@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { setEnvKey, quoted, removeSection } from '../actions/env.mjs';
+import { setEnvKey, quoted, removeSection, serializeEnvValue } from '../actions/env.mjs';
 import { getDatabaseOption } from '../config/databases.mjs';
 
 describe('setEnvKey', () => {
@@ -50,6 +50,12 @@ describe('quoted', () => {
 
 	it('handles empty string', () => {
 		expect(quoted('')).toBe('""');
+	});
+
+	it('escapes backslashes, interpolation, and line breaks', () => {
+		expect(serializeEnvValue('path\\')).toBe('"path\\\\"');
+		expect(serializeEnvValue('${TOKEN}')).toBe('"\\${TOKEN}"');
+		expect(serializeEnvValue('first\r\nsecond')).toBe('"first\\r\\nsecond"');
 	});
 });
 

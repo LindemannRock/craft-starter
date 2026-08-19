@@ -7,6 +7,7 @@ import {
 	buildRedisRemoveSteps,
 	configureRedisEnvironment,
 	getRedisState,
+	removeRedisAddonFiles,
 	removeRedisEnvironment,
 } from '../actions/redis.mjs';
 
@@ -75,9 +76,12 @@ describe('Redis state detection', () => {
 		const root = tempProject();
 		fs.mkdirSync(path.join(root, '.ddev'), { recursive: true });
 		fs.writeFileSync(path.join(root, '.env'), configureRedisEnvironment('', { useSessions: true }));
-		fs.writeFileSync(path.join(root, 'composer.json'), JSON.stringify({
-			require: { 'yiisoft/yii2-redis': '^2.1.2' },
-		}));
+		fs.writeFileSync(
+			path.join(root, 'composer.json'),
+			JSON.stringify({
+				require: { 'yiisoft/yii2-redis': '^2.1.2' },
+			}),
+		);
 		fs.writeFileSync(path.join(root, '.ddev', 'docker-compose.redis.yaml'), 'services: {}\n');
 
 		const state = getRedisState({ root });
@@ -115,5 +119,23 @@ describe('Redis infrastructure steps', () => {
 			'ddev add-on remove redis',
 			'ddev restart',
 		]);
+	});
+
+	it('removes only Redis add-on files', () => {
+		const root = tempProject();
+		for (const target of [
+			'.ddev/docker-compose.redis.yaml',
+			'.ddev/addon-metadata/redis/state.yaml',
+			'.ddev/redis/config',
+		]) {
+			fs.mkdirSync(path.dirname(path.join(root, target)), { recursive: true });
+			fs.writeFileSync(path.join(root, target), 'fixture');
+		}
+		fs.writeFileSync(path.join(root, '.ddev/custom.yaml'), 'keep');
+		removeRedisAddonFiles({ root });
+		expect(fs.existsSync(path.join(root, '.ddev/docker-compose.redis.yaml'))).toBe(false);
+		expect(fs.existsSync(path.join(root, '.ddev/addon-metadata/redis'))).toBe(false);
+		expect(fs.existsSync(path.join(root, '.ddev/redis'))).toBe(false);
+		expect(fs.readFileSync(path.join(root, '.ddev/custom.yaml'), 'utf-8')).toBe('keep');
 	});
 });
