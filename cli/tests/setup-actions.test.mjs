@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { updateComposer } from '../actions/composer.mjs';
+import { syncRebrandAssets } from '../actions/assets.mjs';
 import { updateDdevConfig } from '../actions/ddev.mjs';
 import { updatePackageJson } from '../actions/packageJson.mjs';
 import { scaffoldTranslations, cleanUnusedTranslations } from '../actions/sites.mjs';
@@ -63,7 +64,7 @@ describe('generated DDEV sidecars', () => {
 		fs.mkdirSync(path.join(cliDir, 'templates/critical'), { recursive: true });
 		fs.writeFileSync(
 			path.join(root, '.ddev/config.yaml'),
-			'name: starter\ntimezone: UTC\nwebimage_extra_packages: []\n',
+			'name: starter\ntype: craftcms\ndocroot: web\ntimezone: UTC\nwebimage_extra_packages: []\nupload_dirs:\n    - web/assets\n    - storage\n',
 		);
 		fs.writeFileSync(path.join(cliDir, 'templates/critical/config.m1.yaml'), 'managed: true\n');
 		fs.writeFileSync(path.join(root, '.ddev/config.m1.yaml'), sidecar);
@@ -76,12 +77,32 @@ describe('generated DDEV sidecars', () => {
 		expect(fs.existsSync(path.join(paths.root, '.ddev/config.m1.yaml'))).toBe(false);
 	});
 
+	it('applies the active profile DDEV layout', () => {
+		const paths = prepareDdevProject('managed: true\n');
+		updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: true });
+		const config = fs.readFileSync(path.join(paths.root, '.ddev/config.yaml'), 'utf-8');
+		expect(config).toContain('type: craftcms');
+		expect(config).toContain('docroot: web');
+		expect(config).toContain('upload_dirs:\n    - web/assets\n    - storage\n');
+	});
+
 	it('preserves a customized sidecar when critical CSS is disabled', () => {
 		const paths = prepareDdevProject('custom: true\n');
 		expect(updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: false })).toBe(
 			'.ddev/config.m1.yaml',
 		);
 		expect(fs.readFileSync(path.join(paths.root, '.ddev/config.m1.yaml'), 'utf-8')).toBe('custom: true\n');
+	});
+});
+
+describe('profile-aware static assets', () => {
+	it('copies rebrand assets to the active profile destination', () => {
+		const root = tempProject();
+		const cliDir = path.join(root, 'generator-cli');
+		fs.mkdirSync(path.join(cliDir, 'templates/rebrand/logo'), { recursive: true });
+		fs.writeFileSync(path.join(cliDir, 'templates/rebrand/logo/logo.svg'), '<svg/>');
+		expect(syncRebrandAssets({ root, cliDir })).toBe(true);
+		expect(fs.readFileSync(path.join(root, 'storage/rebrand/logo/logo.svg'), 'utf-8')).toBe('<svg/>');
 	});
 });
 

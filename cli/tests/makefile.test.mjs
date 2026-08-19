@@ -34,4 +34,13 @@ describe('Makefile setup', () => {
 		expect(makefile).toContain('node cli/scripts/lifecycle.mjs nuke');
 		expect(makefile).not.toContain('git checkout');
 	});
+
+	it('delegates Craft commands and generated asset paths through the active profile', () => {
+		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
+		expect(makefile).toContain('node cli/scripts/run-profile-command.mjs schema-version');
+		expect(makefile).toContain('node cli/scripts/run-profile-command.mjs up');
+		expect(makefile).toContain('node cli/scripts/configure-project.mjs');
+		expect(makefile).toContain('node cli/scripts/sync-static-assets.mjs');
+		expect(makefile).not.toContain('[ ! -d web/dist/criticalcss ]');
+	});
 });

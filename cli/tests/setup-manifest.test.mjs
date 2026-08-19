@@ -56,11 +56,34 @@ describe('setup manifest', () => {
 		const manifest = buildSetupManifest(state);
 		const serialized = JSON.stringify(manifest);
 		expect(manifest.status).toBe('pending');
+		expect(manifest.craft).toEqual({ profile: 'craft5', major: 5, channel: 'stable' });
 		expect(manifest.plugins[0]).toMatchObject({ handle: 'search-manager', edition: 'pro' });
 		expect(manifest.sites[0].language).toBe('en-US');
 		expect(serialized).not.toContain('never-store-me');
 		expect(serialized).not.toContain('secret-user');
 		expect(serialized).not.toContain('secret-pass');
+	});
+
+	it('normalizes manifests created before Craft profiles were introduced', () => {
+		const root = tempProject();
+		fs.writeFileSync(
+			path.join(root, '.craft-starter.json'),
+			JSON.stringify({ schemaVersion: 1, status: 'complete', project: { name: 'legacy' } }),
+		);
+		expect(readSetupManifest({ root }).craft).toEqual({ profile: 'craft5', major: 5, channel: 'stable' });
+	});
+
+	it('fails loudly instead of partially loading an unavailable profile', () => {
+		const root = tempProject();
+		fs.writeFileSync(
+			path.join(root, '.craft-starter.json'),
+			JSON.stringify({
+				schemaVersion: 1,
+				status: 'complete',
+				craft: { profile: 'craft6', major: 6, channel: 'alpha' },
+			}),
+		);
+		expect(() => readSetupManifest({ root })).toThrow(/Unsupported Craft profile/);
 	});
 
 	it('persists pending state and marks it complete atomically', () => {
