@@ -7,19 +7,21 @@
 
 import * as p from '@clack/prompts';
 import { cancel } from '../utils/cancel.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
-export async function promptBuildFiles() {
+export async function promptBuildFiles({ craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	const choice = await p.select({
 		message: 'Commit built frontend files?',
 		options: [
 			{
 				value: 'track',
-				label: 'Yes, track web/dist',
+				label: `Yes, track ${profile.paths.build}`,
 				hint: 'For hosts without a build step',
 			},
 			{
 				value: 'ignore',
-				label: 'No, ignore web/dist',
+				label: `No, ignore ${profile.paths.build}`,
 				hint: 'For CI or hosting builds',
 			},
 		],

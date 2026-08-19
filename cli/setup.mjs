@@ -15,7 +15,7 @@
 
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { LR_PLUGINS, THIRD_PARTY_PLUGINS } from './config/plugins.mjs';
+import { HOSTING_OPTIONS, LR_PLUGINS, THIRD_PARTY_PLUGINS } from './config/plugins.mjs';
 import { promptProject } from './prompts/project.mjs';
 import { promptLrPlugins, promptThirdPartyPlugins, promptHosting, promptPluginEditions } from './prompts/plugins.mjs';
 import { getSiteUrlConflicts, promptSites } from './prompts/sites.mjs';
@@ -26,6 +26,7 @@ import { promptTranslationCategory } from './prompts/translation-manager.mjs';
 import { promptRedis } from './prompts/redis.mjs';
 import { promptCritical } from './prompts/critical.mjs';
 import { promptBuildFiles } from './prompts/build-files.mjs';
+import { promptCraftPlatform } from './prompts/craft.mjs';
 import { updateComposer } from './actions/composer.mjs';
 import { updatePackageJson } from './actions/packageJson.mjs';
 import { updateDdevConfig } from './actions/ddev.mjs';
@@ -45,18 +46,26 @@ import {
 } from './actions/setupManifest.mjs';
 import { resetProject } from './actions/lifecycle.mjs';
 import { buildInstallSteps } from './actions/install.mjs';
+import { syncRebrandAssets } from './actions/assets.mjs';
 import { intro, showConfigurationSummary, outro } from './ui.mjs';
 import fs from 'fs';
 import { cancel } from './utils/cancel.mjs';
 import { run } from './utils/run.mjs';
 import { checkPrerequisites } from './utils/preflight.mjs';
 import { ROOT } from './paths.mjs';
+import {
+	DEFAULT_CRAFT_PROFILE,
+	catalogForCraftProfile,
+	craftProjectPath,
+	pluginsForCraftProfile,
+	resolveCraftProfile,
+} from './config/craft-profiles.mjs';
 
 // Phase collectors — each one updates `state` in place. Extracted so the review
 // loop can re-run a single section without re-asking everything else.
 
 async function collectProject(state) {
-	state.project = await promptProject();
+	state.project = await promptProject({ craftProfile: state.craftProfile });
 	state.database = state.project.database;
 }
 
@@ -68,18 +77,20 @@ async function collectSitesAndFeatures(state) {
 	state.useRedisCache = redis.useRedisCache;
 	state.useRedisSession = redis.useRedisSession;
 	state.useCritical = await promptCritical();
-	state.commitBuildFiles = await promptBuildFiles();
+	state.commitBuildFiles = await promptBuildFiles({ craftProfile: state.craftProfile });
 }
 
 async function collectPlugins(state) {
-	state.selectedLr = await promptLrPlugins();
-	state.selectedTp = await promptThirdPartyPlugins();
+	const lrCatalog = pluginsForCraftProfile(LR_PLUGINS, state.craftProfile);
+	const thirdPartyCatalog = pluginsForCraftProfile(THIRD_PARTY_PLUGINS, state.craftProfile);
+	state.selectedLr = await promptLrPlugins(lrCatalog);
+	state.selectedTp = await promptThirdPartyPlugins(thirdPartyCatalog);
 
 	// Auto-add dependencies for selected plugins
 	const hasFormieAddon = state.selectedLr.some((pl) => pl.handle.startsWith('formie-'));
 	const hasFormie = state.selectedTp.some((pl) => pl.handle === 'formie');
 	if (hasFormieAddon && !hasFormie) {
-		const formiePlugin = THIRD_PARTY_PLUGINS.find((pl) => pl.handle === 'formie');
+		const formiePlugin = thirdPartyCatalog.find((pl) => pl.handle === 'formie');
 		if (formiePlugin) {
 			state.selectedTp.push({ ...formiePlugin, autoAdded: 'Formie addon(s)' });
 			p.log.info('Formie auto-added — required by selected Formie addon(s)');
@@ -89,7 +100,7 @@ async function collectPlugins(state) {
 	const hasFormieSms = state.selectedLr.some((pl) => pl.handle === 'formie-sms');
 	const hasSmsManager = state.selectedLr.some((pl) => pl.handle === 'sms-manager');
 	if (hasFormieSms && !hasSmsManager) {
-		const smsPlugin = LR_PLUGINS.find((pl) => pl.handle === 'sms-manager');
+		const smsPlugin = lrCatalog.find((pl) => pl.handle === 'sms-manager');
 		if (smsPlugin) {
 			state.selectedLr.push({ ...smsPlugin, autoAdded: 'Formie SMS' });
 			p.log.info('SMS Manager auto-added — required by Formie SMS');
@@ -112,7 +123,7 @@ async function collectPluginConfig(state) {
 }
 
 async function collectHosting(state) {
-	state.selectedHosting = await promptHosting();
+	state.selectedHosting = await promptHosting(catalogForCraftProfile(HOSTING_OPTIONS, state.craftProfile));
 	state.servdCredentials = null;
 
 	if (state.selectedHosting.value === 'servd') {
@@ -148,6 +159,9 @@ async function main() {
 	// Bail out early with a clear message if Docker/DDEV/Node aren't ready
 	checkPrerequisites();
 	const previousManifest = readSetupManifest();
+	const activeCraftProfile = resolveCraftProfile(previousManifest?.craft || DEFAULT_CRAFT_PROFILE);
+	const activeCraftReleaseChannel = previousManifest?.craft?.channel || activeCraftProfile.release.defaultChannel;
+	let chooseCraftPlatform = !previousManifest;
 
 	// Detect existing project — .env is written on first run.
 	// `make create` is scoped to first-run scaffolding only; re-runs would
@@ -187,7 +201,7 @@ async function main() {
 				'This will permanently:\n' +
 					'  • delete the DDEV project + database\n' +
 					'  • delete .env (admin credentials, site URLs, all custom values)\n' +
-					'  • delete config/project/ (Craft project config)\n' +
+					`  • delete ${activeCraftProfile.paths.projectConfig}/ (Craft project config)\n` +
 					'  • delete incomplete temporary recovery files\n' +
 					'Kept: all project source, translations, lockfiles, and the non-secret setup manifest',
 			);
@@ -199,15 +213,26 @@ async function main() {
 
 			const s = p.spinner();
 			s.start('Resetting project');
-			resetProject();
+			resetProject({ craftProfile: activeCraftProfile });
 			s.stop('Reset complete');
 
 			p.log.info('Starting fresh scaffold...');
+			chooseCraftPlatform = true;
 			// Fall through to the normal create flow below
 		}
 	}
 
-	const state = {};
+	const craftPlatform = chooseCraftPlatform
+		? await promptCraftPlatform({
+				initialProfile: activeCraftProfile,
+				initialChannel: activeCraftReleaseChannel,
+			})
+		: { profile: activeCraftProfile, channel: activeCraftReleaseChannel };
+
+	const state = {
+		craftProfile: craftPlatform.profile,
+		craftReleaseChannel: craftPlatform.channel,
+	};
 
 	// -- Initial collection --------------------------------------------------
 	await collectProject(state);
@@ -300,6 +325,8 @@ async function main() {
 		postmarkToken,
 		smtpCredentials,
 		translationCategory,
+		craftProfile,
+		craftReleaseChannel,
 	} = state;
 
 	// -- Apply file changes --------------------------------------------------
@@ -310,7 +337,14 @@ async function main() {
 	writeSetupManifest(buildSetupManifest(state, { status: 'pending' }));
 
 	s.start('Updating composer.json');
-	updateComposer({ selectedLr, selectedTp, selectedHosting, useRedisCache });
+	updateComposer({
+		selectedLr,
+		selectedTp,
+		selectedHosting,
+		useRedisCache,
+		craftProfile,
+		craftReleaseChannel,
+	});
 	s.stop('composer.json updated');
 
 	s.start('Updating package.json');
@@ -330,25 +364,25 @@ async function main() {
 	}
 
 	s.start('Updating DDEV config');
-	const preservedDdevSidecar = updateDdevConfig(project, { useCritical, database });
+	const preservedDdevSidecar = updateDdevConfig(project, { useCritical, database, craftProfile });
 	s.stop('DDEV config updated');
 	if (preservedDdevSidecar)
 		p.log.warn(`Preserved customized ${preservedDdevSidecar}; remove it manually to fully disable Chromium wiring.`);
 
 	if (project.phpVersion) {
 		s.start(`Pinning PHP ${project.phpVersion}`);
-		setPhpVersion(project.phpVersion);
+		setPhpVersion(project.phpVersion, { craftProfile });
 		s.stop(`PHP ${project.phpVersion} pinned in .ddev/config.yaml + composer.json`);
 	}
 
 	s.start('Applying critical-CSS choice');
-	const preservedCriticalPartial = applyCriticalCssChoice(useCritical);
+	const preservedCriticalPartial = applyCriticalCssChoice(useCritical, { craftProfile });
 	s.stop('Critical-CSS choice applied');
 	if (preservedCriticalPartial)
 		p.log.warn(`Preserved customized ${preservedCriticalPartial}; review it against the new critical-CSS choice.`);
 
 	s.start('Updating .gitignore');
-	updateGitignore({ commitBuildFiles });
+	updateGitignore({ commitBuildFiles, craftProfile });
 	s.stop('.gitignore updated');
 	p.log.info(
 		'composer.lock + package-lock.json will be committed — required for reproducible deploys (Craft Cloud, Servd, CI).',
@@ -369,6 +403,7 @@ async function main() {
 		selectedHosting,
 		translationCategory,
 		database,
+		craftProfile,
 	});
 	s.stop('.env generated');
 
@@ -389,9 +424,11 @@ async function main() {
 
 	s.start('Writing plugin configs');
 	const allSelected = [...selectedLr, ...selectedTp];
-	writePluginConfigs(allSelected);
-	const preservedPluginConfigs = cleanUnusedPluginConfigs([...LR_PLUGINS, ...THIRD_PARTY_PLUGINS], allSelected);
-	const preservedBaseConfig = syncLrBaseConfig(selectedLr.length > 0);
+	writePluginConfigs(allSelected, { craftProfile });
+	const preservedPluginConfigs = cleanUnusedPluginConfigs([...LR_PLUGINS, ...THIRD_PARTY_PLUGINS], allSelected, {
+		craftProfile,
+	});
+	const preservedBaseConfig = syncLrBaseConfig(selectedLr.length > 0, { craftProfile });
 	s.stop('Plugin configs written');
 	for (const config of [...preservedPluginConfigs, preservedBaseConfig].filter(Boolean)) {
 		p.log.warn(`Preserved customized ${config}; it is no longer selected.`);
@@ -399,21 +436,18 @@ async function main() {
 
 	s.start('Scaffolding translations');
 	const category = translationCategory || 'site';
-	scaffoldTranslations(sites, category);
+	scaffoldTranslations(sites, category, { craftProfile });
 	const preservedTranslations = cleanUnusedTranslations(sites, {
 		previousSites: previousManifest?.sites || [],
 		previousCategory: previousManifest?.translationCategory || 'site',
 		category,
+		craftProfile,
 	});
 	s.stop('Translations scaffolded');
 	for (const translation of preservedTranslations) p.log.warn(`Preserved customized ${translation}.`);
 
 	// Copy CP rebrand assets (login logo + site icon)
-	const rebrandSrc = `${ROOT}/cli/templates/rebrand`;
-	const rebrandDest = `${ROOT}/storage/rebrand`;
-	if (fs.existsSync(rebrandSrc)) {
-		fs.cpSync(rebrandSrc, rebrandDest, { recursive: true });
-	}
+	syncRebrandAssets({ craftProfile, overwrite: true });
 
 	// Write sites config for the PHP project config script to read
 	const tmpDir = `${ROOT}/cli/tmp`;
@@ -423,7 +457,7 @@ async function main() {
 	if (project.weekStartDay !== undefined) {
 		// Always rewrite so re-running with a different choice (Sunday → Monday
 		// or vice versa) flips correctly. Matches any digit argument.
-		const generalPath = `${ROOT}/config/general.php`;
+		const generalPath = craftProjectPath(ROOT, 'generalConfig', craftProfile);
 		let general = fs.readFileSync(generalPath, 'utf-8');
 		general = general.replace(/->defaultWeekStartDay\(\d+\)/, `->defaultWeekStartDay(${project.weekStartDay})`);
 		fs.writeFileSync(generalPath, general);
@@ -436,6 +470,7 @@ async function main() {
 		selectedTp,
 		selectedHosting,
 		useRedisCache,
+		craftProfile,
 	});
 	for (const step of steps) {
 		s.start(step.msg);

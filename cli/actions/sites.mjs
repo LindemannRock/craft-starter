@@ -7,9 +7,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { ROOT, CLI_DIR } from '../paths.mjs';
-
-const TEMPLATE_FILE = path.join(CLI_DIR, 'templates', 'translations', 'site.php');
+import { ROOT } from '../paths.mjs';
+import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 const MANAGED_COMMENT = '// Managed by Craft Starter. Customized files are preserved during reconfiguration.';
 
 function managedTranslationContent(content) {
@@ -22,14 +21,20 @@ function managedTranslationContent(content) {
  * The filename matches the translation category (default: 'site').
  *
  */
-export function scaffoldTranslations(sites, category = 'site', { root = ROOT } = {}) {
-	const translationsDir = path.join(root, 'translations');
+export function scaffoldTranslations(
+	sites,
+	category = 'site',
+	{ root = ROOT, templateRoot = ROOT, craftProfile } = {},
+) {
+	const profile = resolveCraftProfile(craftProfile);
+	const translationsDir = craftProjectPath(root, 'translations', profile);
+	const templateFile = craftProjectPath(templateRoot, 'translationTemplate', profile);
 	const filename = `${category}.php`;
 
 	// Read the base template
 	let template = '';
-	if (fs.existsSync(TEMPLATE_FILE)) {
-		template = fs.readFileSync(TEMPLATE_FILE, 'utf-8');
+	if (fs.existsSync(templateFile)) {
+		template = fs.readFileSync(templateFile, 'utf-8');
 	}
 
 	for (const language of new Set(sites.map((site) => site.language))) {
@@ -52,12 +57,21 @@ export function scaffoldTranslations(sites, category = 'site', { root = ROOT } =
  */
 export function cleanUnusedTranslations(
 	sites,
-	{ previousSites = [], previousCategory = 'site', category = 'site', root = ROOT } = {},
+	{
+		previousSites = [],
+		previousCategory = 'site',
+		category = 'site',
+		root = ROOT,
+		templateRoot = ROOT,
+		craftProfile,
+	} = {},
 ) {
-	const translationsDir = path.join(root, 'translations');
+	const profile = resolveCraftProfile(craftProfile);
+	const translationsDir = craftProjectPath(root, 'translations', profile);
+	const templateFile = craftProjectPath(templateRoot, 'translationTemplate', profile);
 	const activeLanguages = new Set(sites.map((site) => site.language));
 	const previousLanguages = new Set(previousSites.map((site) => site.language));
-	const template = fs.existsSync(TEMPLATE_FILE) ? fs.readFileSync(TEMPLATE_FILE, 'utf-8') : null;
+	const template = fs.existsSync(templateFile) ? fs.readFileSync(templateFile, 'utf-8') : null;
 	if (!template) return [];
 
 	const candidates = [];

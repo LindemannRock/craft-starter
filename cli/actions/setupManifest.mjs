@@ -9,6 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
+import { craftManifestMetadata } from '../config/craft-profiles.mjs';
 
 export const SETUP_MANIFEST_FILENAME = '.craft-starter.json';
 export const SETUP_MANIFEST_VERSION = 1;
@@ -21,12 +22,17 @@ export function readSetupManifest({ root = ROOT } = {}) {
 	const manifestPath = setupManifestPath(root);
 	if (!fs.existsSync(manifestPath)) return null;
 
+	let manifest;
 	try {
-		const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-		return manifest.schemaVersion === SETUP_MANIFEST_VERSION ? manifest : null;
+		manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
 	} catch {
 		return null;
 	}
+	if (manifest.schemaVersion !== SETUP_MANIFEST_VERSION) return null;
+	return {
+		...manifest,
+		craft: craftManifestMetadata(manifest.craft || undefined, manifest.craft?.channel),
+	};
 }
 
 export function buildSetupManifest(state, { status = 'pending' } = {}) {
@@ -39,6 +45,7 @@ export function buildSetupManifest(state, { status = 'pending' } = {}) {
 	return {
 		schemaVersion: SETUP_MANIFEST_VERSION,
 		status,
+		craft: craftManifestMetadata(state.craftProfile, state.craftReleaseChannel),
 		project: {
 			name: project.name,
 			description: project.description || '',

@@ -17,14 +17,20 @@ import pc from 'picocolors';
 import { spawn } from 'child_process';
 import { cancel } from '../utils/cancel.mjs';
 import { requireProject } from '../utils/preflight.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
+
+const craftProfile = resolveCraftProfile(readSetupManifest()?.craft);
+const craftUpdateArgs = ['exec', ...craftProfile.commands.update];
+const craftUpdateLabel = `ddev ${craftUpdateArgs.join(' ')}`;
 
 const TARGETS = [
-	{ value: 'craft',    label: 'Craft CMS + plugins', hint: 'pick which packages to update' },
-	{ value: 'composer', label: 'Composer packages',    hint: 'updates all Composer deps' },
-	{ value: 'npm',      label: 'Frontend packages',    hint: 'vite, tailwind, alpine, etc. (npm-check)' },
-	{ value: 'cli',      label: 'CLI tooling',          hint: 'scaffolding packages in cli/ (npm-check)' },
-	{ value: 'all',      label: 'Everything',           hint: 'Craft + plugins + Composer + Frontend + CLI' },
-	{ value: 'cancel',   label: pc.red('Cancel') },
+	{ value: 'craft', label: 'Craft CMS + plugins', hint: 'pick which packages to update' },
+	{ value: 'composer', label: 'Composer packages', hint: 'updates all Composer deps' },
+	{ value: 'npm', label: 'Frontend packages', hint: 'vite, tailwind, alpine, etc. (npm-check)' },
+	{ value: 'cli', label: 'CLI tooling', hint: 'scaffolding packages in cli/ (npm-check)' },
+	{ value: 'all', label: 'Everything', hint: 'Craft + plugins + Composer + Frontend + CLI' },
+	{ value: 'cancel', label: pc.red('Cancel') },
 ];
 
 function runShell(command, args) {
@@ -38,7 +44,9 @@ function captureShell(command, args) {
 	return new Promise((resolve) => {
 		const child = spawn(command, args, { stdio: ['inherit', 'pipe', 'inherit'] });
 		let out = '';
-		child.stdout.on('data', (d) => { out += d.toString(); });
+		child.stdout.on('data', (d) => {
+			out += d.toString();
+		});
 		child.on('exit', (code) => resolve({ code: code ?? 0, stdout: out }));
 	});
 }
@@ -60,7 +68,7 @@ function parseUpdates(output) {
 
 async function runCraftInteractive() {
 	p.log.step('Fetching available Craft + plugin updates…');
-	const { code, stdout } = await captureShell('ddev', ['exec', 'php', 'craft', 'update']);
+	const { code, stdout } = await captureShell('ddev', craftUpdateArgs);
 	process.stdout.write(stdout);
 	if (code !== 0) {
 		p.log.warn('Failed to fetch update list.');
@@ -90,14 +98,14 @@ async function runCraftInteractive() {
 
 	// If everything is selected, a single `update all` is faster than N invocations.
 	if (picks.length === updates.length) {
-		p.log.step('ddev exec php craft update all');
-		return runShell('ddev', ['exec', 'php', 'craft', 'update', 'all']);
+		p.log.step(`${craftUpdateLabel} all`);
+		return runShell('ddev', [...craftUpdateArgs, 'all']);
 	}
 
 	let runCode = 0;
 	for (const handle of picks) {
-		p.log.step(`ddev exec php craft update ${handle}`);
-		const c = await runShell('ddev', ['exec', 'php', 'craft', 'update', handle]);
+		p.log.step(`${craftUpdateLabel} ${handle}`);
+		const c = await runShell('ddev', [...craftUpdateArgs, handle]);
 		if (c !== 0) {
 			p.log.warn(`Update for ${handle} failed — continuing.`);
 			runCode = c;
@@ -110,8 +118,8 @@ async function runTarget(target, { interactive = true } = {}) {
 	if (target === 'craft') {
 		if (interactive) return runCraftInteractive();
 		// "Everything" path — apply all without prompting
-		p.log.step('ddev exec php craft update all');
-		return runShell('ddev', ['exec', 'php', 'craft', 'update', 'all']);
+		p.log.step(`${craftUpdateLabel} all`);
+		return runShell('ddev', [...craftUpdateArgs, 'all']);
 	}
 	p.log.step(`make update-${target}`);
 	return runShell('make', [`update-${target}`]);

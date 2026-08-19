@@ -12,7 +12,7 @@
 import * as p from '@clack/prompts';
 import search from '@inquirer/search';
 import { COMMON_LANGUAGES, ALL_LANGUAGES } from '../config/languages.mjs';
-import { DEFAULT_PHP_VERSION, PHP_VERSION_OPTIONS } from '../config/php.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 import { promptDatabase } from './database.mjs';
 import { cancel, isPromptCancel } from '../utils/cancel.mjs';
 
@@ -45,7 +45,8 @@ function getUtcOffset(tz, date) {
 }
 import { isValidEmail } from '../utils/validate.mjs';
 
-export async function promptProject() {
+export async function promptProject({ craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	// Part 1 — basic project details
 	const base = await p.group(
 		{
@@ -84,22 +85,25 @@ export async function promptProject() {
 	});
 
 	const popularTimezones = [
-		'UTC', 'Europe/London', 'Europe/Berlin', 'America/New_York',
-		'America/Los_Angeles', 'Asia/Dubai', 'Asia/Riyadh', 'Asia/Tokyo',
-		'Asia/Shanghai', 'Australia/Sydney',
+		'UTC',
+		'Europe/London',
+		'Europe/Berlin',
+		'America/New_York',
+		'America/Los_Angeles',
+		'Asia/Dubai',
+		'Asia/Riyadh',
+		'Asia/Tokyo',
+		'Asia/Shanghai',
+		'Australia/Sydney',
 	];
-	const popularEntries = popularTimezones
-		.map((tz) => tzEntries.find((e) => e.value === tz))
-		.filter(Boolean);
+	const popularEntries = popularTimezones.map((tz) => tzEntries.find((e) => e.value === tz)).filter(Boolean);
 
 	const timezone = await search({
 		message: 'Timezone (type to search — name, region, or offset like +4)',
 		source: async (input) => {
 			if (!input) return popularEntries;
 			const lower = input.toLowerCase();
-			return tzEntries
-				.filter((e) => e.searchText.includes(lower))
-				.slice(0, 30);
+			return tzEntries.filter((e) => e.searchText.includes(lower)).slice(0, 30);
 		},
 	}).catch(handlePromptError);
 
@@ -109,9 +113,9 @@ export async function promptProject() {
 		source: async (input) => {
 			if (!input) return COMMON_LANGUAGES.slice(0, 10);
 			const lower = input.toLowerCase();
-			return ALL_LANGUAGES
-				.filter((l) => l.name.toLowerCase().includes(lower) || l.value.toLowerCase().includes(lower))
-				.slice(0, 15);
+			return ALL_LANGUAGES.filter(
+				(l) => l.name.toLowerCase().includes(lower) || l.value.toLowerCase().includes(lower),
+			).slice(0, 15);
 		},
 	}).catch(handlePromptError);
 
@@ -119,12 +123,12 @@ export async function promptProject() {
 	// Supported Craft/PHP combinations are centralized in config/php.mjs.
 	const phpVersion = await p.select({
 		message: 'PHP version',
-		options: PHP_VERSION_OPTIONS,
-		initialValue: DEFAULT_PHP_VERSION,
+		options: profile.php.options,
+		initialValue: profile.php.default,
 	});
 	if (p.isCancel(phpVersion)) cancel();
 
-	const database = await promptDatabase();
+	const database = await promptDatabase({ craftProfile: profile });
 
 	// Part 2 — credentials
 	const credentials = await p.group(

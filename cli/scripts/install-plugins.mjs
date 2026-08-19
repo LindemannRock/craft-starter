@@ -2,7 +2,8 @@
 
 import { readSetupManifest } from '../actions/setupManifest.mjs';
 import { activatePlugins } from '../actions/plugins.mjs';
-import { CORE_PLUGIN_HANDLES, HOSTING_OPTIONS } from '../config/plugins.mjs';
+import { HOSTING_OPTIONS } from '../config/plugins.mjs';
+import { catalogForCraftProfile, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 const manifest = readSetupManifest();
 if (!manifest) {
@@ -10,15 +11,16 @@ if (!manifest) {
 	process.exit(0);
 }
 
-const hosting = HOSTING_OPTIONS.find(({ value }) => value === manifest.hosting);
+const hosting = catalogForCraftProfile(HOSTING_OPTIONS, manifest.craft).find(({ value }) => value === manifest.hosting);
+const craftProfile = resolveCraftProfile(manifest.craft);
 const plan = [
-	...CORE_PLUGIN_HANDLES.map((handle) => ({ handle })),
+	...craftProfile.plugins.coreHandles.map((handle) => ({ handle })),
 	...(manifest.plugins || []),
 	...(hosting?.packages || []).filter(({ handle }) => handle),
 ];
 
 try {
-	await activatePlugins(plan);
+	await activatePlugins(plan, { craftProfile });
 	console.log(`Plugin plan applied (${plan.length} plugin${plan.length === 1 ? '' : 's'}).`);
 } catch (error) {
 	console.error(error.message);

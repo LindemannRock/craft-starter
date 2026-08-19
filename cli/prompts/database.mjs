@@ -6,19 +6,21 @@
  */
 
 import * as p from '@clack/prompts';
-import { DATABASE_OPTIONS, DEFAULT_DATABASE, getDatabaseOption } from '../config/databases.mjs';
+import { getDatabaseOption } from '../config/databases.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 import { cancel } from '../utils/cancel.mjs';
 
-export async function promptDatabase() {
+export async function promptDatabase({ craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	const selected = await p.select({
 		message: 'Database engine',
-		options: DATABASE_OPTIONS.map((option) => ({
+		options: profile.database.options.map((option) => ({
 			value: option.value,
 			label: option.label,
 			hint: option.hint,
 		})),
-		initialValue: DEFAULT_DATABASE.value,
+		initialValue: profile.database.default,
 	});
 	if (p.isCancel(selected)) cancel();
-	return getDatabaseOption(selected);
+	return getDatabaseOption(selected, profile);
 }

@@ -5,6 +5,7 @@ import path from 'path';
 import { execFileSync } from 'child_process';
 import { ROOT, CLI_DIR } from '../paths.mjs';
 import { removeRedisAddonFiles } from './redis.mjs';
+import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 export function deleteDdevProject({ root = ROOT } = {}) {
 	try {
@@ -15,20 +16,26 @@ export function deleteDdevProject({ root = ROOT } = {}) {
 }
 
 /** Remove installation identity/state while preserving all project source. */
-export function resetProject({ root = ROOT, deleteDdev = true } = {}) {
+export function resetProject({ root = ROOT, deleteDdev = true, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	if (deleteDdev) deleteDdevProject({ root });
-	for (const target of [path.join(root, '.env'), path.join(root, 'config', 'project'), path.join(root, 'cli', 'tmp')]) {
+	for (const target of [
+		path.join(root, '.env'),
+		craftProjectPath(root, 'projectConfig', profile),
+		path.join(root, 'cli', 'tmp'),
+	]) {
 		fs.rmSync(target, { recursive: true, force: true });
 	}
 }
 
 /** Remove reproducible local runtime artifacts without touching project definition. */
-export function nukeRuntime({ root = ROOT, deleteDdev = true } = {}) {
+export function nukeRuntime({ root = ROOT, deleteDdev = true, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	if (deleteDdev) deleteDdevProject({ root });
 	for (const target of [
 		path.join(root, 'vendor'),
 		path.join(root, 'node_modules'),
-		path.join(root, 'web', 'dist'),
+		craftProjectPath(root, 'build', profile),
 		path.join(root, 'storage', 'logs'),
 		path.join(root, 'storage', 'runtime'),
 	]) {
@@ -50,7 +57,8 @@ export function isOriginalStarterRepository({ root = ROOT } = {}) {
 }
 
 /** Developer-only return to the committed starter scaffold. */
-export function resetStarterScaffold({ root = ROOT } = {}) {
+export function resetStarterScaffold({ root = ROOT, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	if (!isOriginalStarterRepository({ root })) {
 		throw new Error('starter-reset is only available in the original LindemannRock/craft-starter repository.');
 	}
@@ -62,15 +70,15 @@ export function resetStarterScaffold({ root = ROOT } = {}) {
 		'.gitignore',
 		'composer.json',
 		'package.json',
-		'config/general.php',
-		'config/vite.php',
-		'templates/_boilerplate/_partials/critical-css.twig',
-		'templates/_layouts/global-variables.twig',
+		profile.paths.generalConfig,
+		profile.paths.viteConfig,
+		profile.paths.criticalPartial,
+		`${profile.paths.templates}/_layouts/global-variables.twig`,
 	];
 	execFileSync('git', ['restore', '--source=HEAD', '--', ...tracked], { cwd: root, stdio: 'inherit' });
 
-	resetProject({ root, deleteDdev: false });
-	nukeRuntime({ root, deleteDdev: false });
+	resetProject({ root, deleteDdev: false, craftProfile: profile });
+	nukeRuntime({ root, deleteDdev: false, craftProfile: profile });
 	removeRedisAddonFiles({ root });
 	for (const target of [
 		path.join(root, '.craft-starter.json'),
@@ -82,10 +90,11 @@ export function resetStarterScaffold({ root = ROOT } = {}) {
 	}
 
 	const pluginTemplates = path.join(CLI_DIR, 'templates', 'plugins');
+	const pluginConfigDir = craftProjectPath(root, 'pluginConfig', profile);
 	for (const filename of fs.readdirSync(pluginTemplates)) {
-		fs.rmSync(path.join(root, 'config', filename), { force: true });
+		fs.rmSync(path.join(pluginConfigDir, filename), { force: true });
 	}
-	const translations = path.join(root, 'translations');
+	const translations = craftProjectPath(root, 'translations', profile);
 	if (fs.existsSync(translations)) {
 		for (const entry of fs.readdirSync(translations, { withFileTypes: true })) {
 			if (entry.isDirectory() || entry.name === '.DS_Store') {

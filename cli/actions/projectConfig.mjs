@@ -16,6 +16,7 @@
  */
 
 import { run } from '../utils/run.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 /**
  * Write email transport settings to project config via Craft's API.
@@ -28,6 +29,9 @@ import { run } from '../utils/run.mjs';
  * arguments needed.
  *
  */
-export async function configureEmailTransport() {
-	await run('ddev exec php cli/scripts/configure-project.php');
+export async function configureProject({ craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	await run(`ddev exec ${profile.commands.projectConfigurator.join(' ')}`);
 }
+
+export const configureEmailTransport = configureProject;

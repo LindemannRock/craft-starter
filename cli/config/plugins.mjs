@@ -13,30 +13,19 @@
  * @license MIT
  */
 
-// -----------------------------------------------------------------------------
-// Core — always installed, never prompted
-// -----------------------------------------------------------------------------
+import { DEFAULT_CRAFT_PROFILE, composerConfigForCraftProfile } from './craft-profiles.mjs';
 
-export const CORE_REQUIRE = {
-	'craftcms/cms': '^5.10.13',
-	'craftcms/ckeditor': '^5.6.1',
-	'nystudio107/craft-vite': '^5.0.2',
-	'vlucas/phpdotenv': '^5.6.4',
-};
-
-export const CORE_REQUIRE_DEV = {
-	'craftcms/generator': '^2.2.0',
-	'yiisoft/yii2-shell': '^2.0.6',
-};
+// Compatibility exports for registry maintenance scripts. Project generation
+// reads these values from the selected Craft profile directly.
+const defaultComposer = composerConfigForCraftProfile(DEFAULT_CRAFT_PROFILE);
+export const CORE_REQUIRE = defaultComposer.require;
+export const CORE_REQUIRE_DEV = defaultComposer.requireDev;
 
 // Craft plugin handles always activated after install
-export const CORE_PLUGIN_HANDLES = ['ckeditor', 'vite'];
+export const CORE_PLUGIN_HANDLES = DEFAULT_CRAFT_PROFILE.plugins.coreHandles;
 
 // Optional: Redis cache package — only added when user opts in
-export const REDIS_PACKAGE = {
-	name: 'yiisoft/yii2-redis',
-	version: '^2.1.2',
-};
+export const REDIS_PACKAGE = DEFAULT_CRAFT_PROFILE.composer.redis;
 
 // -----------------------------------------------------------------------------
 // LindemannRock plugins

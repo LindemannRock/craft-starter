@@ -18,6 +18,7 @@ import { ROOT } from '../paths.mjs';
 import { cancel } from '../utils/cancel.mjs';
 import { checkPrerequisites } from '../utils/preflight.mjs';
 import { run } from '../utils/run.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
 import {
 	buildRedisEnableSteps,
 	buildRedisRemoveSteps,
@@ -53,19 +54,21 @@ async function runSteps(steps) {
 	}
 }
 
-async function enableOrRepair(state) {
+async function enableOrRepair(state, craft) {
 	const useSessions = await p.confirm({
 		message: 'Use Redis for PHP sessions too?',
 		initialValue: state.sessionsEnabled,
 	});
 	if (p.isCancel(useSessions)) cancel('Redis configuration cancelled.');
 
-	await runSteps(buildRedisEnableSteps(state));
+	await runSteps(buildRedisEnableSteps(state, { craftProfile: craft, craftReleaseChannel: craft?.channel }));
 	writeRedisEnvironment({ useSessions });
 
-	p.log.success(useSessions
-		? 'Redis enabled for cache (DB 0) and sessions (DB 1).'
-		: 'Redis enabled for cache (DB 0); sessions remain database-backed.');
+	p.log.success(
+		useSessions
+			? 'Redis enabled for cache (DB 0) and sessions (DB 1).'
+			: 'Redis enabled for cache (DB 0); sessions remain database-backed.',
+	);
 }
 
 async function changeSessions(state) {
@@ -79,15 +82,17 @@ async function changeSessions(state) {
 	if (p.isCancel(confirmed) || !confirmed) cancel('Redis session change cancelled.');
 
 	writeRedisEnvironment({ useSessions });
-	p.log.success(useSessions
-		? 'Redis sessions enabled on DB 1.'
-		: 'Redis sessions disabled; Craft will use database-backed sessions.');
+	p.log.success(
+		useSessions
+			? 'Redis sessions enabled on DB 1.'
+			: 'Redis sessions disabled; Craft will use database-backed sessions.',
+	);
 }
 
-async function removeRedis(state) {
+async function removeRedis(state, craft) {
 	p.log.warn(
 		'This removes Redis environment values, yiisoft/yii2-redis, and the DDEV add-on.\n' +
-		'Any custom plugin that connects to this Redis service must be reconfigured first.',
+			'Any custom plugin that connects to this Redis service must be reconfigured first.',
 	);
 	const confirmed = await p.confirm({
 		message: 'Disable and fully remove Redis?',
@@ -98,7 +103,7 @@ async function removeRedis(state) {
 	// Disable Craft first. If Composer or DDEV removal later fails, the project
 	// safely falls back to file cache and database-backed sessions.
 	deleteRedisEnvironment();
-	await runSteps(buildRedisRemoveSteps(state));
+	await runSteps(buildRedisRemoveSteps(state, { craftProfile: craft, craftReleaseChannel: craft?.channel }));
 	p.log.success('Redis removed; Craft now uses file cache and database-backed sessions.');
 }
 
@@ -111,7 +116,8 @@ async function main() {
 	}
 	checkPrerequisites({ retryCommand: 'make redis' });
 
-	const state = getRedisState();
+	const craft = readSetupManifest()?.craft;
+	const state = getRedisState({ craftProfile: craft, craftReleaseChannel: craft?.channel });
 	p.log.info(`Current state: ${pc.bold(stateLabel(state))}`);
 
 	const options = [];
@@ -137,9 +143,9 @@ async function main() {
 	if (p.isCancel(action) || action === 'cancel') cancel('Redis configuration cancelled.');
 
 	try {
-		if (action === 'enable') await enableOrRepair(state);
+		if (action === 'enable') await enableOrRepair(state, craft);
 		if (action === 'sessions') await changeSessions(state);
-		if (action === 'remove') await removeRedis(state);
+		if (action === 'remove') await removeRedis(state, craft);
 	} catch (err) {
 		p.log.error(err.message);
 		p.outro(pc.red('Redis configuration stopped. Re-run this command to inspect and repair the remaining state.'));

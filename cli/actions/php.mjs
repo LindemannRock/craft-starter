@@ -14,15 +14,19 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
-import { SUPPORTED_PHP_VERSIONS } from '../config/php.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
-export function setPhpVersion(version) {
-	if (!SUPPORTED_PHP_VERSIONS.includes(version)) {
-		throw new Error(`Unsupported PHP version "${version}". Supported: ${SUPPORTED_PHP_VERSIONS.join(', ')}`);
+export function setPhpVersion(version, { craftProfile, root = ROOT } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const supportedVersions = profile.php.options.map(({ value }) => value);
+	if (!supportedVersions.includes(version)) {
+		throw new Error(
+			`Unsupported PHP version "${version}" for ${profile.label}. Supported: ${supportedVersions.join(', ')}`,
+		);
 	}
 
-	const ddevPath = path.join(ROOT, '.ddev', 'config.yaml');
-	const composerPath = path.join(ROOT, 'composer.json');
+	const ddevPath = path.join(root, '.ddev', 'config.yaml');
+	const composerPath = path.join(root, 'composer.json');
 
 	// .ddev/config.yaml — single line replacement
 	if (fs.existsSync(ddevPath)) {

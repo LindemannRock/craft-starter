@@ -1,45 +1,15 @@
-/**
- * Database engines supported by the interactive starter.
- *
- * @copyright 2026 LindemannRock
- * @license MIT
- */
+/** Database compatibility aliases for the default Craft profile. */
 
-export const DATABASE_OPTIONS = [
-	{
-		value: 'mysql',
-		label: 'MySQL 8.0',
-		hint: 'Default for most Craft projects',
-		ddevType: 'mysql',
-		ddevVersion: '8.0',
-		craftDriver: 'mysql',
-		craftPort: '3306',
-		craftSchema: '',
-	},
-	{
-		value: 'postgres',
-		label: 'PostgreSQL 18',
-		hint: 'Latest stable PostgreSQL',
-		ddevType: 'postgres',
-		ddevVersion: '18',
-		craftDriver: 'pgsql',
-		craftPort: '5432',
-		craftSchema: 'public',
-	},
-	{
-		value: 'postgres-16',
-		label: 'PostgreSQL 16',
-		hint: 'Craft 5 baseline',
-		ddevType: 'postgres',
-		ddevVersion: '16',
-		craftDriver: 'pgsql',
-		craftPort: '5432',
-		craftSchema: 'public',
-	},
-];
+import { DEFAULT_CRAFT_PROFILE, resolveCraftProfile } from './craft-profiles.mjs';
 
-export const DEFAULT_DATABASE = DATABASE_OPTIONS[0];
+export const DATABASE_OPTIONS = DEFAULT_CRAFT_PROFILE.database.options;
 
-export function getDatabaseOption(value) {
-	return DATABASE_OPTIONS.find((option) => option.value === value) || DEFAULT_DATABASE;
+export const DEFAULT_DATABASE = getDatabaseOption(DEFAULT_CRAFT_PROFILE.database.default);
+
+export function getDatabaseOption(value, craftProfile = DEFAULT_CRAFT_PROFILE) {
+	const profile = resolveCraftProfile(craftProfile);
+	return (
+		profile.database.options.find((option) => option.value === value) ||
+		profile.database.options.find((option) => option.value === profile.database.default)
+	);
 }

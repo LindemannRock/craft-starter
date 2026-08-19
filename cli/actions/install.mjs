@@ -14,17 +14,18 @@ import { execSync } from 'child_process';
 import { ROOT } from '../paths.mjs';
 import { run } from '../utils/run.mjs';
 import { activatePlugins } from './plugins.mjs';
-import { configureEmailTransport } from './projectConfig.mjs';
-import { CORE_PLUGIN_HANDLES } from '../config/plugins.mjs';
+import { configureProject } from './projectConfig.mjs';
+import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 import { shellEscape } from '../utils/validate.mjs';
 
 /**
  * Returns true if Craft is already installed (has a schemaVersion in project config).
  *
  */
-function isCraftInstalled() {
+function isCraftInstalled(craftProfile) {
+	const profile = resolveCraftProfile(craftProfile);
 	try {
-		const out = execSync('ddev exec php craft project-config/get system.schemaVersion', {
+		const out = execSync(`ddev exec ${profile.commands.schemaVersion.join(' ')}`, {
 			cwd: ROOT,
 			stdio: ['ignore', 'pipe', 'ignore'],
 		})
@@ -36,12 +37,13 @@ function isCraftInstalled() {
 	}
 }
 
-export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedisCache }) {
+export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHosting, useRedisCache, craftProfile }) {
+	const profile = resolveCraftProfile(craftProfile);
 	const siteName = project.description || project.name;
 	const siteUrl = `https://${project.name}.ddev.site`;
 
 	const pluginPlan = [
-		...CORE_PLUGIN_HANDLES.map((handle) => ({ handle })),
+		...profile.plugins.coreHandles.map((handle) => ({ handle })),
 		...selectedLr.filter((plugin) => plugin.handle),
 		...selectedTp.filter((plugin) => plugin.handle),
 		...selectedHosting.packages.filter((plugin) => plugin.handle),
@@ -54,7 +56,7 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 			msg: 'Cleaning stale artifacts',
 			fn: () => {
 				// Clear stale project config from previous runs
-				const projectDir = path.join(ROOT, 'config', 'project');
+				const projectDir = craftProjectPath(ROOT, 'projectConfig', profile);
 				if (fs.existsSync(projectDir)) {
 					fs.rmSync(projectDir, { recursive: true });
 				}
@@ -85,9 +87,9 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 		{
 			msg: 'Installing Craft CMS',
 			fn: async () => {
-				if (isCraftInstalled()) return 'skipped';
+				if (isCraftInstalled(profile)) return 'skipped';
 				await run(
-					`ddev exec php craft install` +
+					`ddev exec ${profile.commands.projectInstall.join(' ')}` +
 						` --interactive=0` +
 						` --email=${shellEscape(project.adminEmail)}` +
 						` --password=${shellEscape(project.adminPassword)}` +
@@ -99,15 +101,15 @@ export function buildInstallSteps({ project, selectedLr, selectedTp, selectedHos
 		},
 		{
 			msg: `Activating ${pluginPlan.length} plugin${pluginPlan.length === 1 ? '' : 's'}`,
-			fn: () => activatePlugins(pluginPlan),
+			fn: () => activatePlugins(pluginPlan, { craftProfile: profile }),
 		},
-		{ msg: 'Applying project config', cmd: 'ddev exec php craft up --interactive=0' },
+		{ msg: 'Applying project config', cmd: `ddev exec ${profile.commands.projectUp.join(' ')}` },
 		// Email transport — runs AFTER craft up so the PHP script boots a
 		// fully-synced Craft. The script reads env vars directly and picks
 		// Postmark / SMTP / Mailpit automatically.
 		{
 			msg: 'Configuring email transport',
-			fn: () => configureEmailTransport(),
+			fn: () => configureProject({ craftProfile: profile }),
 		},
 		{ msg: 'Building frontend assets', cmd: 'ddev exec env GENERATE_CRITICAL_CSS=false npm run build' },
 	);

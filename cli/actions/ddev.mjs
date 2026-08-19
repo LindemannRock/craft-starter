@@ -11,6 +11,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT, CLI_DIR } from '../paths.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 // Packages needed by headless Chromium (via rollup-plugin-critical → puppeteer).
 // Order-preserving list so the committed config.yaml's order is respected.
@@ -42,12 +43,19 @@ const CHROMIUM_SET = new Set(CHROMIUM_PACKAGES);
 
 export function updateDdevConfig(
 	{ name, timezone },
-	{ useCritical = true, database = null, root = ROOT, cliDir = CLI_DIR } = {},
+	{ useCritical = true, database = null, root = ROOT, cliDir = CLI_DIR, craftProfile } = {},
 ) {
+	const profile = resolveCraftProfile(craftProfile);
 	const ddevPath = path.join(root, '.ddev', 'config.yaml');
 	let ddevConfig = fs.readFileSync(ddevPath, 'utf-8');
 	ddevConfig = ddevConfig.replace(/^name: .*/m, `name: ${name}`);
 	ddevConfig = ddevConfig.replace(/^timezone: .*/m, `timezone: ${timezone}`);
+	ddevConfig = ddevConfig.replace(/^type: .*/m, `type: ${profile.ddev.projectType}`);
+	ddevConfig = ddevConfig.replace(/^docroot: .*/m, `docroot: ${profile.ddev.docroot}`);
+	ddevConfig = ddevConfig.replace(
+		/^upload_dirs:\n(?:    - .*\n)*/m,
+		`upload_dirs:\n${profile.ddev.uploadDirs.map((directory) => `    - ${directory}`).join('\n')}\n`,
+	);
 	if (database) {
 		ddevConfig = updateDatabaseConfig(ddevConfig, database);
 	}

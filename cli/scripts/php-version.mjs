@@ -18,10 +18,12 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { setPhpVersion } from '../actions/php.mjs';
-import { DEFAULT_PHP_VERSION, PHP_VERSION_OPTIONS } from '../config/php.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 import { cancel } from '../utils/cancel.mjs';
 
 const cliVersion = process.env.VERSION;
+const craftProfile = resolveCraftProfile(readSetupManifest()?.craft);
 
 p.intro(pc.bgCyan(pc.black(' PHP Version ')));
 
@@ -30,18 +32,15 @@ let version = cliVersion;
 if (!version) {
 	const choice = await p.select({
 		message: 'PHP version',
-		options: [
-			...PHP_VERSION_OPTIONS,
-			{ value: 'cancel', label: pc.red('Cancel') },
-		],
-		initialValue: DEFAULT_PHP_VERSION,
+		options: [...craftProfile.php.options, { value: 'cancel', label: pc.red('Cancel') }],
+		initialValue: craftProfile.php.default,
 	});
 	if (p.isCancel(choice) || choice === 'cancel') cancel();
 	version = choice;
 }
 
 try {
-	setPhpVersion(version);
+	setPhpVersion(version, { craftProfile });
 } catch (err) {
 	p.log.error(err.message);
 	process.exit(1);

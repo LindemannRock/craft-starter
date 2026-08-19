@@ -13,7 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
-import { REDIS_PACKAGE } from '../config/plugins.mjs';
+import { composerConfigForCraftProfile } from '../config/craft-profiles.mjs';
 
 export const REDIS_ENV_KEYS = ['REDIS_HOST', 'REDIS_PORT', 'REDIS_PASSWORD', 'REDIS_DATABASE', 'REDIS_SESSION_DB'];
 
@@ -89,7 +89,8 @@ export function deleteRedisEnvironment({ root = ROOT } = {}) {
 }
 
 /** Detect complete, disabled, and mixed/partial Redis installations. */
-export function getRedisState({ root = ROOT } = {}) {
+export function getRedisState({ root = ROOT, craftProfile, craftReleaseChannel } = {}) {
+	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
 	const envPath = path.join(root, '.env');
 	const composerPath = path.join(root, 'composer.json');
 	const env = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
@@ -104,7 +105,7 @@ export function getRedisState({ root = ROOT } = {}) {
 	const cacheEnabled = hasValue(envValues.REDIS_HOST);
 	const sessionsEnabled = hasValue(envValues.REDIS_SESSION_DB);
 	const packageInstalled = Boolean(
-		composer.require?.[REDIS_PACKAGE.name] || composer['require-dev']?.[REDIS_PACKAGE.name],
+		composer.require?.[redisPackage.name] || composer['require-dev']?.[redisPackage.name],
 	);
 	const addonInstalled = [
 		path.join(root, '.ddev', 'docker-compose.redis.yaml'),
@@ -128,7 +129,8 @@ export function getRedisState({ root = ROOT } = {}) {
 }
 
 /** Commands needed to enable or repair infrastructure for the detected state. */
-export function buildRedisEnableSteps(state) {
+export function buildRedisEnableSteps(state, { craftProfile, craftReleaseChannel } = {}) {
+	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
 	const steps = [];
 	if (!state.addonInstalled) {
 		steps.push({ msg: 'Installing DDEV Redis add-on', cmd: 'ddev add-on get ddev/ddev-redis' });
@@ -137,20 +139,21 @@ export function buildRedisEnableSteps(state) {
 	if (!state.packageInstalled) {
 		steps.push({
 			msg: 'Installing Yii Redis package',
-			cmd: `ddev composer require ${REDIS_PACKAGE.name}:${REDIS_PACKAGE.version} --no-interaction`,
+			cmd: `ddev composer require ${redisPackage.name}:${redisPackage.version} --no-interaction`,
 		});
 	}
 	return steps;
 }
 
 /** Commands needed after `.env` has been deactivated during full removal. */
-export function buildRedisRemoveSteps(state) {
+export function buildRedisRemoveSteps(state, { craftProfile, craftReleaseChannel } = {}) {
+	const redisPackage = composerConfigForCraftProfile(craftProfile, craftReleaseChannel).redis;
 	const steps = [];
 	if (state.packageInstalled) {
 		steps.push({ msg: 'Starting DDEV', cmd: 'ddev start' });
 		steps.push({
 			msg: 'Removing Yii Redis package',
-			cmd: `ddev composer remove ${REDIS_PACKAGE.name} --no-interaction`,
+			cmd: `ddev composer remove ${redisPackage.name} --no-interaction`,
 		});
 	}
 	if (state.addonInstalled) {

@@ -13,10 +13,10 @@ import { cancel } from '../utils/cancel.mjs';
 
 const byLabel = (a, b) => a.label.localeCompare(b.label);
 
-export async function promptLrPlugins() {
+export async function promptLrPlugins(catalog = LR_PLUGINS) {
 	const selected = await p.autocompleteMultiselect({
 		message: 'LindemannRock plugins',
-		options: [...LR_PLUGINS].sort(byLabel).map((pl) => ({
+		options: [...catalog].sort(byLabel).map((pl) => ({
 			value: pl.value,
 			label: pl.label,
 			hint: pl.hint,
@@ -24,13 +24,13 @@ export async function promptLrPlugins() {
 		required: false,
 	});
 	if (p.isCancel(selected)) cancel();
-	return LR_PLUGINS.filter((pl) => selected.includes(pl.value));
+	return catalog.filter((pl) => selected.includes(pl.value));
 }
 
-export async function promptThirdPartyPlugins() {
+export async function promptThirdPartyPlugins(catalog = THIRD_PARTY_PLUGINS) {
 	const selected = await p.autocompleteMultiselect({
 		message: 'Third-party plugins',
-		options: [...THIRD_PARTY_PLUGINS].sort(byLabel).map((pl) => ({
+		options: [...catalog].sort(byLabel).map((pl) => ({
 			value: pl.value,
 			label: pl.label,
 			hint: pl.hint,
@@ -38,7 +38,7 @@ export async function promptThirdPartyPlugins() {
 		required: false,
 	});
 	if (p.isCancel(selected)) cancel();
-	return THIRD_PARTY_PLUGINS.filter((pl) => selected.includes(pl.value));
+	return catalog.filter((pl) => selected.includes(pl.value));
 }
 
 /** Ask for a Craft edition before installation for plugins that expose more than one. */
@@ -61,15 +61,15 @@ export async function promptPluginEditions(plugins) {
 	return resolved;
 }
 
-export async function promptHosting() {
+export async function promptHosting(catalog = HOSTING_OPTIONS) {
 	const hosting = await p.select({
 		message: 'Hosting provider',
-		options: HOSTING_OPTIONS.map((h) => ({
+		options: catalog.map((h) => ({
 			value: h.value,
 			label: h.label,
 			hint: h.hint,
 		})),
 	});
 	if (p.isCancel(hosting)) cancel();
-	return HOSTING_OPTIONS.find((h) => h.value === hosting);
+	return catalog.find((h) => h.value === hosting);
 }

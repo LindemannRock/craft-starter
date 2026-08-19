@@ -48,7 +48,7 @@ help: ## Show this help
 # to the recipe.
 # -----------------------------------------------------------------------------
 # require_project — wraps a command with .env + DDEV checks.
-# Usage: @$(call require_project, ddev exec php craft up)
+# Usage: @$(call require_project, node cli/scripts/run-profile-command.mjs up)
 define require_project
 if [ ! -f .env ]; then \
   echo "No .env file found. Run 'make create' first."; \
@@ -93,23 +93,20 @@ _install:
 	@# Only run `craft install` if Craft isn't installed yet.
 	@# Prompts for admin email + password only. Site name/URL/language get
 	@# overwritten by configure-project.php immediately after.
-	@if ddev exec php craft project-config/get system.schemaVersion 2>/dev/null | grep -qE '^[0-9]+\.'; then \
+	@if node cli/scripts/run-profile-command.mjs schema-version 2>/dev/null | grep -qE '^[0-9]+\.'; then \
 		echo "Craft already installed — skipping first-run install"; \
 	else \
 		echo "Installing Craft CMS (enter admin credentials)..."; \
-		ddev exec php craft install; \
+		node cli/scripts/run-profile-command.mjs install; \
 	fi
 	@node cli/scripts/install-plugins.mjs
-	ddev exec php craft up --interactive=0
+	@node cli/scripts/run-profile-command.mjs up
 	@# Run project config script if sites.json exists (left by make create)
 	@if [ -f cli/tmp/sites.json ]; then \
 		echo "Configuring project (email, sites, system settings)..."; \
-		ddev exec php cli/scripts/configure-project.php; \
+		node cli/scripts/configure-project.mjs; \
 	fi
-	@# Copy CP rebrand assets if not already present
-	@if [ -d cli/templates/rebrand ] && [ ! -d storage/rebrand ]; then \
-		cp -r cli/templates/rebrand storage/rebrand; \
-	fi
+	@node cli/scripts/sync-static-assets.mjs
 	ddev exec env GENERATE_CRITICAL_CSS=false npm run build
 	@node cli/scripts/complete-setup.mjs
 	@echo "Install/sync complete"
@@ -119,7 +116,7 @@ start: ## ddev start + Vite dev server
 	else ddev start && ddev exec npm run dev; fi
 
 keys: ## Generate Craft security key + app ID into .env
-	@$(call require_project, ddev exec php craft setup/keys)
+	@$(call require_project, node cli/scripts/run-profile-command.mjs setup-keys)
 
 npm-install: ## Run `npm install` inside DDEV
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
@@ -139,7 +136,7 @@ test: ## Run CLI unit tests (vitest)
 prod: ## Production build (fast — skips critical CSS)
 	@$(call require_project, ddev exec env GENERATE_CRITICAL_CSS=false npm run build)
 	@# Hint: if the project opted into critical CSS but files aren't built yet, suggest `make critical`
-	@if grep -q '^GENERATE_CRITICAL_CSS=true' .env 2>/dev/null && [ ! -d web/dist/criticalcss ]; then \
+	@if grep -q '^GENERATE_CRITICAL_CSS=true' .env 2>/dev/null && ! node cli/scripts/check-critical-output.mjs; then \
 	  printf '\n  \033[2mtip: this project uses critical CSS — run\033[0m \033[36mmake critical\033[0m \033[2mbefore shipping\033[0m\n'; \
 	fi
 
@@ -202,7 +199,7 @@ funnel: ## Share publicly via Tailscale Funnel (no Tailscale on test device)
 ##@ Maintenance
 
 up: ## Apply project config + run pending migrations
-	@$(call require_project, ddev exec php craft up --interactive=0)
+	@$(call require_project, node cli/scripts/run-profile-command.mjs up)
 
 verify: ## Scan .env for unfilled placeholders (run before deploy)
 	@# Swallow the exit code for friendly interactive output.
@@ -217,7 +214,7 @@ update: ## Interactive update picker (Craft / Composer / NPM / CLI / All)
 
 # Hidden (no `##` description) — still callable, invoked by the picker above.
 update-craft:
-	@$(call require_project, ddev exec php craft update all)
+	@$(call require_project, node cli/scripts/run-profile-command.mjs update all)
 
 update-composer:
 	@$(call require_project, ddev composer update)
@@ -295,7 +292,7 @@ db-import:
 	fi
 
 reindex-search: ## Rebuild the search index
-	@$(call require_project, ddev exec php craft resave/entries --update-search-index)
+	@$(call require_project, node cli/scripts/run-profile-command.mjs resave-entries --update-search-index)
 
 ##@ Destructive (asks for confirmation)
 

@@ -3,6 +3,7 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { nukeRuntime, resetProject, resetStarterScaffold } from '../actions/lifecycle.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
 
 const action = process.argv[2];
 const definitions = {
@@ -37,7 +38,8 @@ if (p.isCancel(confirmed) || !confirmed) {
 }
 
 try {
-	definition.run();
+	const manifest = readSetupManifest();
+	definition.run({ craftProfile: manifest?.craft });
 	p.outro(pc.green(definition.done));
 } catch (error) {
 	p.outro(pc.red(error.message));

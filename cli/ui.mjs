@@ -7,6 +7,7 @@
 
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
+import { resolveCraftProfile } from './config/craft-profiles.mjs';
 
 export function intro() {
 	console.log('');
@@ -24,9 +25,13 @@ export function showConfigurationSummary({
 	selectedLr,
 	selectedTp,
 	selectedHosting,
+	craftProfile,
+	craftReleaseChannel,
 }) {
+	const profile = resolveCraftProfile(craftProfile);
 	const localBaseUrl = `https://${project.name}.ddev.site`;
 	const rows = [
+		['Craft', `${profile.label} (${craftReleaseChannel || profile.release.defaultChannel})`],
 		['Project', project.name],
 		['Site name', project.description],
 		['Timezone', project.timezone],
@@ -47,7 +52,7 @@ export function showConfigurationSummary({
 		['Database', database?.label || 'MySQL 8.0'],
 		['Cache', useRedisCache ? (useRedisSession ? 'Redis (cache + sessions)' : 'Redis (cache only)') : 'File (default)'],
 		['Critical CSS', useCritical ? 'Yes (run make critical)' : 'No'],
-		['Build files', commitBuildFiles ? 'Track web/dist' : 'Ignore web/dist'],
+		['Build files', `${commitBuildFiles ? 'Track' : 'Ignore'} ${profile.paths.build}`],
 		['LR Plugins', selectedLr.length ? selectedLr.map(pluginSummary).join(', ') : 'None'],
 		['Plugins', selectedTp.length ? selectedTp.map(pluginSummary).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],

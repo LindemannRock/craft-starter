@@ -10,13 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT, CLI_DIR } from '../paths.mjs';
-
-const CRITICAL_PARTIAL = path.join(ROOT, 'templates', '_boilerplate', '_partials', 'critical-css.twig');
-const VITE_CONFIG = path.join(ROOT, 'config', 'vite.php');
-
-const TEMPLATES_DIR = path.join(CLI_DIR, 'templates', 'critical');
-const ENABLED_PARTIAL = path.join(TEMPLATES_DIR, 'critical-css.twig');
-const DISABLED_PARTIAL = path.join(TEMPLATES_DIR, 'critical-css-disabled.twig');
+import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 // Canonical criticalPath + criticalSuffix lines for config/vite.php.
 // Re-inserted on opt-in if they were previously stripped.
@@ -24,19 +18,27 @@ const VITE_CONFIG_CRITICAL_LINES = `    'criticalPath' => $distDir . '/criticalc
     'criticalSuffix' => '_critical.min.css',
 `;
 
-export function applyCriticalCssChoice(useCritical) {
-	const preserved = writePartial(useCritical);
-	patchViteConfig(useCritical);
+export function applyCriticalCssChoice(useCritical, { root = ROOT, cliDir = CLI_DIR, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const paths = {
+		criticalPartial: craftProjectPath(root, 'criticalPartial', profile),
+		viteConfig: craftProjectPath(root, 'viteConfig', profile),
+		templatesDir: path.join(cliDir, 'templates', 'critical'),
+	};
+	const preserved = writePartial(useCritical, { root, ...paths });
+	patchViteConfig(useCritical, paths.viteConfig);
 	return preserved;
 }
 
-function writePartial(useCritical) {
-	const source = useCritical ? ENABLED_PARTIAL : DISABLED_PARTIAL;
+function writePartial(useCritical, { root, criticalPartial, templatesDir }) {
+	const enabledPartial = path.join(templatesDir, 'critical-css.twig');
+	const disabledPartial = path.join(templatesDir, 'critical-css-disabled.twig');
+	const source = useCritical ? enabledPartial : disabledPartial;
 	if (!fs.existsSync(source)) return;
 	const content = fs.readFileSync(source, 'utf-8');
-	if (fs.existsSync(CRITICAL_PARTIAL)) {
-		const current = fs.readFileSync(CRITICAL_PARTIAL, 'utf-8');
-		const canonical = [ENABLED_PARTIAL, DISABLED_PARTIAL]
+	if (fs.existsSync(criticalPartial)) {
+		const current = fs.readFileSync(criticalPartial, 'utf-8');
+		const canonical = [enabledPartial, disabledPartial]
 			.filter((candidate) => fs.existsSync(candidate))
 			.flatMap((candidate) => {
 				const managed = fs.readFileSync(candidate, 'utf-8');
@@ -46,16 +48,16 @@ function writePartial(useCritical) {
 				);
 				return [managed, legacy];
 			});
-		if (!canonical.includes(current)) return path.relative(ROOT, CRITICAL_PARTIAL);
+		if (!canonical.includes(current)) return path.relative(root, criticalPartial);
 	}
-	fs.mkdirSync(path.dirname(CRITICAL_PARTIAL), { recursive: true });
-	fs.writeFileSync(CRITICAL_PARTIAL, content);
+	fs.mkdirSync(path.dirname(criticalPartial), { recursive: true });
+	fs.writeFileSync(criticalPartial, content);
 	return null;
 }
 
-function patchViteConfig(useCritical) {
-	if (!fs.existsSync(VITE_CONFIG)) return;
-	let content = fs.readFileSync(VITE_CONFIG, 'utf-8');
+function patchViteConfig(useCritical, viteConfig) {
+	if (!fs.existsSync(viteConfig)) return;
+	let content = fs.readFileSync(viteConfig, 'utf-8');
 
 	// Always strip existing critical lines first (idempotent)
 	content = content.replace(/^\s*'criticalPath' =>.*\n/m, '');
@@ -71,5 +73,5 @@ function patchViteConfig(useCritical) {
 		}
 	}
 
-	fs.writeFileSync(VITE_CONFIG, content);
+	fs.writeFileSync(viteConfig, content);
 }

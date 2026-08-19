@@ -13,21 +13,20 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
-
-const GITIGNORE = path.join(ROOT, '.gitignore');
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 const LOCK_FILES_SECTION_REGEX = /\n# Lock files — TEMPORARY[\s\S]*?\/package-lock\.json\n/;
-const PROJECT_CONFIG_SECTION_REGEX = /\n# Project config — TEMPORARY[\s\S]*?\/config\/project\/\n/;
-const BUILD_FILES_SECTION_REGEX = /\n# Build files\n\/web\/dist\/\n/;
 
-export function updateGitignore({ commitBuildFiles = true } = {}) {
-	if (!fs.existsSync(GITIGNORE)) return;
-	let content = fs.readFileSync(GITIGNORE, 'utf-8');
-	content = stripStarterOnlyIgnores(content);
-	content = setBuildFilesIgnored(content, !commitBuildFiles);
+export function updateGitignore({ commitBuildFiles = true, craftProfile, root = ROOT } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const gitignore = path.join(root, '.gitignore');
+	if (!fs.existsSync(gitignore)) return;
+	let content = fs.readFileSync(gitignore, 'utf-8');
+	content = stripStarterOnlyIgnores(content, { craftProfile: profile });
+	content = setBuildFilesIgnored(content, !commitBuildFiles, { craftProfile: profile });
 	// Collapse any extra blank lines left behind
 	content = content.replace(/\n{3,}/g, '\n\n');
-	fs.writeFileSync(GITIGNORE, content);
+	fs.writeFileSync(gitignore, content);
 }
 
 /**
@@ -35,22 +34,31 @@ export function updateGitignore({ commitBuildFiles = true } = {}) {
  * Generated projects must commit their lockfiles and Project Config so Craft
  * can reproduce plugin/schema state in every deployment environment.
  */
-export function stripStarterOnlyIgnores(content) {
+
+export function stripStarterOnlyIgnores(content, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const projectConfig = escapeRegex(`/${profile.paths.projectConfig}/`);
+	const projectConfigSection = new RegExp(`\\n# Project config — TEMPORARY[\\s\\S]*?${projectConfig}\\n`);
 	return content
 		.replace(LOCK_FILES_SECTION_REGEX, '\n')
-		.replace(PROJECT_CONFIG_SECTION_REGEX, '\n')
+		.replace(projectConfigSection, '\n')
 		.replace(/\n{3,}/g, '\n\n');
 }
 
-export function setBuildFilesIgnored(content, ignored) {
+export function setBuildFilesIgnored(content, ignored, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const buildLine = `/${profile.paths.build}/`;
+	const escapedBuildLine = escapeRegex(buildLine);
+	const buildFilesSection = new RegExp(`\\n# Build files\\n${escapedBuildLine}\\n`);
 	if (!ignored) {
-		return content.replace(BUILD_FILES_SECTION_REGEX, '\n');
+		return content.replace(buildFilesSection, '\n');
 	}
-	if (BUILD_FILES_SECTION_REGEX.test(content) || /^\/web\/dist\/$/m.test(content)) {
+	if (buildFilesSection.test(content) || new RegExp(`^${escapedBuildLine}$`, 'm').test(content)) {
 		return content;
 	}
-	return content.replace(
-		/(# Web assets\n)/,
-		'# Build files\n/web/dist/\n\n$1',
-	);
+	return content.replace(/(# Web assets\n)/, `# Build files\n${buildLine}\n\n$1`);
+}
+
+function escapeRegex(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

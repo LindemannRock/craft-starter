@@ -8,6 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 /**
  * Cloud builds the frontend and publishes webroot files to its artifact CDN.
@@ -15,6 +16,7 @@ import { ROOT } from '../paths.mjs';
  */
 export function applyCraftCloudDefaults(state) {
 	if (state.selectedHosting?.value !== 'craft-cloud') return [];
+	const profile = resolveCraftProfile(state.craftProfile);
 
 	const notices = [];
 	if (state.useCritical) {
@@ -23,7 +25,7 @@ export function applyCraftCloudDefaults(state) {
 	}
 	if (state.commitBuildFiles) {
 		state.commitBuildFiles = false;
-		notices.push('web/dist will be ignored — Craft Cloud builds and publishes it to the artifact CDN.');
+		notices.push(`${profile.paths.build} will be ignored — Craft Cloud builds and publishes it to the artifact CDN.`);
 	}
 
 	return notices;

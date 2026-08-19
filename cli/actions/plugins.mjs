@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { ROOT, CLI_DIR } from '../paths.mjs';
+import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
 
 const PLUGIN_TEMPLATES_DIR = path.join(CLI_DIR, 'templates', 'plugins');
 const MANAGED_COMMENT = '// Managed by Craft Starter. Customized files are preserved during reconfiguration.';
@@ -22,11 +23,13 @@ function managedPhpContent(content) {
  * every selected plugin that has one.
  *
  */
-export function writePluginConfigs(allSelectedPlugins, { root = ROOT } = {}) {
+export function writePluginConfigs(allSelectedPlugins, { root = ROOT, craftProfile } = {}) {
+	const pluginConfigDir = craftProjectPath(root, 'pluginConfig', craftProfile);
+	fs.mkdirSync(pluginConfigDir, { recursive: true });
 	for (const pl of allSelectedPlugins) {
 		if (!pl.config) continue;
 		const src = path.join(PLUGIN_TEMPLATES_DIR, pl.config);
-		const dest = path.join(root, 'config', pl.config);
+		const dest = path.join(pluginConfigDir, pl.config);
 		if (fs.existsSync(src) && !fs.existsSync(dest)) {
 			fs.writeFileSync(dest, managedPhpContent(fs.readFileSync(src, 'utf-8')));
 		}
@@ -41,14 +44,15 @@ export function writePluginConfigs(allSelectedPlugins, { root = ROOT } = {}) {
  * every other failure is surfaced with its original stdout/stderr.
  *
  */
-export async function activatePlugins(plugins) {
+export async function activatePlugins(plugins, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	const plan = plugins
 		.map((plugin) => (typeof plugin === 'string' ? { handle: plugin } : plugin))
 		.filter(({ handle }) => Boolean(handle));
-	validatePluginEditions(plan);
+	validatePluginEditions(plan, { craftProfile: profile });
 
 	for (const { handle, edition } of plan) {
-		const args = pluginInstallArgs({ handle, edition });
+		const args = pluginInstallArgs({ handle, edition }, { craftProfile: profile });
 		try {
 			execFileSync('ddev', args, { cwd: ROOT, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
 		} catch (error) {
@@ -61,17 +65,22 @@ export async function activatePlugins(plugins) {
 	}
 }
 
-export function pluginInstallArgs({ handle, edition }) {
-	const args = ['exec', 'php', 'craft', 'plugin/install', handle];
+export function pluginInstallArgs({ handle, edition }, { craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
+	const args = ['exec', ...profile.commands.pluginInstall, handle];
 	if (edition) args.push(edition);
 	args.push('--interactive=0');
 	return args;
 }
 
-export function validatePluginEditions(plan, { inspector = inspectPluginEditions } = {}) {
+export function validatePluginEditions(plan, { inspector = inspectPluginEditions, craftProfile } = {}) {
+	const profile = resolveCraftProfile(craftProfile);
 	const candidates = plan.filter(({ handle }) => handle);
 	if (candidates.length === 0) return;
-	const actual = inspector(candidates.map(({ handle }) => handle));
+	const actual = inspector(
+		candidates.map(({ handle }) => handle),
+		profile,
+	);
 	for (const plugin of candidates) {
 		const editions = actual[plugin.handle] || [];
 		if (editions.length < 2) continue;
@@ -88,9 +97,10 @@ export function validatePluginEditions(plan, { inspector = inspectPluginEditions
 	}
 }
 
-function inspectPluginEditions(handles) {
+function inspectPluginEditions(handles, craftProfile) {
+	const profile = resolveCraftProfile(craftProfile);
 	try {
-		const output = execFileSync('ddev', ['exec', 'php', 'cli/scripts/inspect-plugin-editions.php', ...handles], {
+		const output = execFileSync('ddev', ['exec', ...profile.commands.editionInspector, ...handles], {
 			cwd: ROOT,
 			encoding: 'utf-8',
 			stdio: ['ignore', 'pipe', 'pipe'],
@@ -110,13 +120,14 @@ function inspectPluginEditions(handles) {
  * previous runs.
  *
  */
-export function cleanUnusedPluginConfigs(allPluginDefs, selectedNow, { root = ROOT } = {}) {
+export function cleanUnusedPluginConfigs(allPluginDefs, selectedNow, { root = ROOT, craftProfile } = {}) {
+	const pluginConfigDir = craftProjectPath(root, 'pluginConfig', craftProfile);
 	const selectedConfigs = new Set(selectedNow.filter((p) => p.config).map((p) => p.config));
 	const preserved = [];
 	for (const pl of allPluginDefs) {
 		if (!pl.config) continue;
 		if (selectedConfigs.has(pl.config)) continue;
-		const staleConfig = path.join(root, 'config', pl.config);
+		const staleConfig = path.join(pluginConfigDir, pl.config);
 		if (fs.existsSync(staleConfig)) {
 			const template = path.join(PLUGIN_TEMPLATES_DIR, pl.config);
 			const templateContent = fs.existsSync(template) ? fs.readFileSync(template, 'utf-8') : null;
@@ -131,9 +142,10 @@ export function cleanUnusedPluginConfigs(allPluginDefs, selectedNow, { root = RO
 	return preserved;
 }
 
-export function syncLrBaseConfig(hasLrPlugins, { root = ROOT } = {}) {
+export function syncLrBaseConfig(hasLrPlugins, { root = ROOT, craftProfile } = {}) {
+	const pluginConfigDir = craftProjectPath(root, 'pluginConfig', craftProfile);
 	const template = path.join(PLUGIN_TEMPLATES_DIR, 'lindemannrock-base.php');
-	const destination = path.join(root, 'config', 'lindemannrock-base.php');
+	const destination = path.join(pluginConfigDir, 'lindemannrock-base.php');
 	if (hasLrPlugins) {
 		if (!fs.existsSync(destination) && fs.existsSync(template)) {
 			fs.writeFileSync(destination, managedPhpContent(fs.readFileSync(template, 'utf-8')));

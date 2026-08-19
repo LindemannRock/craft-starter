@@ -17,21 +17,48 @@ import { fileURLToPath } from 'url';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { spawn } from 'child_process';
-import { LR_PLUGINS, THIRD_PARTY_PLUGINS, CORE_REQUIRE, CORE_REQUIRE_DEV, REDIS_PACKAGE, HOSTING_OPTIONS } from '../config/plugins.mjs';
+import { LR_PLUGINS, THIRD_PARTY_PLUGINS, HOSTING_OPTIONS } from '../config/plugins.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
+import {
+	catalogForCraftProfile,
+	composerConfigForCraftProfile,
+	resolveCraftProfile,
+} from '../config/craft-profiles.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
 const PLUGINS_FILE = path.join(__dirname, '../config/plugins.mjs');
+const PROFILES_FILE = path.join(__dirname, '../config/craft-profiles.mjs');
 const COMPOSER_FILE = path.join(ROOT, 'composer.json');
 const ENV_FILE = path.join(ROOT, '.env');
 
+const manifest = readSetupManifest();
+const craftProfile = resolveCraftProfile(manifest?.craft);
+const craftReleaseChannel = manifest?.craft?.channel || craftProfile.release.defaultChannel;
+const platform = composerConfigForCraftProfile(craftProfile, craftReleaseChannel);
+const lrPlugins = catalogForCraftProfile(LR_PLUGINS, craftProfile);
+const thirdPartyPlugins = catalogForCraftProfile(THIRD_PARTY_PLUGINS, craftProfile);
+const hostingOptions = catalogForCraftProfile(HOSTING_OPTIONS, craftProfile);
+
 const allPackages = [
-	...Object.entries(CORE_REQUIRE).map(([name, version]) => ({ name, version, source: 'core' })),
-	...Object.entries(CORE_REQUIRE_DEV).map(([name, version]) => ({ name, version, source: 'core-dev' })),
-	{ name: REDIS_PACKAGE.name, version: REDIS_PACKAGE.version, source: 'core-optional' },
-	...LR_PLUGINS.map((pl) => ({ name: pl.value, version: pl.version, source: 'lr' })),
-	...THIRD_PARTY_PLUGINS.map((pl) => ({ name: pl.value, version: pl.version, source: '3rd-party' })),
-	...HOSTING_OPTIONS.flatMap((h) => h.packages.map((pk) => ({ name: pk.name, version: pk.version, source: `hosting:${h.value}` }))),
+	...Object.entries(platform.require).map(([name, version]) => ({
+		name,
+		version,
+		source: 'core',
+		channel: name === 'craftcms/cms' ? craftReleaseChannel : 'stable',
+	})),
+	...Object.entries(platform.requireDev).map(([name, version]) => ({
+		name,
+		version,
+		source: 'core-dev',
+		channel: 'stable',
+	})),
+	{ name: platform.redis.name, version: platform.redis.version, source: 'core-optional', channel: 'stable' },
+	...lrPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: 'lr', channel: 'stable' })),
+	...thirdPartyPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: '3rd-party', channel: 'stable' })),
+	...hostingOptions.flatMap((h) =>
+		h.packages.map((pk) => ({ name: pk.name, version: pk.version, source: `hosting:${h.value}`, channel: 'stable' })),
+	),
 ];
 
 function normalizeVersion(version) {
@@ -51,17 +78,24 @@ function releaseUrl(sourceUrl) {
 	return cleanUrl;
 }
 
-async function getPackageInfo(packageName) {
+async function getPackageInfo(packageName, channel = 'stable') {
 	try {
-		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`, { signal: AbortSignal.timeout(15_000) });
+		const res = await fetch(`https://repo.packagist.org/p2/${packageName}.json`, {
+			signal: AbortSignal.timeout(15_000),
+		});
 		if (!res.ok) return null;
 		const data = await res.json();
 		const versions = data.packages?.[packageName] || [];
 		const stable = versions
-			// Case-insensitive prerelease filter so `rc1` / `Alpha` / `BETA` are caught too.
-			// Matches any hyphen-prefixed suffix (the conventional prerelease marker).
-			.filter((v) => !/-(dev|alpha|beta|rc|pre)/i.test(v.version))
-			.sort((a, b) => normalizeVersion(b.version).localeCompare(normalizeVersion(a.version), undefined, { numeric: true }));
+			.filter((v) => {
+				if (/-dev/i.test(v.version)) return false;
+				if (channel === 'alpha') return true;
+				if (channel === 'beta') return !/-alpha/i.test(v.version);
+				return !/-(alpha|beta|rc|pre)/i.test(v.version);
+			})
+			.sort((a, b) =>
+				normalizeVersion(b.version).localeCompare(normalizeVersion(a.version), undefined, { numeric: true }),
+			);
 		const latest = stable[0];
 		if (!latest) return null;
 		const sourceUrl = latest.source?.url || latest.homepage || null;
@@ -79,7 +113,10 @@ function parseConstraint(constraint) {
 	// Caret/tilde/single-version only. Compound constraints (`>=1.0,<2.0`)
 	// collapse weirdly here; warn the caller they need to hand-check.
 	if (/,|\|/.test(constraint)) return null;
-	return constraint.replace(/[\^~>=<\s]/g, '').split('.').map(Number);
+	return constraint
+		.replace(/[\^~>=<\s]/g, '')
+		.split('.')
+		.map(Number);
 }
 
 function isOutdated(constraint, latest) {
@@ -125,7 +162,7 @@ s.start('Fetching versions from Packagist');
 
 const results = [];
 for (const pkg of allPackages) {
-	const info = await getPackageInfo(pkg.name);
+	const info = await getPackageInfo(pkg.name, pkg.channel);
 	results.push({ ...pkg, ...info });
 }
 
@@ -156,10 +193,14 @@ p.log.step(`${outdatedList.length} package${outdatedList.length === 1 ? '' : 's'
 const majorUpdates = outdatedList.filter((r) => r.major);
 if (majorUpdates.length > 0) {
 	p.note(
-		majorUpdates.map((r) => [
-			`${pc.bold(r.name)}  ${pc.dim(r.version)} → ${pc.red(newConstraint(r.latest))}`,
-			`Review: ${reviewLink(r)}`,
-		].join('\n')).join('\n\n'),
+		majorUpdates
+			.map((r) =>
+				[
+					`${pc.bold(r.name)}  ${pc.dim(r.version)} → ${pc.red(newConstraint(r.latest))}`,
+					`Review: ${reviewLink(r)}`,
+				].join('\n'),
+			)
+			.join('\n\n'),
 		`${majorUpdates.length} major update${majorUpdates.length === 1 ? '' : 's'} ${majorUpdates.length === 1 ? 'requires' : 'require'} review`,
 	);
 }
@@ -173,7 +214,9 @@ if (!interactive) {
 		initialValue: false,
 	});
 	if (p.isCancel(proceed) || !proceed) {
-		p.outro('Run ' + pc.bold('make registry') + ' → ' + pc.cyan('Update versions') + ' to select which to update later.');
+		p.outro(
+			'Run ' + pc.bold('make registry') + ' → ' + pc.cyan('Update versions') + ' to select which to update later.',
+		);
 		process.exit(0);
 	}
 }
@@ -217,26 +260,24 @@ if (updates.length === 0) {
 	process.exit(0);
 }
 
-// Apply updates to plugins.mjs
-let content = fs.readFileSync(PLUGINS_FILE, 'utf-8');
+// Apply registry updates to the plugin catalogue or platform profiles.
+const configContents = new Map(
+	[PLUGINS_FILE, PROFILES_FILE].map((filename) => [filename, fs.readFileSync(filename, 'utf-8')]),
+);
 for (const u of updates) {
 	const escaped = u.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-	// Plugin registry entries (version: '^x.y')
-	const pluginRegex = new RegExp(`(['"]${escaped}['"][^}]*version:\\s*['"])([^'"]+)(['"])`);
-	if (pluginRegex.test(content)) {
+	for (const [filename, original] of configContents) {
+		let content = original;
+		const pluginRegex = new RegExp(`(['"]${escaped}['"][^}]*version:\\s*['"])([^'"]+)(['"])`);
 		content = content.replace(pluginRegex, `$1${u.to}$3`);
-	}
-
-	// CORE_REQUIRE entries ('package': '^x.y')
-	const coreRegex = new RegExp(`(['"]${escaped}['"]:\\s*['"])([^'"]+)(['"])`);
-	if (coreRegex.test(content)) {
+		const coreRegex = new RegExp(`(['"]${escaped}['"]:\\s*['"])([^'"]+)(['"])`);
 		content = content.replace(coreRegex, `$1${u.to}$3`);
+		configContents.set(filename, content);
 	}
 
 	p.log.success(`${u.name}  ${pc.dim(u.from)} → ${pc.green(u.to)}`);
 }
-fs.writeFileSync(PLUGINS_FILE, content);
+for (const [filename, content] of configContents) fs.writeFileSync(filename, content);
 
 // Sync core package versions into the committed composer.json so `make nuke`
 // restores the up-to-date baseline. Only the keys present in composer.json
@@ -262,13 +303,17 @@ if (fs.existsSync(COMPOSER_FILE)) {
 		fs.writeFileSync(COMPOSER_FILE, JSON.stringify(composer, null, '\t') + '\n');
 		p.log.info('composer.json synced with selected package versions');
 		if (fs.existsSync(ENV_FILE)) {
-			p.log.warn('composer.json changed in an existing project. Refresh composer.lock before using Craft CP updates/plugin installs.');
+			p.log.warn(
+				'composer.json changed in an existing project. Refresh composer.lock before using Craft CP updates/plugin installs.',
+			);
 			const updateLock = await p.confirm({
 				message: 'Run ddev composer update now?',
 				initialValue: true,
 			});
 			if (p.isCancel(updateLock)) {
-				p.outro(pc.yellow('Cancelled before updating composer.lock. Run make update-composer before Craft CP updates.'));
+				p.outro(
+					pc.yellow('Cancelled before updating composer.lock. Run make update-composer before Craft CP updates.'),
+				);
 				process.exit(0);
 			}
 			if (updateLock) {
