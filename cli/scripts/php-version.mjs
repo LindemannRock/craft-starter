@@ -7,7 +7,7 @@
  *   make php-version          → prompts for version
  *
  * Direct:
- *   make php-version VERSION=8.4
+ *   make php-version VERSION=8.5
  *
  * After running, `ddev restart` is required for the new image to build.
  *
@@ -18,6 +18,7 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { setPhpVersion } from '../actions/php.mjs';
+import { DEFAULT_PHP_VERSION, PHP_VERSION_OPTIONS } from '../config/php.mjs';
 import { cancel } from '../utils/cancel.mjs';
 
 const cliVersion = process.env.VERSION;
@@ -30,10 +31,10 @@ if (!version) {
 	const choice = await p.select({
 		message: 'PHP version',
 		options: [
-			{ value: '8.3', label: '8.3', hint: 'recommended (Craft 5 default)' },
-			{ value: '8.2', label: '8.2', hint: 'Craft 5 minimum' },
+			...PHP_VERSION_OPTIONS,
 			{ value: 'cancel', label: pc.red('Cancel') },
 		],
+		initialValue: DEFAULT_PHP_VERSION,
 	});
 	if (p.isCancel(choice) || choice === 'cancel') cancel();
 	version = choice;

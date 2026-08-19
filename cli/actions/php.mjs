@@ -14,12 +14,11 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
-
-const SUPPORTED = ['8.2', '8.3', '8.4'];
+import { SUPPORTED_PHP_VERSIONS } from '../config/php.mjs';
 
 export function setPhpVersion(version) {
-	if (!SUPPORTED.includes(version)) {
-		throw new Error(`Unsupported PHP version "${version}". Supported: ${SUPPORTED.join(', ')}`);
+	if (!SUPPORTED_PHP_VERSIONS.includes(version)) {
+		throw new Error(`Unsupported PHP version "${version}". Supported: ${SUPPORTED_PHP_VERSIONS.join(', ')}`);
 	}
 
 	const ddevPath = path.join(ROOT, '.ddev', 'config.yaml');

@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 describe('Craft Cloud scaffolding', () => {
 	it('uses the PHP version selected for the project', () => {
-		expect(craftCloudConfig('8.2')).toBe("php-version: '8.2'\nnode-version: '22'\nnpm-script: build\n");
+		expect(craftCloudConfig('8.5')).toBe("php-version: '8.5'\nnode-version: '22'\nnpm-script: build\n");
 	});
 
 	it('uses a stable Cloud extension constraint without treating it as a Craft plugin', () => {

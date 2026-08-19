@@ -12,6 +12,7 @@
 import * as p from '@clack/prompts';
 import search from '@inquirer/search';
 import { COMMON_LANGUAGES, ALL_LANGUAGES } from '../config/languages.mjs';
+import { DEFAULT_PHP_VERSION, PHP_VERSION_OPTIONS } from '../config/php.mjs';
 import { promptDatabase } from './database.mjs';
 import { cancel, isPromptCancel } from '../utils/cancel.mjs';
 
@@ -115,16 +116,11 @@ export async function promptProject() {
 	}).catch(handlePromptError);
 
 	// PHP version — pinned in both .ddev/config.yaml and composer.json platform.
-	// Craft 5 minimum is 8.2; 8.3 is the recommended default.
-	// PHP 8.4 is excluded for now — voku/Stringy dependency throws deprecation
-	// warnings under 8.4 (tracked at craftcms/cms#17572). Re-add when fixed upstream.
+	// Craft 5.9+ supports PHP 8.2 through 8.5; this starter defaults to 8.3.
 	const phpVersion = await p.select({
 		message: 'PHP version',
-		options: [
-			{ value: '8.3', label: '8.3', hint: 'recommended (Craft 5 default)' },
-			{ value: '8.2', label: '8.2', hint: 'Craft 5 minimum' },
-		],
-		initialValue: '8.3',
+		options: PHP_VERSION_OPTIONS,
+		initialValue: DEFAULT_PHP_VERSION,
 	});
 	if (p.isCancel(phpVersion)) cancel();
 

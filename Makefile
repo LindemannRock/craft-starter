@@ -205,7 +205,7 @@ verify: ## Scan .env for unfilled placeholders (run before deploy)
 	@# For CI gating, call the script directly: `node cli/scripts/verify.mjs`
 	@node cli/scripts/verify.mjs || true
 
-php-version: ## Set PHP version (interactive, or pass VERSION=8.4)
+php-version: ## Set PHP version (interactive, or pass VERSION=8.5)
 	@VERSION="$(VERSION)" node cli/scripts/php-version.mjs
 
 update: ## Interactive update picker (Craft / Composer / NPM / CLI / All)

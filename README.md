@@ -1,7 +1,7 @@
 # Craft CMS Starter by LindemannRock
 
 [![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.10%2B-orange.svg)](https://craftcms.com/)
-[![PHP](https://img.shields.io/badge/PHP-8.3%2B-blue.svg)](https://php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.2--8.5-blue.svg)](https://php.net/)
 [![Node](https://img.shields.io/badge/Node-22%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
@@ -127,7 +127,7 @@ Three commands open interactive pickers so you don't have to remember sub-target
 | `make registry`         | Maintain the plugin list offered by `make create` (check / update / add / remove / fetch) |
 | `make db`               | Database picker — pull from Servd / export / import        |
 | `make verify`           | Scan `.env` for unfilled `# TODO:` placeholders (run before deploy) |
-| `make php-version`      | Set PHP version across `.ddev/config.yaml` + `composer.json` (interactive, or `VERSION=8.4`) |
+| `make php-version`      | Set PHP version across `.ddev/config.yaml` + `composer.json` (8.2–8.5; interactive, or `VERSION=8.5`) |
 | `make clean`            | Remove vendor & node_modules then reinstall                |
 | `make clean-logs`       | Remove `storage/logs/*.log`                                |
 | `make reindex-search`   | Rebuild the search index                                   |
@@ -206,7 +206,7 @@ craft-starter/
 ## Stack
 
 - **[Craft CMS 5.10+](https://craftcms.com)** — Content management system
-- **[DDEV](https://ddev.com)** — Local development environment (nginx-fpm, PHP 8.3, MySQL 8.0 or PostgreSQL 18/16)
+- **[DDEV](https://ddev.com)** — Local development environment (nginx-fpm, PHP 8.3 by default with 8.2–8.5 available, MySQL 8.0 or PostgreSQL 18/16)
 - **[Vite 8](https://vitejs.dev)** — Rolldown-powered frontend build tool with HMR
 - **[Tailwind CSS 4](https://tailwindcss.com)** — Utility-first CSS (CSS-first, no config file)
 - **[Alpine.js 3](https://alpinejs.dev)** — Reactive UI
