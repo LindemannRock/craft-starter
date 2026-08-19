@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.14.0](https://github.com/LindemannRock/craft-starter/compare/v5.13.1...v5.14.0) - 2026-08-19
+
+
+### Added
+
+* **cli:** add PHP 8.4 and 8.5 support ([da16e46](https://github.com/LindemannRock/craft-starter/commit/da16e46b482ac5250d8c6495c30c10200bdf275c))
+* **cli:** add versioned Craft platform profiles ([cb73397](https://github.com/LindemannRock/craft-starter/commit/cb7339706f30343de6c97828faa5dd6d723b8e5a))
+* **cli:** make generated project setup reproducible ([d3b6044](https://github.com/LindemannRock/craft-starter/commit/d3b60440af7a3a60a0fba0a82045d7f761c289f8))
+
+
+### Fixed
+
+* **cli:** keep automatic queue enabled for all hosts ([cb634bb](https://github.com/LindemannRock/craft-starter/commit/cb634bbeda1eac78fc5e56e5f2af4f849b8fccbf))
+* **cli:** preserve lockfile during project creation ([74ac748](https://github.com/LindemannRock/craft-starter/commit/74ac748d7fb1c233366aec51d39ec04ab6e89a02))
+
 ## [5.13.1](https://github.com/LindemannRock/craft-starter/compare/v5.13.0...v5.13.1) - 2026-08-16
 
 
