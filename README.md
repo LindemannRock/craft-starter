@@ -5,7 +5,7 @@
 [![Node](https://img.shields.io/badge/Node-22%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
-An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few questions, and end up with a configured DDEV project — Tailwind CSS 4, TypeScript, Alpine.js, the plugins you need, and hosting wired up — all installed and ready to develop.
+An opinionated, interactive Craft CMS starter. Craft 5 is the production-ready default; an explicitly warned Craft 6 alpha profile is also available for early scaffolding tests. Run `make create`, answer a few questions, and end up with a configured DDEV project — Tailwind CSS 4, TypeScript, Alpine.js, and the compatible integrations you selected.
 
 ## Contents
 
@@ -29,6 +29,7 @@ An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few
 ## Features
 
 - **Interactive installer** — `make create` walks you through project name, timezone, language, admin credentials, plugin selection, hosting, and feature toggles with a modern TUI (review loop + per-section editing if you change your mind)
+- **Versioned application scaffolds** — choose stable Craft 5 or the experimental Craft 6 alpha/Laravel scaffold before project-specific questions
 - **Auto-generated credentials** — Craft security key, app ID, and LR plugin IP salts generated locally, never committed
 - **Multi-hosting ready** — Servd, Craft Cloud, or self-hosted with plugin-level conditionals
 - **Email transport configured automatically** — Postmark, SMTP (Servd SMTP, Mailgun, etc.), or Mailpit as a safe dev default; written to project config so the CP shows the right value and Servd's sendmail alert never fires
@@ -50,12 +51,13 @@ An opinionated, interactive Craft CMS 5 starter. Run `make create`, answer a few
 - [Docker](https://www.docker.com)
 - [DDEV](https://ddev.com) 1.25+
 - Node 22+ and npm 10+ (for running the CLI outside DDEV — DDEV provides Node internally for the project itself)
+- Composer 2 (only required on the host when selecting the experimental Craft 6 profile, so the pinned official scaffold can be materialized)
 
 ### Optional
 
 - [Tailscale](https://tailscale.com) — only if you want `make share` / `make funnel` for device testing. Free for personal use. See the [Device testing (Tailscale)](#device-testing-tailscale) section below for install details (app cask vs. CLI).
 
-> The `make create` installer checks that Docker, DDEV, and Node are present before running. If any are missing you'll get a clean error with install links.
+> The `make create` installer checks that Docker, DDEV, and Node are present before running, and also checks for host Composer when Craft 6 is selected. If anything is missing you'll get a clean error with install links.
 
 ## Quick Start
 
@@ -67,7 +69,7 @@ make create
 
 `make create` will:
 
-1. Prompt you for project details, sites, database, features (Redis, critical CSS), plugins and their editions, hosting, and email transport
+1. Prompt for the Craft profile, then project details, sites, database, and the features/integrations compatible with that profile
 2. Let you review the full configuration and jump back to edit any section
 3. Write `composer.json`, `package.json`, `.ddev/config.yaml`, `.env`, `.craft-starter.json`, plugin configs, and translation scaffolding; make generated Project Config and lockfiles trackable
 4. Strip or keep conditional code based on your choices (critical CSS deps, hosting-specific env sections, unused plugin env vars)
@@ -174,7 +176,7 @@ The `db-export` picker asks whether it's a disposable working dump (`.sql.gz`, g
 
 After `make nuke`, run `make install` to rebuild the same project. Running `make create` while `.env` exists offers **Reinstall existing project** or **Full reset and create again**. A failed creation is recorded as pending and the first option becomes **Resume setup**.
 
-`make reset` is a deliberate new-project reset: it removes the local database, `.env`, and generated Project Config but leaves project source untouched. `make starter-reset` is more destructive and refuses to run outside the original `LindemannRock/craft-starter` Git repository.
+`make reset` is a deliberate new-project reset: it removes the local database, `.env`, and generated Project Config but leaves project source untouched. A reset keeps the project on its recorded Craft major; changing framework generations is a migration, not a reset. `make starter-reset` is more destructive and refuses to run outside the original `LindemannRock/craft-starter` Git repository.
 
 ## After `make create`
 
@@ -294,17 +296,17 @@ The CLI generates `.env` from `cli/templates/env.example` on every run. For loca
 
 Craft's built-in settings use `CRAFT_*` env vars (`CRAFT_DEV_MODE`, `CRAFT_TIMEZONE`, `CRAFT_CP_TRIGGER`, `CRAFT_IS_SYSTEM_LIVE`, etc.) which Craft auto-reads into `GeneralConfig`. Project config values use `SYSTEM_*` env vars (`SYSTEM_NAME`, `SYSTEM_EMAIL`, etc.) referenced as `$VAR` in YAML. We don't re-read `CRAFT_*` vars in `general.php` — **one source of truth per setting**.
 
-The starter repository temporarily ignores `config/project/` because it does not yet ship a fixed baseline. During `make create`, the CLI removes that ignore rule before Craft generates the downstream project's configuration. Commit the generated `config/project/` directory so plugin and schema changes are applied consistently on Craft Cloud, Servd, and other deployment targets.
+The starter repository temporarily ignores its Craft 5 `config/project/` because it does not ship a fixed baseline. During `make create`, the CLI removes that starter-only rule before Craft generates the downstream project's configuration. Commit the generated project-config directory (`config/project/` on Craft 5, `config/craft/project/` on Craft 6) so schema changes are reproducible across environments.
 
 Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (Craft profile and release channel, hosting, PHP/database selection, sites, Redis, plugin packages and editions, and translation category). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
 
 ### Versioned Craft profiles
 
-Framework-specific assumptions live in `cli/config/craft-profiles.mjs`: Composer requirements, PHP compatibility, DDEV type/docroot, project paths, database environment keys, core plugin handles, and plugin-install commands. Only complete profiles are exposed to the installer; currently that is `craft5` on the `stable` release channel. Once another complete profile or channel is registered, `make create` automatically asks for it before the project-specific questions.
+Framework-specific assumptions live in `cli/config/craft-profiles.mjs`: Composer requirements, PHP compatibility, DDEV type/docroot, project paths, database/application environment keys, installer flags, core plugin handles, and command adapters. `make create` currently offers stable Craft 5 and an experimental Craft 6 alpha profile, with Craft 5 remaining the default.
 
-Project architecture and release stability are deliberately separate. A future `craft6` profile can describe Laravel-era paths and dependencies once it is complete, while `stable`, `beta`, or `alpha` channels can select different Composer constraints without duplicating that scaffold. Legacy plugin registry entries are treated as Craft 5-only; future entries can add per-major overrides through a `craft` map.
+Project architecture and release stability are deliberately separate. The Craft 6 profile materializes the pinned official Laravel scaffold, then applies the starter's frontend/templates through a small profile overlay. Release channels select Composer constraints without duplicating that architecture. Legacy plugin and hosting registry entries are treated as Craft 5-only; entries must opt into another major through a `craft` map.
 
-A new Craft major becomes selectable only after its profile is complete and tested. At minimum, it must define its PHP/database compatibility, Composer packages, DDEV layout, generated paths and env template, core plugins, command adapters, project configurator, and edition inspector. Plugin and hosting entries must then opt into that major explicitly. This fail-closed approach prevents an experimental or partially ported profile from appearing in production project setup.
+Craft 6 is intentionally labelled **experimental** and requires a second confirmation. Its core scaffold is verified against PHP 8.5, MySQL 8.4, Craft's Laravel installer, native project-config services, Twig `vite()`, a production Vite build, and local HTTP/CP boot. Plugins, Redis automation, critical CSS, rebrand automation, Servd, and Craft Cloud are disabled for this profile until each integration explicitly declares and passes Craft 6 compatibility. Do not use the alpha profile for production projects.
 
 ## What `make create` does differently based on your choices
 

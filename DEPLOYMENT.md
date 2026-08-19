@@ -2,6 +2,8 @@
 
 This starter is configured for **local development with DDEV**. For staging and production, set environment variables through your hosting provider's dashboard (Servd, Craft Cloud, Vercel, etc.) rather than committing a `.env` file.
 
+> This deployment guide currently covers the production-ready Craft 5 profile. The Craft 6 alpha profile is exposed for local scaffolding tests only; hosting integrations remain disabled there until they are verified against a stable Craft 6 release.
+
 ## Before first deploy
 
 - [ ] Run `make verify` — scans `.env` for unfilled `# TODO:` placeholders (e.g. Servd credentials you skipped during `make create`)
