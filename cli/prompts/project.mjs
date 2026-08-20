@@ -135,10 +135,10 @@ export async function promptProject({ craftProfile } = {}) {
 		{
 			weekStartDay: () =>
 				p.select({
-					message: 'Week starts on',
+					message: 'Working week starts on',
 					options: [
-						{ value: 1, label: 'Monday', hint: 'Europe, most of the world' },
-						{ value: 0, label: 'Sunday', hint: 'Middle East, US, Canada' },
+						{ value: 1, label: 'Monday', hint: 'Monday–Friday workweek' },
+						{ value: 0, label: 'Sunday', hint: 'Sunday–Thursday workweek' },
 					],
 					initialValue: 1,
 				}),

@@ -37,7 +37,7 @@ export function showConfigurationSummary({
 		['Timezone', project.timezone],
 		['Language', project.language],
 		['CP trigger', `/${project.cpTrigger || 'cms'}`],
-		['Week starts', project.weekStartDay === 0 ? 'Sunday' : 'Monday'],
+		['Working week', project.weekStartDay === 0 ? 'Sunday–Thursday' : 'Monday–Friday'],
 		['Admin', project.adminEmail],
 		['System email', project.systemEmail],
 		[
