@@ -98,5 +98,16 @@ describe('setPlatformPaths', () => {
 		expect(result).not.toContain('/config/license.key');
 		expect(result).toContain('/public/assets/*');
 		expect(result).toContain('/public/cpresources/*');
+		expect(result).toContain('/public/hot');
+		expect(result).toContain('/public/vendor/');
+		expect(setPlatformPaths(result, { craftProfile: 'craft6' })).toBe(result);
+	});
+
+	it('does not add Craft 6 runtime ignores to Craft 5 projects', () => {
+		const input = '# Web assets\n/web/assets/*\n';
+		const result = setPlatformPaths(input, { craftProfile: 'craft5' });
+
+		expect(result).not.toContain('/public/hot');
+		expect(result).not.toContain('/public/vendor/');
 	});
 });

@@ -110,6 +110,7 @@ export const CRAFT_PROFILES = Object.freeze({
 		}),
 		paths: Object.freeze({
 			public: 'web',
+			publicRuntimeIgnores: Object.freeze([]),
 			build: 'web/dist',
 			assets: 'web/assets',
 			templates: 'templates',
@@ -269,6 +270,7 @@ export const CRAFT_PROFILES = Object.freeze({
 		}),
 		paths: Object.freeze({
 			public: 'public',
+			publicRuntimeIgnores: Object.freeze(['public/hot', 'public/vendor/']),
 			build: 'public/build',
 			assets: 'public/assets',
 			templates: 'resources/views',
@@ -464,6 +466,7 @@ const REQUIRED_PROFILE_KEYS = [
 	'commands.installOptions.siteUrl',
 	'plugins.coreHandles',
 	'paths.public',
+	'paths.publicRuntimeIgnores',
 	'paths.build',
 	'paths.assets',
 	'paths.templates',

@@ -60,6 +60,13 @@ export function setPlatformPaths(content, { craftProfile } = {}) {
 		content = content.replace(new RegExp(`^/(?:web|public)/${directory}/\\*`, 'm'), `/${publicPath}/${directory}/*`);
 	}
 
+	const missingRuntimeIgnores = profile.paths.publicRuntimeIgnores
+		.map((runtimePath) => `/${runtimePath}`)
+		.filter((ignoreLine) => !content.split('\n').includes(ignoreLine));
+	if (missingRuntimeIgnores.length > 0) {
+		content = content.replace(/(# Web assets\n)/, `$1${missingRuntimeIgnores.join('\n')}\n`);
+	}
+
 	return content;
 }
 
