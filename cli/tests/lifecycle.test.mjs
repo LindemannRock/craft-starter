@@ -117,6 +117,7 @@ describe('project lifecycle', () => {
 			'.gitignore': '.env\n',
 			'composer.json': '{"name":"starter/baseline"}\n',
 			'package.json': '{"name":"starter-baseline"}\n',
+			'vite.config.mjs': 'export default { baseline: true };\n',
 			'bootstrap.php': '<?php // baseline\n',
 			craft: '#!/usr/bin/env php\n',
 			'config/general.php': '<?php return [];\n',
@@ -138,6 +139,7 @@ describe('project lifecycle', () => {
 		execFileSync('git', ['commit', '-qm', 'baseline'], {cwd: root});
 
 		fs.writeFileSync(path.join(root, 'composer.json'), '{"name":"generated/craft6"}\n');
+		fs.writeFileSync(path.join(root, 'vite.config.mjs'), 'export default { generated: true };\n');
 		for (const filename of [
 			'.env',
 			'.craft-starter.json',
@@ -154,6 +156,7 @@ describe('project lifecycle', () => {
 		resetStarterScaffold({root, craftProfile: 'craft6', deleteDdev: false});
 
 		expect(fs.readFileSync(path.join(root, 'composer.json'), 'utf8')).toBe(baseline['composer.json']);
+		expect(fs.readFileSync(path.join(root, 'vite.config.mjs'), 'utf8')).toBe(baseline['vite.config.mjs']);
 		expect(fs.readFileSync(path.join(root, 'web/index.php'), 'utf8')).toBe(baseline['web/index.php']);
 		for (const removed of ['.env', '.craft-starter.json', 'composer.lock', 'package-lock.json', 'app', 'public']) {
 			expect(fs.existsSync(path.join(root, removed))).toBe(false);

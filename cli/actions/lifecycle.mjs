@@ -107,6 +107,7 @@ export function resetStarterScaffold({root = ROOT, craftProfile, deleteDdev = tr
 		'.gitignore',
 		'composer.json',
 		'package.json',
+		'vite.config.mjs',
 		'bootstrap.php',
 		'craft',
 		'config',
