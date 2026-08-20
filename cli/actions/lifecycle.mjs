@@ -56,25 +56,49 @@ function clearRuntimeDirectory(directory) {
 	}
 }
 
-export function isOriginalStarterRepository({root = ROOT} = {}) {
+function gitOutput(args, {root = ROOT} = {}) {
 	try {
-		const remote = execFileSync('git', ['config', '--get', 'remote.origin.url'], {
+		return execFileSync('git', args, {
 			cwd: root,
 			encoding: 'utf-8',
 			stdio: ['ignore', 'pipe', 'ignore'],
 		}).trim();
-		return /(?:^|[/:])LindemannRock\/craft-starter(?:\.git)?$/i.test(remote);
 	} catch {
-		return false;
+		return null;
 	}
 }
 
-/** Developer-only return to the committed starter scaffold. */
+export function hasCommittedGitBaseline({root = ROOT} = {}) {
+	return (
+		gitOutput(['rev-parse', '--is-inside-work-tree'], {root}) === 'true' &&
+		Boolean(gitOutput(['rev-parse', '--verify', 'HEAD'], {root}))
+	);
+}
+
+export function isStarterMaintenanceEnabled({root = ROOT} = {}) {
+	if (!hasCommittedGitBaseline({root})) return false;
+	const remote = gitOutput(['config', '--get', 'remote.origin.url'], {root}) || '';
+	if (/(?:^|[/:])LindemannRock\/craft-starter(?:\.git)?$/i.test(remote)) return true;
+	return gitOutput(['config', '--local', '--bool', '--get', 'craft-starter.maintenance'], {root}) === 'true';
+}
+
+export function assertStarterMaintenanceEnabled({root = ROOT} = {}) {
+	if (!hasCommittedGitBaseline({root})) {
+		throw new Error(
+			'Cannot restore the starter without a committed Git baseline. If you downloaded a ZIP for starter development, run `git init`, commit the untouched scaffold, then enable maintenance with `git config --local craft-starter.maintenance true`.',
+		);
+	}
+	if (!isStarterMaintenanceEnabled({root})) {
+		throw new Error(
+			'Reset is disabled for this repository. If this is a maintained starter fork, enable it with `git config --local craft-starter.maintenance true`.',
+		);
+	}
+}
+
+/** Maintainer-only return to the committed starter scaffold. */
 export function resetStarterScaffold({root = ROOT, craftProfile, deleteDdev = true} = {}) {
 	const activeProfile = resolveCraftProfile(craftProfile);
-	if (!isOriginalStarterRepository({root})) {
-		throw new Error('reset is only available in the original LindemannRock/craft-starter repository.');
-	}
+	assertStarterMaintenanceEnabled({root});
 
 	if (deleteDdev) deleteDdevProject({root});
 	const tracked = [

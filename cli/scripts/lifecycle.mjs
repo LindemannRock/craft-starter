@@ -8,7 +8,7 @@ import {readSetupManifest} from '../actions/setupManifest.mjs';
 const action = process.argv[2];
 const definitions = {
 	reset: {
-		message: 'Restore the original starter scaffold and delete all generated project state?',
+		message: 'Restore the committed starter scaffold and delete all generated project state?',
 		run: resetStarterScaffold,
 		done: 'Starter restored. Run `make create` to generate a new project.',
 	},

@@ -305,5 +305,5 @@ repair-vite:
 
 ##@ Starter maintenance
 
-reset: ## Restore the original starter scaffold (starter repository only)
+reset: ## Restore the committed starter scaffold (starter maintainers)
 	@node cli/scripts/lifecycle.mjs reset

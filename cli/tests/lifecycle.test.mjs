@@ -3,7 +3,13 @@ import os from 'os';
 import path from 'path';
 import {execFileSync} from 'child_process';
 import {afterEach, describe, expect, it} from 'vitest';
-import {nukeRuntime, resetProject, resetStarterScaffold} from '../actions/lifecycle.mjs';
+import {
+	assertStarterMaintenanceEnabled,
+	isStarterMaintenanceEnabled,
+	nukeRuntime,
+	resetProject,
+	resetStarterScaffold,
+} from '../actions/lifecycle.mjs';
 
 const tempDirs = [];
 function fixture() {
@@ -31,6 +37,26 @@ afterEach(() => {
 });
 
 describe('project lifecycle', () => {
+	it('automatically enables maintenance for the official repository', () => {
+		const root = committedRepository('git@github.com:LindemannRock/craft-starter.git');
+		expect(isStarterMaintenanceEnabled({root})).toBe(true);
+	});
+
+	it('requires an explicit local opt-in for maintained forks', () => {
+		const root = committedRepository('git@github.com:example/craft-starter.git');
+		expect(isStarterMaintenanceEnabled({root})).toBe(false);
+		expect(() => assertStarterMaintenanceEnabled({root})).toThrow('git config --local craft-starter.maintenance true');
+
+		execFileSync('git', ['config', '--local', 'craft-starter.maintenance', 'true'], {cwd: root});
+		expect(isStarterMaintenanceEnabled({root})).toBe(true);
+	});
+
+	it('requires ZIP downloads to create a committed baseline', () => {
+		const root = fixture();
+		expect(isStarterMaintenanceEnabled({root})).toBe(false);
+		expect(() => assertStarterMaintenanceEnabled({root})).toThrow('committed Git baseline');
+	});
+
 	it('nukes runtime while preserving the project definition', () => {
 		const root = fixture();
 		nukeRuntime({root, deleteDdev: false});
@@ -134,3 +160,16 @@ describe('project lifecycle', () => {
 		}
 	});
 });
+
+function committedRepository(remote) {
+	const root = fs.mkdtempSync(path.join(os.tmpdir(), 'craft-starter-maintenance-test-'));
+	tempDirs.push(root);
+	fs.writeFileSync(path.join(root, 'README.md'), 'baseline\n');
+	execFileSync('git', ['init', '-q'], {cwd: root});
+	execFileSync('git', ['config', 'user.name', 'Test'], {cwd: root});
+	execFileSync('git', ['config', 'user.email', 'test@example.com'], {cwd: root});
+	execFileSync('git', ['remote', 'add', 'origin', remote], {cwd: root});
+	execFileSync('git', ['add', '.'], {cwd: root});
+	execFileSync('git', ['commit', '-qm', 'baseline'], {cwd: root});
+	return root;
+}

@@ -93,7 +93,7 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 | `make create`      | Interactive setup (end-to-end: prompts → install → ready)                                             |
 | `make install`     | Rebuild or re-sync an existing project from `.env`, lockfiles, Project Config, and the setup manifest |
 | `make start`       | `ddev start` + Vite dev server                                                                        |
-| `make keys`        | Generate application security keys for the active Craft profile                                      |
+| `make keys`        | Generate application security keys for the active Craft profile                                       |
 | `make npm-install` | Run `npm install` inside DDEV                                                                         |
 | `make redis`       | Enable, configure, repair, or remove Redis                                                            |
 
@@ -177,7 +177,32 @@ Running `make create` while `.env` exists offers **Reinstall existing project** 
 
 ### Starter maintenance
 
-`make reset` is deliberately limited to the original `LindemannRock/craft-starter` repository. After confirmation, it restores the committed starter scaffold and deletes generated project state so maintainers can test `make create` from the baseline. It refuses to run in normal client repositories.
+`make reset` is a **starter-maintainer command**, not a normal project recovery command. It restores the starter-owned tracked files from the current `HEAD` commit, deletes the local DDEV database and generated application state, then returns the working tree to the committed scaffold so `make create` can be tested again.
+
+Before running it, commit any starter/CLI work you want to keep. The confirmation is intentionally destructive: generated Craft/Laravel files, `.env`, Project Config, dependency directories, lockfiles, build output, and runtime caches are removed. Normal client projects should use **Reinstall existing project** or **Full reset and create again** from `make create`, or a focused option from `make repair`.
+
+The official `LindemannRock/craft-starter` clone is enabled automatically. A maintained fork must opt in once per local clone:
+
+```bash
+git config --local craft-starter.maintenance true
+```
+
+This flag is stored only in that clone's `.git/config`; it is never committed, pushed, or inherited by projects generated from the fork. Consequently, normal client repositories remain blocked even when they share starter history.
+
+#### Using a downloaded ZIP
+
+A ZIP has no Git history, so there is no committed scaffold for `make reset` to restore. This does not prevent ordinary project use: `make create`, `make install`, and `make repair` continue to be the relevant commands.
+
+If the ZIP is intended for developing or maintaining a custom starter, create the baseline **before** running `make create`:
+
+```bash
+git init
+git add .
+git commit -m "chore: initial starter baseline"
+git config --local craft-starter.maintenance true
+```
+
+`make reset` will then restore that commit—not the LindemannRock upstream version—after its normal confirmation. A fork that has already committed a generated client project should not enable this command unless that committed state is intentionally its starter baseline.
 
 ## After `make create`
 
