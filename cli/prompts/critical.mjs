@@ -6,7 +6,7 @@
  * - Keeps rollup-plugin-critical in devDependencies
  * - Keeps the critical() block in vite.config.mjs active
  * - Sets GENERATE_CRITICAL_CSS=true in .env (consumed by vite.config.mjs)
- * - Exposes `make critical` for explicit generation (make prod stays fast)
+ * - Exposes `make build-critical` for explicit generation (`make build` stays fast)
  *
  * When disabled:
  * - rollup-plugin-critical is removed from devDependencies
@@ -17,7 +17,7 @@
  */
 
 import * as p from '@clack/prompts';
-import { cancel } from '../utils/cancel.mjs';
+import {cancel} from '../utils/cancel.mjs';
 
 export async function promptCritical() {
 	const useCritical = await p.confirm({

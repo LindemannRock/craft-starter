@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#ddev-generated
+# Starter-managed copy of the DDEV Redis helper.
 ## Description: Run redis-cli inside the Redis container
 ## Usage: redis-cli [flags] [args]
 ## Example: "ddev redis-cli KEYS *" or "ddev redis-cli INFO" or "ddev redis-cli --version"

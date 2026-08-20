@@ -115,7 +115,6 @@ async function main() {
 		p.log.error('No .env file found. Run ' + pc.bold('make create') + ' first.');
 		process.exit(0);
 	}
-	checkPrerequisites({ retryCommand: 'make redis' });
 
 	const craft = readSetupManifest()?.craft;
 	const profile = resolveCraftProfile(craft);
@@ -124,6 +123,7 @@ async function main() {
 		p.outro('No project files were changed.');
 		process.exit(0);
 	}
+	checkPrerequisites({ retryCommand: 'make redis' });
 	const state = getRedisState({ craftProfile: craft, craftReleaseChannel: craft?.channel });
 	p.log.info(`Current state: ${pc.bold(stateLabel(state))}`);
 

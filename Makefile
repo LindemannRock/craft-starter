@@ -1,10 +1,10 @@
-.PHONY: help create install start redis dev test prod critical favicons reset nuke starter-reset \
-	clean clean-logs update update-craft update-composer update-npm update-cli \
+.PHONY: help create install start redis test build build-critical favicons reset repair \
+	repair-dependencies repair-logs repair-vite update update-craft update-composer update-npm update-cli \
 	registry registry-plugins-check registry-plugins-update registry-plugins-add registry-plugins-remove registry-plugins-fetch \
-	up npm-install kill-vite \
+	up npm-install \
 	db db-pull db-export db-import verify php-version reindex-search \
 	launch tableplus mailpit keys format share funnel \
-	l tp mp fmt kv
+	l tp mp fmt
 
 # `make` with no args shows help
 .DEFAULT_GOAL := help
@@ -91,13 +91,12 @@ _install:
 		ddev exec -- npm install $(NPM_INSTALL_FLAGS); \
 	fi
 	@# Only run `craft install` if Craft isn't installed yet.
-	@# Prompts for admin email + password only. Site name/URL/language get
-	@# overwritten by configure-project.php immediately after.
+	@# Reuses non-secret choices from .craft-starter.json and prompts only for
+	@# the admin password, which is deliberately never persisted.
 	@if node cli/scripts/run-profile-command.mjs schema-version 2>/dev/null | grep -qE '^[0-9]+\.'; then \
 		echo "Craft already installed — skipping first-run install"; \
 	else \
-		echo "Installing Craft CMS (enter admin credentials)..."; \
-		node cli/scripts/run-profile-command.mjs install; \
+		node cli/scripts/install-craft.mjs; \
 	fi
 	@node cli/scripts/install-plugins.mjs
 	@node cli/scripts/run-profile-command.mjs up
@@ -115,7 +114,7 @@ start: ## ddev start + Vite dev server
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
 	else ddev start && ddev exec npm run dev; fi
 
-keys: ## Generate Craft security key + app ID into .env
+keys: ## Generate application security keys for the active Craft profile
 	@$(call require_project, node cli/scripts/run-profile-command.mjs setup-keys)
 
 npm-install: ## Run `npm install` inside DDEV
@@ -127,21 +126,20 @@ redis: ## Manage Redis cache and sessions (enable, change, or remove)
 
 ##@ Development
 
-dev: ## Start Vite dev server (HMR)
-	@$(call require_project, ddev exec npm run dev)
-
 test: ## Run CLI unit tests (vitest)
 	@cd cli && npx vitest run
 
-prod: ## Production build (fast — skips critical CSS)
+build: ## Production frontend build (fast — skips critical CSS)
 	@$(call require_project, ddev exec env GENERATE_CRITICAL_CSS=false npm run build)
-	@# Hint: if the project opted into critical CSS but files aren't built yet, suggest `make critical`
+	@# Hint: if the project opted into critical CSS but files aren't built yet, suggest `make build-critical`
 	@if grep -q '^GENERATE_CRITICAL_CSS=true' .env 2>/dev/null && ! node cli/scripts/check-critical-output.mjs; then \
-	  printf '\n  \033[2mtip: this project uses critical CSS — run\033[0m \033[36mmake critical\033[0m \033[2mbefore shipping\033[0m\n'; \
+	  printf '\n  \033[2mtip: this project uses critical CSS — run\033[0m \033[36mmake build-critical\033[0m \033[2mbefore shipping\033[0m\n'; \
 	fi
 
-critical: ## Production build with critical CSS (slow — spawns Chromium per page)
-	@if ! grep -q '"rollup-plugin-critical"' package.json 2>/dev/null; then \
+build-critical: ## Production frontend build with critical CSS (slow)
+	@if ! node cli/scripts/check-profile-feature.mjs criticalCss; then \
+		:; \
+	elif ! grep -q '"rollup-plugin-critical"' package.json 2>/dev/null; then \
 	  echo "Critical CSS was not selected during 'make create' — rollup-plugin-critical is not installed."; \
 	  echo "To enable:"; \
 	  echo "  1. Add to package.json devDependencies:  \"rollup-plugin-critical\": \"^1.0.15\""; \
@@ -156,15 +154,11 @@ critical: ## Production build with critical CSS (slow — spawns Chromium per pa
 	fi
 
 favicons: ## Generate site favicons from src/img/favicon.svg
-	@$(call require_project, ddev exec bash -c 'cd cli && node scripts/generate-favicons.mjs')
+	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
+	else node cli/scripts/generate-favicons.mjs; fi
 
 format: ## @fmt Format everything with Prettier
 	@$(call require_project, ddev exec npx prettier -w .)
-	$(call alias_hint)
-
-kill-vite: ## @kv Kill stuck Vite processes
-	@ddev exec bash -c "pkill -9 -f 'node.*vite'" 2>/dev/null || true
-	@echo "Vite processes killed"
 	$(call alias_hint)
 
 launch: ## @l Launch the site in your browser
@@ -186,7 +180,6 @@ l: launch
 tp: tableplus
 mp: mailpit
 fmt: format
-kv: kill-vite
 
 ##@ Device testing (Tailscale)
 
@@ -245,20 +238,6 @@ registry-plugins-remove:
 registry-plugins-fetch:
 	@node cli/scripts/fetch-plugin-configs.mjs
 
-clean: ## Remove vendor & node_modules then reinstall
-	@if [ ! -f .env ]; then \
-		echo "No .env file found. Run 'make create' for interactive setup."; \
-	else \
-		rm -rf vendor/ node_modules/; \
-		ddev composer clear-cache; \
-		ddev exec npm cache clean --force; \
-		ddev composer install; \
-		ddev exec -- npm install $(NPM_INSTALL_FLAGS); \
-	fi
-
-clean-logs: ## Remove storage/logs/*.log
-	rm -rf storage/logs/*.log
-
 db: ## Interactive database picker (pull / export / import)
 	@node cli/scripts/db.mjs
 
@@ -294,13 +273,37 @@ db-import:
 reindex-search: ## Rebuild the search index
 	@$(call require_project, node cli/scripts/run-profile-command.mjs resave-entries --update-search-index)
 
-##@ Destructive (asks for confirmation)
+##@ Repair & troubleshooting
 
-reset: ## Wipe local DB + .env + generated Project Config; preserve project source
+repair: ## Repair dependencies, logs, Vite, or the local runtime
+	@node cli/scripts/repair.mjs
+
+# Hidden (no `##` description) — invoked by the repair picker above.
+repair-dependencies:
+	@if [ ! -f .env ]; then \
+		echo "No .env file found. Run 'make create' for interactive setup."; \
+	else \
+		set -e; \
+		rm -rf vendor/ node_modules/; \
+		ddev start; \
+		ddev composer clear-cache; \
+		ddev exec npm cache clean --force; \
+		ddev composer install; \
+		if [ -f package-lock.json ]; then \
+			ddev exec -- npm ci $(NPM_INSTALL_FLAGS); \
+		else \
+			ddev exec -- npm install $(NPM_INSTALL_FLAGS); \
+		fi; \
+	fi
+
+repair-logs:
+	rm -rf storage/logs/*.log
+
+repair-vite:
+	@ddev exec bash -c "pkill -9 -f 'node.*vite'" 2>/dev/null || true
+	@echo "Vite processes killed"
+
+##@ Starter maintenance
+
+reset: ## Restore the original starter scaffold (starter repository only)
 	@node cli/scripts/lifecycle.mjs reset
-
-nuke: ## Remove local runtime; preserve project definition and source
-	@node cli/scripts/lifecycle.mjs nuke
-
-starter-reset: ## Developer-only: restore the original starter scaffold
-	@node cli/scripts/lifecycle.mjs starter-reset

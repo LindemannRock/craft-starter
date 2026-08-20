@@ -12,7 +12,7 @@ export default defineConfig(async ({ command, mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
 	// Critical CSS is opt-in (slow — spawns Chromium per page).
-	// Enabled via `make critical`; `make prod` leaves it off for fast builds.
+	// Enabled via `make build-critical`; `make build` leaves it off for fast builds.
 	let criticalPlugin = null;
 	if (env.GENERATE_CRITICAL_CSS === 'true') {
 		if (!env.PRIMARY_SITE_URL) {

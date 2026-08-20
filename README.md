@@ -35,7 +35,7 @@ An opinionated, interactive Craft CMS starter. Craft 5 is the production-ready d
 - **Email transport configured automatically** — Postmark, SMTP (Servd SMTP, Mailgun, etc.), or Mailpit as a safe dev default; written to project config so the CP shows the right value and Servd's sendmail alert never fires
 - **Database choice** — MySQL 8.0 by default, with PostgreSQL 18 or 16 available during `make create`
 - **Redis opt-in** — cache + optional sessions. Adds `ddev/ddev-redis` addon + `yii2-redis` package, env-var-gated components in `app.php` (DB 0 for cache, DB 1 for sessions). Each Redis feature prompted separately
-- **Critical CSS opt-in** — slow builds (Chromium-based) are off by default; `make prod` is fast, `make critical` generates above-the-fold CSS when you need it. Declining removes `rollup-plugin-critical` + ~20 Chromium apt packages from DDEV
+- **Critical CSS opt-in** — slow builds (Chromium-based) are off by default; `make build` is fast, `make build-critical` generates above-the-fold CSS when you need it. Declining removes `rollup-plugin-critical` + ~20 Chromium apt packages from DDEV
 - **Build artifact choice** — choose whether `web/dist/` is committed for hosts without a build step, or ignored when CI/hosting builds assets
 - **Multi-site support** — 1 to N sites with per-site language, URL prefix, name, and RTL detection. Sites created via Craft's project-config API, translation files scaffolded per locale, favicon generation with per-site web manifests
 - **Vite 8 build pipeline** — Rolldown-powered (10-30× faster), single `web/dist/` output, Subresource Integrity (SRI), gzip compression, page-specific asset splitting. For per-environment runtime config (Algolia keys, Mapbox tokens, etc.) inject from Twig into `window.__APP_CONFIG__` — do **not** rely on `import.meta.env.VITE_*` baking values into the bundle.
@@ -80,7 +80,7 @@ make create
 9. Apply and write Project Config, including plugin installation state, sites, and your email transport choice
 10. Build the frontend and mark the resumable setup manifest complete
 
-When it finishes you'll see the site URL, CP URL, login, and a hint about which commands to run next (`make dev`, `make prod`, `make critical` if enabled).
+When it finishes you'll see the site URL, CP URL, login, and a hint about which commands to run next (`make start`, `make build`, `make build-critical` if enabled).
 
 ## Make commands
 
@@ -93,24 +93,22 @@ Run `make` (or `make help`) with no arguments to see a grouped, color-coded list
 | `make create`      | Interactive setup (end-to-end: prompts → install → ready)                                             |
 | `make install`     | Rebuild or re-sync an existing project from `.env`, lockfiles, Project Config, and the setup manifest |
 | `make start`       | `ddev start` + Vite dev server                                                                        |
-| `make keys`        | Generate Craft security key + app ID into `.env`                                                      |
+| `make keys`        | Generate application security keys for the active Craft profile                                      |
 | `make npm-install` | Run `npm install` inside DDEV                                                                         |
 | `make redis`       | Enable, configure, repair, or remove Redis                                                            |
 
 ### Development
 
-| Command          | Alias | Description                                                                                                                            |
-| ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `make dev`       |       | Start Vite dev server (HMR)                                                                                                            |
-| `make test`      |       | Run CLI unit tests (vitest — no DDEV needed)                                                                                           |
-| `make prod`      |       | Production build (fast — skips critical CSS)                                                                                           |
-| `make critical`  |       | Production build + critical CSS (slow — spawns Chromium per page). Only available if you opted in to critical CSS during `make create` |
-| `make favicons`  |       | Generate favicons from `src/img/favicon.svg`                                                                                           |
-| `make format`    | `fmt` | Format everything with Prettier                                                                                                        |
-| `make kill-vite` | `kv`  | Kill stuck Vite processes                                                                                                              |
-| `make launch`    | `l`   | Launch the site in your browser                                                                                                        |
-| `make tableplus` | `tp`  | Launch TablePlus                                                                                                                       |
-| `make mailpit`   | `mp`  | Launch Mailpit                                                                                                                         |
+| Command               | Alias | Description                                                                                                                            |
+| --------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `make test`           |       | Run CLI unit tests (vitest — no DDEV needed)                                                                                           |
+| `make build`          |       | Production build (fast — skips critical CSS)                                                                                           |
+| `make build-critical` |       | Production build + critical CSS (slow — spawns Chromium per page). Only available if you opted in to critical CSS during `make create` |
+| `make favicons`       |       | Generate favicons from `src/img/favicon.svg`                                                                                           |
+| `make format`         | `fmt` | Format everything with Prettier                                                                                                        |
+| `make launch`         | `l`   | Launch the site in your browser                                                                                                        |
+| `make tableplus`      | `tp`  | Launch TablePlus                                                                                                                       |
+| `make mailpit`        | `mp`  | Launch Mailpit                                                                                                                         |
 
 ### Device testing (Tailscale)
 
@@ -131,8 +129,6 @@ Three commands open interactive pickers so you don't have to remember sub-target
 | `make db`             | Database picker — pull from Servd / export / import                                                   |
 | `make verify`         | Scan `.env` for unfilled `# TODO:` placeholders (run before deploy)                                   |
 | `make php-version`    | Set PHP version across `.ddev/config.yaml` + `composer.json` (8.2–8.5; interactive, or `VERSION=8.5`) |
-| `make clean`          | Remove vendor & node_modules then reinstall                                                           |
-| `make clean-logs`     | Remove `storage/logs/*.log`                                                                           |
 | `make reindex-search` | Rebuild the search index                                                                              |
 
 #### `make update` sub-targets (hidden from help, still callable)
@@ -166,17 +162,22 @@ Tip: pick "Craft CMS + plugins" in the picker to see a checklist of available up
 
 The `db-export` picker asks whether it's a disposable working dump (`.sql.gz`, git-ignored) or a seed DB (`.sql.gzip`, committed) and sets the extension accordingly.
 
-### Destructive (asks for confirmation)
+### Repair and troubleshooting
 
-| Command              | Description                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------- |
-| `make reset`         | Wipe local DB + `.env` + generated Project Config; preserve source and setup choices                    |
-| `make nuke`          | Remove local runtime/dependencies; preserve `.env`, Project Config, source, translations, and lockfiles |
-| `make starter-reset` | Original starter repo only: restore its committed scaffold for generator testing                        |
+`make repair` opens a picker with four focused recovery operations:
 
-After `make nuke`, run `make install` to rebuild the same project. Running `make create` while `.env` exists offers **Reinstall existing project** or **Full reset and create again**. A failed creation is recorded as pending and the first option becomes **Resume setup**.
+| Option                  | Description                                                                                                           |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Reinstall dependencies  | Delete `vendor/` + `node_modules/`, clear package caches, and reinstall from lockfiles                                |
+| Clear logs              | Delete local Craft log files                                                                                          |
+| Stop stuck Vite process | Stop the Vite process inside DDEV                                                                                     |
+| Rebuild local runtime   | Recreate DDEV/database, dependencies, build output, and runtime caches while preserving project source and definition |
 
-`make reset` is a deliberate new-project reset: it removes the local database, `.env`, and generated Project Config but leaves project source untouched. A reset keeps the project on its recorded Craft major; changing framework generations is a migration, not a reset. `make starter-reset` is more destructive and refuses to run outside the original `LindemannRock/craft-starter` Git repository.
+Running `make create` while `.env` exists offers **Reinstall existing project** or **Full reset and create again**. A failed creation is recorded as pending and the first option becomes **Resume setup**. This keeps project recreation inside the setup workflow rather than exposing a second ambiguous reset command.
+
+### Starter maintenance
+
+`make reset` is deliberately limited to the original `LindemannRock/craft-starter` repository. After confirmation, it restores the committed starter scaffold and deletes generated project state so maintainers can test `make create` from the baseline. It refuses to run in normal client repositories.
 
 ## After `make create`
 
@@ -314,8 +315,8 @@ The installer tailors the project to your selections so you don't end up with de
 
 ### Critical CSS
 
-- **Opted in** → `rollup-plugin-critical` kept in `package.json`, ~20 Chromium apt packages added to `.ddev/config.yaml`, `.ddev/config.m1.yaml` present (native Chromium on Apple Silicon), full `critical-css.twig` partial with Nginx SSI + cookie logic, `GENERATE_CRITICAL_CSS=true` in `.env`, `make critical` works
-- **Declined** → all of the above stripped. `make prod` is the fast path; `make critical` refuses with a clear re-enable message
+- **Opted in** → `rollup-plugin-critical` kept in `package.json`, ~20 Chromium apt packages added to `.ddev/config.yaml`, `.ddev/config.m1.yaml` present (native Chromium on Apple Silicon), full `critical-css.twig` partial with Nginx SSI + cookie logic, `GENERATE_CRITICAL_CSS=true` in `.env`, `make build-critical` works
+- **Declined** → all of the above stripped. `make build` is the fast path; `make build-critical` refuses with a clear re-enable message
 - **Craft Cloud** → automatically disabled because its edge does not execute the Nginx SSI directives used by this implementation
 - **Flip-flopping** (re-running `make create` and changing your mind) is idempotent in both directions. The canonical "full" + "disabled" variants live under `cli/templates/critical/`, so opt-in works even if a project previously committed a declined state
 
@@ -376,7 +377,7 @@ make test              # fast unit + lifecycle fixture suite
 cd cli && npx vitest   # watch mode (re-runs on save)
 ```
 
-Release/manual validation additionally exercises the full DDEV lifecycle: create, nuke, install, reset, and create again with changed hosting/Redis/plugin choices.
+Release/manual validation additionally exercises the full DDEV lifecycle: create, install, every `make repair` action, starter reset, and creation again with changed hosting/Redis/plugin choices.
 
 When contributing changes to `cli/utils/` or `cli/actions/`, run `make test` before pushing.
 
@@ -416,7 +417,7 @@ sudo tailscale up                       # sign in (follow the URL it prints)
 
 Both commands register a temporary `.ddev/config.tailscale.yaml` (gitignored), expose the Vite dev server on port 8443 so HMR works on the test device, and clean up when you hit Ctrl+C.
 
-Run the command in one terminal and `make dev` in another.
+Run the command in one terminal and `make start` in another.
 
 ## Versioning & releases (release-please)
 

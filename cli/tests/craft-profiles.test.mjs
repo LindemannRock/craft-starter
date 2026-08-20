@@ -69,6 +69,7 @@ describe('Craft platform profiles', () => {
 			redis: false,
 			criticalCss: false,
 			rebrandAssets: false,
+			favicons: false,
 		});
 		expect(profile.scaffold.copy).toContain('storage');
 		expect(profile.scaffold.cleanup).toContain('resources');

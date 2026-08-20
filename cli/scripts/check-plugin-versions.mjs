@@ -13,17 +13,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { spawn } from 'child_process';
-import { LR_PLUGINS, THIRD_PARTY_PLUGINS, HOSTING_OPTIONS } from '../config/plugins.mjs';
-import { readSetupManifest } from '../actions/setupManifest.mjs';
-import {
-	catalogForCraftProfile,
-	composerConfigForCraftProfile,
-	resolveCraftProfile,
-} from '../config/craft-profiles.mjs';
+import {spawn} from 'child_process';
+import {LR_PLUGINS, THIRD_PARTY_PLUGINS, HOSTING_OPTIONS} from '../config/plugins.mjs';
+import {readSetupManifest} from '../actions/setupManifest.mjs';
+import {catalogForCraftProfile, composerConfigForCraftProfile, resolveCraftProfile} from '../config/craft-profiles.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -54,12 +50,12 @@ const allPackages = [
 		channel: 'stable',
 	})),
 	...(platform.redis
-		? [{ name: platform.redis.name, version: platform.redis.version, source: 'core-optional', channel: 'stable' }]
+		? [{name: platform.redis.name, version: platform.redis.version, source: 'core-optional', channel: 'stable'}]
 		: []),
-	...lrPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: 'lr', channel: 'stable' })),
-	...thirdPartyPlugins.map((pl) => ({ name: pl.value, version: pl.version, source: '3rd-party', channel: 'stable' })),
+	...lrPlugins.map((pl) => ({name: pl.value, version: pl.version, source: 'lr', channel: 'stable'})),
+	...thirdPartyPlugins.map((pl) => ({name: pl.value, version: pl.version, source: '3rd-party', channel: 'stable'})),
 	...hostingOptions.flatMap((h) =>
-		h.packages.map((pk) => ({ name: pk.name, version: pk.version, source: `hosting:${h.value}`, channel: 'stable' })),
+		h.packages.map((pk) => ({name: pk.name, version: pk.version, source: `hosting:${h.value}`, channel: 'stable'})),
 	),
 ];
 
@@ -96,7 +92,7 @@ async function getPackageInfo(packageName, channel = 'stable') {
 				return !/-(alpha|beta|rc|pre)/i.test(v.version);
 			})
 			.sort((a, b) =>
-				normalizeVersion(b.version).localeCompare(normalizeVersion(a.version), undefined, { numeric: true }),
+				normalizeVersion(b.version).localeCompare(normalizeVersion(a.version), undefined, {numeric: true}),
 			);
 		const latest = stable[0];
 		if (!latest) return null;
@@ -165,7 +161,7 @@ s.start('Fetching versions from Packagist');
 const results = [];
 for (const pkg of allPackages) {
 	const info = await getPackageInfo(pkg.name, pkg.channel);
-	results.push({ ...pkg, ...info });
+	results.push({...pkg, ...info});
 }
 
 s.stop('Versions fetched');
@@ -179,7 +175,7 @@ for (const r of results) {
 		const major = isMajorBump(r.version, r.latest);
 		const arrow = `${pc.dim(r.version)} → ${major ? pc.red(r.latest + ' MAJOR') : pc.green(r.latest)}`;
 		p.log.info(`${r.name}  ${arrow}`);
-		outdatedList.push({ ...r, major });
+		outdatedList.push({...r, major});
 	} else {
 		p.log.success(`${r.name}  ${pc.dim(r.version)}  ${pc.dim('up to date')}`);
 	}
@@ -254,7 +250,7 @@ for (const name of selected) {
 			continue;
 		}
 	}
-	updates.push({ name: r.name, from: r.version, to: newConstraint(r.latest) });
+	updates.push({name: r.name, from: r.version, to: newConstraint(r.latest)});
 }
 
 if (updates.length === 0) {
@@ -281,7 +277,7 @@ for (const u of updates) {
 }
 for (const [filename, content] of configContents) fs.writeFileSync(filename, content);
 
-// Sync core package versions into the committed composer.json so `make nuke`
+// Sync core package versions into the committed composer.json so a clean install
 // restores the up-to-date baseline. Only the keys present in composer.json
 // (require + require-dev) get touched — plugin selections are written by the
 // CLI from the registry during `make create`, not stored here.
@@ -342,7 +338,7 @@ p.outro(pc.green(`${updates.length} package${updates.length === 1 ? '' : 's'} up
 
 function runInherited(command, args) {
 	return new Promise((resolve) => {
-		const child = spawn(command, args, { cwd: ROOT, stdio: 'inherit' });
+		const child = spawn(command, args, {cwd: ROOT, stdio: 'inherit'});
 		child.on('exit', (code) => resolve(code ?? 0));
 	});
 }

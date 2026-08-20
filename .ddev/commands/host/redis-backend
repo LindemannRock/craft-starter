@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#ddev-generated
+# Starter-managed copy of the DDEV Redis helper.
 
 ## Description: Use a different key-value store for Redis
 ## Usage: redis-backend <image> [optimize]

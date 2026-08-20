@@ -7,7 +7,7 @@
 
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { resolveCraftProfile } from './config/craft-profiles.mjs';
+import {resolveCraftProfile} from './config/craft-profiles.mjs';
 
 export function intro() {
 	console.log('');
@@ -51,7 +51,7 @@ export function showConfigurationSummary({
 		],
 		['Database', database?.label || 'MySQL 8.0'],
 		['Cache', useRedisCache ? (useRedisSession ? 'Redis (cache + sessions)' : 'Redis (cache only)') : 'File (default)'],
-		['Critical CSS', useCritical ? 'Yes (run make critical)' : 'No'],
+		['Critical CSS', useCritical ? 'Yes (run make build-critical)' : 'No'],
 		['Build files', `${commitBuildFiles ? 'Track' : 'Ignore'} ${profile.paths.build}`],
 		['LR Plugins', selectedLr.length ? selectedLr.map(pluginSummary).join(', ') : 'None'],
 		['Plugins', selectedTp.length ? selectedTp.map(pluginSummary).join(', ') : 'None'],
@@ -132,11 +132,13 @@ function wrapValue(value, maxWidth, indent) {
 	return lines.join(`\n${indent}`);
 }
 
-export function outro({ project, useCritical, hasPlaceholders }) {
+export function outro({project, useCritical, hasPlaceholders}) {
 	const siteUrl = `https://${project.name}.ddev.site`;
 	const cpUrl = `${siteUrl}/${project.cpTrigger || 'cms'}`;
 
-	const criticalLine = useCritical ? `  ${pc.bold('make critical')}  Production build + critical CSS (slow)\n` : '';
+	const criticalLine = useCritical
+		? `  ${pc.bold('make build-critical')}  Production build + critical CSS (slow)\n`
+		: '';
 
 	const verifyLine = hasPlaceholders
 		? `  ${pc.bold('make verify')}    ${pc.yellow('Check .env for unfilled placeholders before deploy')}\n`
@@ -150,12 +152,12 @@ export function outro({ project, useCritical, hasPlaceholders }) {
 			`  ${pc.bold('Admin')}    ${pc.cyan(cpUrl)}\n` +
 			`  ${pc.bold('Login')}    ${project.adminEmail}\n\n` +
 			`  ${pc.dim('Common commands:')}\n` +
-			`  ${pc.bold('make dev')}       Start Vite dev server (HMR)\n` +
-			`  ${pc.bold('make prod')}      Production build (fast)\n` +
+			`  ${pc.bold('make start')}     Start DDEV + Vite dev server\n` +
+			`  ${pc.bold('make build')}     Production build (fast)\n` +
 			criticalLine +
 			verifyLine +
 			`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
-			`  ${pc.bold('make reset')}     Wipe DB + .env, re-run setup\n` +
+			`  ${pc.bold('make repair')}    Repair local dependencies or runtime\n` +
 			`  ${pc.bold('make help')}      See all available commands\n`,
 	);
 }

@@ -22,23 +22,24 @@ export const CRAFT_PROFILES = Object.freeze({
 			redis: true,
 			criticalCss: true,
 			rebrandAssets: true,
+			favicons: true,
 		}),
 		release: Object.freeze({
 			defaultChannel: 'stable',
 			channels: Object.freeze({
 				stable: Object.freeze({
 					label: 'Stable',
-					composerRequire: Object.freeze({ 'craftcms/cms': '^5.10.13' }),
+					composerRequire: Object.freeze({'craftcms/cms': '^5.10.13'}),
 				}),
 			}),
 		}),
 		php: Object.freeze({
 			default: '8.3',
 			options: Object.freeze([
-				{ value: '8.5', label: '8.5', hint: 'latest stable' },
-				{ value: '8.4', label: '8.4', hint: 'supported by Craft 5.9+' },
-				{ value: '8.3', label: '8.3', hint: 'starter default' },
-				{ value: '8.2', label: '8.2', hint: 'Craft 5 minimum' },
+				{value: '8.5', label: '8.5', hint: 'latest stable'},
+				{value: '8.4', label: '8.4', hint: 'supported by Craft 5.9+'},
+				{value: '8.3', label: '8.3', hint: 'starter default'},
+				{value: '8.2', label: '8.2', hint: 'Craft 5 minimum'},
 			]),
 		}),
 		database: Object.freeze({
@@ -80,6 +81,13 @@ export const CRAFT_PROFILES = Object.freeze({
 			projectType: 'craftcms',
 			docroot: 'web',
 			uploadDirs: Object.freeze(['web/assets', 'storage']),
+			databaseComments: Object.freeze([
+				'Craft 5 requires: MySQL 8.0.36+, MariaDB 10.4.6+, or PostgreSQL 16+.',
+				'MySQL 8.0 is the Servd default. To switch:',
+				'  PostgreSQL: type: postgres, version: "16"',
+				'  MariaDB:    type: mariadb,  version: "10.11"',
+				'Run `ddev delete -Oy && ddev start` after changing.',
+			]),
 		}),
 		commands: Object.freeze({
 			pluginInstall: Object.freeze(['php', 'craft', 'plugin/install']),
@@ -162,9 +170,9 @@ export const CRAFT_PROFILES = Object.freeze({
 				'craftcms/generator': '^2.2.0',
 				'yiisoft/yii2-shell': '^2.0.6',
 			}),
-			redis: Object.freeze({ name: 'yiisoft/yii2-redis', version: '^2.1.2' }),
+			redis: Object.freeze({name: 'yiisoft/yii2-redis', version: '^2.1.2'}),
 			project: Object.freeze({
-				autoload: Object.freeze({ psr4: Object.freeze({ 'modules\\': 'modules/' }) }),
+				autoload: Object.freeze({psr4: Object.freeze({'modules\\': 'modules/'})}),
 				autoloadDev: null,
 				scripts: null,
 				extra: null,
@@ -190,6 +198,7 @@ export const CRAFT_PROFILES = Object.freeze({
 			redis: false,
 			criticalCss: false,
 			rebrandAssets: false,
+			favicons: false,
 		}),
 		release: Object.freeze({
 			defaultChannel: 'alpha',
@@ -197,13 +206,13 @@ export const CRAFT_PROFILES = Object.freeze({
 				alpha: Object.freeze({
 					label: 'Alpha (experimental)',
 					hint: 'Scaffolding tests only — not for production',
-					composerRequire: Object.freeze({ 'craftcms/cms': '^6.0.0-alpha.16' }),
+					composerRequire: Object.freeze({'craftcms/cms': '^6.0.0-alpha.16'}),
 				}),
 			}),
 		}),
 		php: Object.freeze({
 			default: '8.5',
-			options: Object.freeze([{ value: '8.5', label: '8.5', hint: 'Craft 6 alpha requirement' }]),
+			options: Object.freeze([{value: '8.5', label: '8.5', hint: 'Craft 6 alpha requirement'}]),
 		}),
 		database: Object.freeze({
 			default: 'mysql',
@@ -234,6 +243,10 @@ export const CRAFT_PROFILES = Object.freeze({
 			projectType: 'laravel',
 			docroot: 'public',
 			uploadDirs: Object.freeze(['public/assets', 'storage']),
+			databaseComments: Object.freeze([
+				'Craft 6 alpha profile options: MySQL 8.4 or PostgreSQL 18.',
+				'Run `make create` again to select a different database engine.',
+			]),
 		}),
 		commands: Object.freeze({
 			pluginInstall: Object.freeze(['php', 'craft', 'plugin:install']),
@@ -329,7 +342,7 @@ export const CRAFT_PROFILES = Object.freeze({
 						'Database\\Seeders\\': 'database/seeders/',
 					}),
 				}),
-				autoloadDev: Object.freeze({ psr4: Object.freeze({ 'Tests\\': 'tests/' }) }),
+				autoloadDev: Object.freeze({psr4: Object.freeze({'Tests\\': 'tests/'})}),
 				scripts: Object.freeze({
 					'post-autoload-dump': Object.freeze([
 						'Illuminate\\Foundation\\ComposerScripts::postAutoloadDump',
@@ -339,7 +352,7 @@ export const CRAFT_PROFILES = Object.freeze({
 					'post-update-cmd': Object.freeze(['@php artisan vendor:publish --tag=laravel-assets --ansi --force']),
 					'pre-package-uninstall': Object.freeze(['Illuminate\\Foundation\\ComposerScripts::prePackageUninstall']),
 				}),
-				extra: Object.freeze({ laravel: Object.freeze({ 'dont-discover': Object.freeze([]) }) }),
+				extra: Object.freeze({laravel: Object.freeze({'dont-discover': Object.freeze([])})}),
 				allowPlugins: Object.freeze({
 					'craftcms/plugin-installer': true,
 					'php-http/discovery': true,
@@ -347,7 +360,7 @@ export const CRAFT_PROFILES = Object.freeze({
 			}),
 		}),
 		frontend: Object.freeze({
-			devDependencies: Object.freeze({ 'laravel-vite-plugin': '^3.0.0' }),
+			devDependencies: Object.freeze({'laravel-vite-plugin': '^3.0.0'}),
 		}),
 		scaffold: Object.freeze({
 			package: 'craftcms/craft',
@@ -427,6 +440,7 @@ const REQUIRED_PROFILE_KEYS = [
 	'features.redis',
 	'features.criticalCss',
 	'features.rebrandAssets',
+	'features.favicons',
 	'release.defaultChannel',
 	'php.default',
 	'php.options',
@@ -435,6 +449,7 @@ const REQUIRED_PROFILE_KEYS = [
 	'ddev.projectType',
 	'ddev.docroot',
 	'ddev.uploadDirs',
+	'ddev.databaseComments',
 	'commands.pluginInstall',
 	'commands.editionInspector',
 	'commands.projectConfigurator',
@@ -491,10 +506,10 @@ export function validateCraftProfile(profile) {
 			`Incomplete Craft profile "${profile.id}": default release channel "${profile.release.defaultChannel}" is not defined.`,
 		);
 	}
-	if (!profile.php.options.some(({ value }) => value === profile.php.default)) {
+	if (!profile.php.options.some(({value}) => value === profile.php.default)) {
 		throw new Error(`Incomplete Craft profile "${profile.id}": default PHP ${profile.php.default} is not selectable.`);
 	}
-	if (!profile.database.options.some(({ value }) => value === profile.database.default)) {
+	if (!profile.database.options.some(({value}) => value === profile.database.default)) {
 		throw new Error(
 			`Incomplete Craft profile "${profile.id}": default database "${profile.database.default}" is not selectable.`,
 		);
@@ -507,7 +522,7 @@ for (const [id, profile] of Object.entries(CRAFT_PROFILES)) {
 	if (id !== profile.id) throw new Error(`Craft profile key "${id}" must match its id "${profile.id}".`);
 }
 
-const profileMajors = Object.values(CRAFT_PROFILES).map(({ major }) => major);
+const profileMajors = Object.values(CRAFT_PROFILES).map(({major}) => major);
 if (new Set(profileMajors).size !== profileMajors.length) {
 	throw new Error('Craft profile major versions must be unique.');
 }
@@ -534,7 +549,7 @@ export function resolveCraftProfile(value = DEFAULT_CRAFT_PROFILE_ID) {
 export function craftManifestMetadata(value = DEFAULT_CRAFT_PROFILE_ID, channel) {
 	const profile = resolveCraftProfile(value);
 	const release = resolveCraftRelease(profile, channel);
-	return { profile: profile.id, major: profile.major, channel: release.channel };
+	return {profile: profile.id, major: profile.major, channel: release.channel};
 }
 
 export function resolveCraftRelease(value = DEFAULT_CRAFT_PROFILE_ID, channel) {
@@ -546,16 +561,16 @@ export function resolveCraftRelease(value = DEFAULT_CRAFT_PROFILE_ID, channel) {
 			`Unsupported ${profile.label} release channel "${releaseChannel}". Available channels: ${Object.keys(profile.release.channels).join(', ')}.`,
 		);
 	}
-	return { channel: releaseChannel, ...release };
+	return {channel: releaseChannel, ...release};
 }
 
 export function composerConfigForCraftProfile(value = DEFAULT_CRAFT_PROFILE_ID, channel) {
 	const profile = resolveCraftProfile(value);
 	const release = resolveCraftRelease(profile, channel);
 	return {
-		require: { ...profile.composer.require, ...release.composerRequire },
-		requireDev: { ...profile.composer.requireDev },
-		redis: profile.composer.redis ? { ...profile.composer.redis } : null,
+		require: {...profile.composer.require, ...release.composerRequire},
+		requireDev: {...profile.composer.requireDev},
+		redis: profile.composer.redis ? {...profile.composer.redis} : null,
 		project: profile.composer.project,
 	};
 }
@@ -573,7 +588,7 @@ export function resolvePluginForCraftProfile(plugin, value = DEFAULT_CRAFT_PROFI
 	const overrides = plugin.craft?.[profile.major];
 	if (plugin.craft && !overrides) return null;
 	if (!plugin.craft && profile.major !== 5) return null;
-	return overrides ? { ...plugin, ...overrides } : { ...plugin };
+	return overrides ? {...plugin, ...overrides} : {...plugin};
 }
 
 export function catalogForCraftProfile(items, value = DEFAULT_CRAFT_PROFILE_ID) {

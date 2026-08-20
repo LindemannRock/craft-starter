@@ -10,8 +10,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { ROOT, CLI_DIR } from '../paths.mjs';
-import { resolveCraftProfile } from '../config/craft-profiles.mjs';
+import {ROOT, CLI_DIR} from '../paths.mjs';
+import {resolveCraftProfile} from '../config/craft-profiles.mjs';
 
 // Packages needed by headless Chromium (via rollup-plugin-critical → puppeteer).
 // Order-preserving list so the committed config.yaml's order is respected.
@@ -42,8 +42,8 @@ const CHROMIUM_PACKAGES = [
 const CHROMIUM_SET = new Set(CHROMIUM_PACKAGES);
 
 export function updateDdevConfig(
-	{ name, timezone },
-	{ useCritical = true, database = null, root = ROOT, cliDir = CLI_DIR, craftProfile } = {},
+	{name, timezone},
+	{useCritical = true, database = null, root = ROOT, cliDir = CLI_DIR, craftProfile} = {},
 ) {
 	const profile = resolveCraftProfile(craftProfile);
 	const ddevPath = path.join(root, '.ddev', 'config.yaml');
@@ -52,6 +52,7 @@ export function updateDdevConfig(
 	ddevConfig = ddevConfig.replace(/^timezone: .*/m, `timezone: ${timezone}`);
 	ddevConfig = ddevConfig.replace(/^type: .*/m, `type: ${profile.ddev.projectType}`);
 	ddevConfig = ddevConfig.replace(/^docroot: .*/m, `docroot: ${profile.ddev.docroot}`);
+	ddevConfig = updateDatabaseComments(ddevConfig, profile.ddev.databaseComments);
 	ddevConfig = ddevConfig.replace(
 		/^upload_dirs:\n(?:    - .*\n)*/m,
 		`upload_dirs:\n${profile.ddev.uploadDirs.map((directory) => `    - ${directory}`).join('\n')}\n`,
@@ -82,6 +83,11 @@ export function updateDdevConfig(
 	}
 
 	return null;
+}
+
+export function updateDatabaseComments(ddevConfig, comments) {
+	const rendered = comments.map((comment) => `    # ${comment}`).join('\n');
+	return ddevConfig.replace(/(^database:\n)(?:    #.*\n)*/m, `$1${rendered}\n`);
 }
 
 export function updateDatabaseConfig(ddevConfig, database) {

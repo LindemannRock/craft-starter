@@ -14,10 +14,20 @@
  * @license MIT
  */
 
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { ROOT } from '../paths.mjs';
+import { readSetupManifest } from '../actions/setupManifest.mjs';
+import { resolveCraftProfile } from '../config/craft-profiles.mjs';
+
+const profile = resolveCraftProfile(readSetupManifest()?.craft);
+if (!profile.features.favicons) {
+	console.log(`Favicon generation is not enabled yet for the experimental ${profile.label} profile.`);
+	console.log('No project files were changed.');
+	process.exit(0);
+}
+
+const { default: sharp } = await import('sharp');
 
 const SOURCE = path.join(ROOT, 'src/img/favicon.svg');
 const OUTPUT_DIR = path.join(ROOT, 'src/brand/favicons');

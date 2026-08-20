@@ -1,15 +1,15 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { afterEach, describe, expect, it } from 'vitest';
-import { updateComposer } from '../actions/composer.mjs';
-import { syncRebrandAssets } from '../actions/assets.mjs';
-import { updateDdevConfig } from '../actions/ddev.mjs';
-import { updatePackageJson } from '../actions/packageJson.mjs';
-import { buildCraftInstallCommand, cleanInstallArtifacts } from '../actions/install.mjs';
-import { scaffoldTranslations, cleanUnusedTranslations } from '../actions/sites.mjs';
-import { cleanUnusedPluginConfigs, pluginInstallArgs, validatePluginEditions } from '../actions/plugins.mjs';
-import { HOSTING_OPTIONS, LR_PLUGINS, THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
+import {afterEach, describe, expect, it} from 'vitest';
+import {updateComposer} from '../actions/composer.mjs';
+import {syncRebrandAssets} from '../actions/assets.mjs';
+import {updateDdevConfig} from '../actions/ddev.mjs';
+import {updatePackageJson} from '../actions/packageJson.mjs';
+import {buildCraftInstallArgs, buildCraftInstallCommand, cleanInstallArtifacts} from '../actions/install.mjs';
+import {scaffoldTranslations, cleanUnusedTranslations} from '../actions/sites.mjs';
+import {cleanUnusedPluginConfigs, pluginInstallArgs, validatePluginEditions} from '../actions/plugins.mjs';
+import {HOSTING_OPTIONS, LR_PLUGINS, THIRD_PARTY_PLUGINS} from '../config/plugins.mjs';
 
 const tempDirs = [];
 const tempProject = () => {
@@ -19,7 +19,7 @@ const tempProject = () => {
 };
 
 afterEach(() => {
-	for (const dir of tempDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+	for (const dir of tempDirs.splice(0)) fs.rmSync(dir, {recursive: true, force: true});
 });
 
 describe('generator-owned dependencies', () => {
@@ -28,10 +28,10 @@ describe('generator-owned dependencies', () => {
 		fs.writeFileSync(
 			path.join(root, 'composer.json'),
 			JSON.stringify({
-				require: { 'acme/custom-package': '^1.0', 'verbb/formie': '^3.0' },
-				'require-dev': { 'acme/dev-tool': '^2.0' },
-				autoload: { 'psr-4': { 'Acme\\': 'src/' } },
-				scripts: { test: 'php test.php' },
+				require: {'acme/custom-package': '^1.0', 'verbb/formie': '^3.0'},
+				'require-dev': {'acme/dev-tool': '^2.0'},
+				autoload: {'psr-4': {'Acme\\': 'src/'}},
+				scripts: {test: 'php test.php'},
 			}),
 		);
 		updateComposer(
@@ -39,22 +39,22 @@ describe('generator-owned dependencies', () => {
 				selectedLr: [],
 				selectedTp: [],
 				useRedisCache: false,
-				selectedHosting: HOSTING_OPTIONS.find(({ value }) => value === 'none'),
+				selectedHosting: HOSTING_OPTIONS.find(({value}) => value === 'none'),
 			},
-			{ root },
+			{root},
 		);
 		const composer = JSON.parse(fs.readFileSync(path.join(root, 'composer.json'), 'utf-8'));
 		expect(composer.require['acme/custom-package']).toBe('^1.0');
 		expect(composer.require['verbb/formie']).toBeUndefined();
 		expect(composer['require-dev']['acme/dev-tool']).toBe('^2.0');
-		expect(composer.autoload['psr-4']).toEqual({ 'Acme\\': 'src/' });
-		expect(composer.scripts).toEqual({ test: 'php test.php' });
+		expect(composer.autoload['psr-4']).toEqual({'Acme\\': 'src/'});
+		expect(composer.scripts).toEqual({test: 'php test.php'});
 	});
 
 	it('uses pinned optional frontend versions without Git history', () => {
 		const root = tempProject();
-		fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ devDependencies: {} }));
-		updatePackageJson({ name: 'demo', description: '' }, { root, useCritical: true, hasIconManager: true });
+		fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({devDependencies: {}}));
+		updatePackageJson({name: 'demo', description: ''}, {root, useCritical: true, hasIconManager: true});
 		const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf-8'));
 		expect(pkg.devDependencies['rollup-plugin-critical']).toBe('^1.0.15');
 		expect(pkg.devDependencies.svgo).toBe('^4.0.0');
@@ -65,15 +65,15 @@ describe('generator-owned dependencies', () => {
 		fs.writeFileSync(
 			path.join(root, 'composer.json'),
 			JSON.stringify({
-				require: { 'craftcms/cms': '^5', 'nystudio107/craft-vite': '^5' },
-				'require-dev': { 'craftcms/generator': '^2' },
+				require: {'craftcms/cms': '^5', 'nystudio107/craft-vite': '^5'},
+				'require-dev': {'craftcms/generator': '^2'},
 			}),
 		);
 		fs.writeFileSync(
 			path.join(root, 'package.json'),
-			JSON.stringify({ devDependencies: { vite: '^8', 'rollup-plugin-critical': '^1' } }),
+			JSON.stringify({devDependencies: {vite: '^8', 'rollup-plugin-critical': '^1'}}),
 		);
-		const hosting = { value: 'none', packages: [] };
+		const hosting = {value: 'none', packages: []};
 		updateComposer(
 			{
 				selectedLr: [],
@@ -83,9 +83,9 @@ describe('generator-owned dependencies', () => {
 				craftProfile: 'craft6',
 				craftReleaseChannel: 'alpha',
 			},
-			{ root },
+			{root},
 		);
-		updatePackageJson({ name: 'demo', description: 'Demo' }, { root, craftProfile: 'craft6', useCritical: false });
+		updatePackageJson({name: 'demo', description: 'Demo'}, {root, craftProfile: 'craft6', useCritical: false});
 
 		const composer = JSON.parse(fs.readFileSync(path.join(root, 'composer.json'), 'utf-8'));
 		const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf-8'));
@@ -94,7 +94,7 @@ describe('generator-owned dependencies', () => {
 			'laravel/framework': '^13.8',
 		});
 		expect(composer.require['nystudio107/craft-vite']).toBeUndefined();
-		expect(composer.autoload['psr-4']).toMatchObject({ 'App\\': 'app/' });
+		expect(composer.autoload['psr-4']).toMatchObject({'App\\': 'app/'});
 		expect(composer.scripts['post-autoload-dump']).toContain('@php artisan craft:setup:publish --ansi');
 		expect(pkg.devDependencies['laravel-vite-plugin']).toBe('^3.0.0');
 		expect(pkg.devDependencies['rollup-plugin-critical']).toBeUndefined();
@@ -111,24 +111,39 @@ describe('Craft install commands', () => {
 	};
 
 	it('uses Symfony option names for Craft 6', () => {
-		const command = buildCraftInstallCommand(project, { craftProfile: 'craft6' });
-		expect(command).toContain('php craft install --no-interaction');
+		const command = buildCraftInstallCommand(project, {craftProfile: 'craft6'});
+		expect(command).toContain("'php' 'craft' 'install' '--no-interaction'");
 		expect(command).toContain('--siteName=');
 		expect(command).toContain('--siteUrl=');
 		expect(command).not.toContain('--site-name=');
 	});
 
+	it('builds argument-safe Craft 5 install options', () => {
+		const args = buildCraftInstallArgs({...project, description: "Director's Site"}, {craftProfile: 'craft5'});
+		expect(args).toEqual([
+			'php',
+			'craft',
+			'install',
+			'--interactive=0',
+			'--email=admin@example.com',
+			'--password=password123',
+			"--site-name=Director's Site",
+			'--site-url=https://demo.ddev.site',
+			'--language=en-US',
+		]);
+	});
+
 	it('cleans host dependency artifacts before installing inside DDEV', () => {
 		const root = tempProject();
 		for (const directory of ['node_modules', 'vendor', 'config/project']) {
-			fs.mkdirSync(path.join(root, directory), { recursive: true });
+			fs.mkdirSync(path.join(root, directory), {recursive: true});
 			fs.writeFileSync(path.join(root, directory, '.stale'), 'stale');
 		}
 		for (const lockFile of ['composer.lock', 'package-lock.json']) {
 			fs.writeFileSync(path.join(root, lockFile), '{}');
 		}
 
-		cleanInstallArtifacts({ root, craftProfile: 'craft5' });
+		cleanInstallArtifacts({root, craftProfile: 'craft5'});
 
 		for (const artifact of ['node_modules', 'vendor', 'config/project', 'composer.lock', 'package-lock.json']) {
 			expect(fs.existsSync(path.join(root, artifact))).toBe(false);
@@ -140,26 +155,26 @@ describe('generated DDEV sidecars', () => {
 	function prepareDdevProject(sidecar) {
 		const root = tempProject();
 		const cliDir = path.join(root, 'cli');
-		fs.mkdirSync(path.join(root, '.ddev'), { recursive: true });
-		fs.mkdirSync(path.join(cliDir, 'templates/critical'), { recursive: true });
+		fs.mkdirSync(path.join(root, '.ddev'), {recursive: true});
+		fs.mkdirSync(path.join(cliDir, 'templates/critical'), {recursive: true});
 		fs.writeFileSync(
 			path.join(root, '.ddev/config.yaml'),
-			'name: starter\ntype: craftcms\ndocroot: web\ntimezone: UTC\nwebimage_extra_packages: []\nupload_dirs:\n    - web/assets\n    - storage\n',
+			'name: starter\ntype: craftcms\ndocroot: web\ntimezone: UTC\ndatabase:\n    # old comment\n    type: mysql\n    version: "8.0"\nwebimage_extra_packages: []\nupload_dirs:\n    - web/assets\n    - storage\n',
 		);
 		fs.writeFileSync(path.join(cliDir, 'templates/critical/config.m1.yaml'), 'managed: true\n');
 		fs.writeFileSync(path.join(root, '.ddev/config.m1.yaml'), sidecar);
-		return { root, cliDir };
+		return {root, cliDir};
 	}
 
 	it('removes an unchanged generated sidecar when critical CSS is disabled', () => {
 		const paths = prepareDdevProject('managed: true\n');
-		expect(updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: false })).toBeNull();
+		expect(updateDdevConfig({name: 'demo', timezone: 'UTC'}, {...paths, useCritical: false})).toBeNull();
 		expect(fs.existsSync(path.join(paths.root, '.ddev/config.m1.yaml'))).toBe(false);
 	});
 
 	it('applies the active profile DDEV layout', () => {
 		const paths = prepareDdevProject('managed: true\n');
-		updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: true });
+		updateDdevConfig({name: 'demo', timezone: 'UTC'}, {...paths, useCritical: true});
 		const config = fs.readFileSync(path.join(paths.root, '.ddev/config.yaml'), 'utf-8');
 		expect(config).toContain('type: craftcms');
 		expect(config).toContain('docroot: web');
@@ -168,16 +183,18 @@ describe('generated DDEV sidecars', () => {
 
 	it('applies the Craft 6 Laravel DDEV layout', () => {
 		const paths = prepareDdevProject('managed: true\n');
-		updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: false, craftProfile: 'craft6' });
+		updateDdevConfig({name: 'demo', timezone: 'UTC'}, {...paths, useCritical: false, craftProfile: 'craft6'});
 		const config = fs.readFileSync(path.join(paths.root, '.ddev/config.yaml'), 'utf-8');
 		expect(config).toContain('type: laravel');
 		expect(config).toContain('docroot: public');
+		expect(config).toContain('# Craft 6 alpha profile options: MySQL 8.4 or PostgreSQL 18.');
+		expect(config).not.toContain('# Craft 5 requires:');
 		expect(config).toContain('upload_dirs:\n    - public/assets\n    - storage\n');
 	});
 
 	it('preserves a customized sidecar when critical CSS is disabled', () => {
 		const paths = prepareDdevProject('custom: true\n');
-		expect(updateDdevConfig({ name: 'demo', timezone: 'UTC' }, { ...paths, useCritical: false })).toBe(
+		expect(updateDdevConfig({name: 'demo', timezone: 'UTC'}, {...paths, useCritical: false})).toBe(
 			'.ddev/config.m1.yaml',
 		);
 		expect(fs.readFileSync(path.join(paths.root, '.ddev/config.m1.yaml'), 'utf-8')).toBe('custom: true\n');
@@ -188,9 +205,9 @@ describe('profile-aware static assets', () => {
 	it('copies rebrand assets to the active profile destination', () => {
 		const root = tempProject();
 		const cliDir = path.join(root, 'generator-cli');
-		fs.mkdirSync(path.join(cliDir, 'templates/rebrand/logo'), { recursive: true });
+		fs.mkdirSync(path.join(cliDir, 'templates/rebrand/logo'), {recursive: true});
 		fs.writeFileSync(path.join(cliDir, 'templates/rebrand/logo/logo.svg'), '<svg/>');
-		expect(syncRebrandAssets({ root, cliDir })).toBe(true);
+		expect(syncRebrandAssets({root, cliDir})).toBe(true);
 		expect(fs.readFileSync(path.join(root, 'storage/rebrand/logo/logo.svg'), 'utf-8')).toBe('<svg/>');
 	});
 });
@@ -200,12 +217,12 @@ describe('translation scaffolding', () => {
 		const root = tempProject();
 		scaffoldTranslations(
 			[
-				{ handle: 'english', language: 'en-US' },
-				{ handle: 'corporate', language: 'en-US' },
-				{ handle: 'arabic', language: 'ar' },
+				{handle: 'english', language: 'en-US'},
+				{handle: 'corporate', language: 'en-US'},
+				{handle: 'arabic', language: 'ar'},
 			],
 			'messages',
-			{ root },
+			{root},
 		);
 		expect(fs.existsSync(path.join(root, 'translations/en-US/messages.php'))).toBe(true);
 		expect(fs.existsSync(path.join(root, 'translations/ar/messages.php'))).toBe(true);
@@ -214,11 +231,11 @@ describe('translation scaffolding', () => {
 
 	it('preserves customized obsolete translation files', () => {
 		const root = tempProject();
-		fs.mkdirSync(path.join(root, 'translations/en-US'), { recursive: true });
+		fs.mkdirSync(path.join(root, 'translations/en-US'), {recursive: true});
 		fs.writeFileSync(path.join(root, 'translations/en-US/site.php'), '<?php return ["custom" => "value"];\n');
 		const preserved = cleanUnusedTranslations([], {
 			root,
-			previousSites: [{ language: 'en-US' }],
+			previousSites: [{language: 'en-US'}],
 			previousCategory: 'site',
 		});
 		expect(preserved).toEqual(['translations/en-US/site.php']);
@@ -227,15 +244,15 @@ describe('translation scaffolding', () => {
 });
 
 describe('plugin edition plan', () => {
-	const actual = { commerce: ['pro', 'enterprise'] };
+	const actual = {commerce: ['pro', 'enterprise']};
 	it('accepts an edition verified against the installed plugin class', () => {
 		expect(() =>
-			validatePluginEditions([{ handle: 'commerce', edition: 'pro' }], { inspector: () => actual }),
+			validatePluginEditions([{handle: 'commerce', edition: 'pro'}], {inspector: () => actual}),
 		).not.toThrow();
 	});
 
 	it('passes the selected edition positionally and disables installer prompts', () => {
-		expect(pluginInstallArgs({ handle: 'search-manager', edition: 'pro' })).toEqual([
+		expect(pluginInstallArgs({handle: 'search-manager', edition: 'pro'})).toEqual([
 			'exec',
 			'php',
 			'craft',
@@ -247,30 +264,30 @@ describe('plugin edition plan', () => {
 	});
 
 	it('rejects missing or stale registry edition metadata', () => {
-		expect(() => validatePluginEditions([{ handle: 'commerce' }], { inspector: () => actual })).toThrow(
+		expect(() => validatePluginEditions([{handle: 'commerce'}], {inspector: () => actual})).toThrow(
 			/no edition metadata/,
 		);
-		expect(() =>
-			validatePluginEditions([{ handle: 'commerce', edition: 'lite' }], { inspector: () => actual }),
-		).toThrow(/invalid/);
+		expect(() => validatePluginEditions([{handle: 'commerce', edition: 'lite'}], {inspector: () => actual})).toThrow(
+			/invalid/,
+		);
 	});
 
 	it('records every currently known multi-edition catalogue plugin', () => {
 		const plugins = [...LR_PLUGINS, ...THIRD_PARTY_PLUGINS];
-		expect(plugins.find(({ handle }) => handle === 'search-manager')?.editions.map(({ value }) => value)).toEqual([
+		expect(plugins.find(({handle}) => handle === 'search-manager')?.editions.map(({value}) => value)).toEqual([
 			'standard',
 			'pro',
 		]);
-		expect(plugins.find(({ handle }) => handle === 'commerce')?.editions.map(({ value }) => value)).toEqual([
+		expect(plugins.find(({handle}) => handle === 'commerce')?.editions.map(({value}) => value)).toEqual([
 			'pro',
 			'enterprise',
 		]);
-		expect(plugins.find(({ handle }) => handle === 'freeform')?.editions.map(({ value }) => value)).toEqual([
+		expect(plugins.find(({handle}) => handle === 'freeform')?.editions.map(({value}) => value)).toEqual([
 			'express',
 			'lite',
 			'pro',
 		]);
-		expect(plugins.find(({ handle }) => handle === 'imager-x')?.editions.map(({ value }) => value)).toEqual([
+		expect(plugins.find(({handle}) => handle === 'imager-x')?.editions.map(({value}) => value)).toEqual([
 			'lite',
 			'pro',
 		]);
@@ -280,9 +297,9 @@ describe('plugin edition plan', () => {
 describe('generated plugin configuration', () => {
 	it('preserves a customized config for a deselected plugin', () => {
 		const root = tempProject();
-		fs.mkdirSync(path.join(root, 'config'), { recursive: true });
+		fs.mkdirSync(path.join(root, 'config'), {recursive: true});
 		fs.writeFileSync(path.join(root, 'config/redirect-manager.php'), '<?php\nreturn ["custom" => true];\n');
-		expect(cleanUnusedPluginConfigs(LR_PLUGINS, [], { root })).toEqual(['config/redirect-manager.php']);
+		expect(cleanUnusedPluginConfigs(LR_PLUGINS, [], {root})).toEqual(['config/redirect-manager.php']);
 		expect(fs.existsSync(path.join(root, 'config/redirect-manager.php'))).toBe(true);
 	});
 });

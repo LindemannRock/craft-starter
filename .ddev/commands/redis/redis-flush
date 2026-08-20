@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#ddev-generated
+# Starter-managed copy of the DDEV Redis helper.
 ## Description: Flush all cache inside the Redis container
 ## Usage: redis-flush
 ## Example: "ddev redis-flush"

@@ -1,16 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { afterEach, describe, expect, it } from 'vitest';
-import { fileURLToPath } from 'url';
-import { applyCraftCloudDefaults, craftCloudConfig, reconcileCraftCloudConfig } from '../actions/cloud.mjs';
-import { HOSTING_OPTIONS } from '../config/plugins.mjs';
+import {afterEach, describe, expect, it} from 'vitest';
+import {fileURLToPath} from 'url';
+import {applyCraftCloudDefaults, craftCloudConfig, reconcileCraftCloudConfig} from '../actions/cloud.mjs';
+import {readSetupManifest} from '../actions/setupManifest.mjs';
+import {HOSTING_OPTIONS} from '../config/plugins.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const tempDirs = [];
+const activeCraftProfile = readSetupManifest({root})?.craft?.profile;
 
 afterEach(() => {
-	for (const directory of tempDirs.splice(0)) fs.rmSync(directory, { recursive: true, force: true });
+	for (const directory of tempDirs.splice(0)) fs.rmSync(directory, {recursive: true, force: true});
 });
 
 describe('Craft Cloud scaffolding', () => {
@@ -22,12 +24,12 @@ describe('Craft Cloud scaffolding', () => {
 
 	it('uses a stable Cloud extension constraint without treating it as a Craft plugin', () => {
 		const cloud = HOSTING_OPTIONS.find((option) => option.value === 'craft-cloud');
-		expect(cloud.packages).toEqual([{ name: 'craftcms/cloud', version: '^3.11.0', handle: null }]);
+		expect(cloud.packages).toEqual([{name: 'craftcms/cloud', version: '^3.11.0', handle: null}]);
 	});
 
 	it('disables Nginx SSI critical CSS and committed build output on Cloud', () => {
 		const state = {
-			selectedHosting: { value: 'craft-cloud' },
+			selectedHosting: {value: 'craft-cloud'},
 			useCritical: true,
 			commitBuildFiles: true,
 		};
@@ -41,7 +43,7 @@ describe('Craft Cloud scaffolding', () => {
 
 	it('does not alter choices for other hosts', () => {
 		const state = {
-			selectedHosting: { value: 'servd' },
+			selectedHosting: {value: 'servd'},
 			useCritical: true,
 			commitBuildFiles: true,
 		};
@@ -55,16 +57,16 @@ describe('Craft Cloud scaffolding', () => {
 		const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'craft-cloud-test-'));
 		tempDirs.push(fixture);
 		fs.writeFileSync(path.join(fixture, 'craft-cloud.yaml'), craftCloudConfig('8.4'));
-		expect(reconcileCraftCloudConfig({ enabled: false, root: fixture })).toBeNull();
+		expect(reconcileCraftCloudConfig({enabled: false, root: fixture})).toBeNull();
 		expect(fs.existsSync(path.join(fixture, 'craft-cloud.yaml'))).toBe(false);
 
 		fs.writeFileSync(path.join(fixture, 'craft-cloud.yaml'), "php-version: '8.5'\ncustom: true\n");
-		expect(reconcileCraftCloudConfig({ enabled: false, root: fixture })).toBe('craft-cloud.yaml');
+		expect(reconcileCraftCloudConfig({enabled: false, root: fixture})).toBe('craft-cloud.yaml');
 		expect(fs.existsSync(path.join(fixture, 'craft-cloud.yaml'))).toBe(true);
 	});
 });
 
-describe('Cloud-safe project templates', () => {
+describe.skipIf(activeCraftProfile === 'craft6')('Craft 5 Cloud-safe project templates', () => {
 	it('does not render a synchronous CSRF token in the base layout', () => {
 		const layout = fs.readFileSync(path.join(root, 'templates/_boilerplate/_layouts/base-html-layout.twig'), 'utf8');
 		expect(layout).not.toContain('request.csrfToken');
@@ -87,7 +89,9 @@ describe('Cloud-safe project templates', () => {
 		expect(globals).toContain("cloud.artifactUrl('')");
 		expect(globals).not.toContain('cloud.artifactUrl()');
 	});
+});
 
+describe('Cloud-safe generation defaults', () => {
 	it('keeps the tracked rebrand path environment-configurable', () => {
 		const envTemplate = fs.readFileSync(path.join(root, 'cli/templates/env.example'), 'utf8');
 		expect(envTemplate).toContain('CRAFT_REBRAND_PATH=@root/storage/rebrand');

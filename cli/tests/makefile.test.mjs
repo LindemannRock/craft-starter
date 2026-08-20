@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { describe, expect, it } from 'vitest';
+import {fileURLToPath} from 'url';
+import {describe, expect, it} from 'vitest';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -28,11 +28,34 @@ describe('Makefile setup', () => {
 		expect(makefile).toContain('node cli/scripts/install-plugins.mjs');
 	});
 
-	it('delegates destructive lifecycle commands to the tested script', () => {
+	it('exposes one unambiguous starter reset command', () => {
 		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
 		expect(makefile).toContain('node cli/scripts/lifecycle.mjs reset');
-		expect(makefile).toContain('node cli/scripts/lifecycle.mjs nuke');
+		expect(makefile).not.toMatch(/^nuke:/m);
+		expect(makefile).not.toMatch(/^starter-reset:/m);
 		expect(makefile).not.toContain('git checkout');
+	});
+
+	it('uses the consolidated build and repair command surface', () => {
+		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
+		expect(makefile).toMatch(/^build:.*##/m);
+		expect(makefile).toMatch(/^build-critical:.*##/m);
+		expect(makefile).toContain('node cli/scripts/check-profile-feature.mjs criticalCss');
+		expect(makefile).toMatch(/^repair:.*##/m);
+		expect(makefile).not.toMatch(/^(dev|prod|critical|clean|clean-logs|kill-vite):/m);
+		expect(makefile).toContain('repair-dependencies:');
+		expect(makefile).toContain('repair-logs:');
+		expect(makefile).toContain('repair-vite:');
+	});
+
+	it('repairs dependencies reproducibly from lockfiles', () => {
+		const makefile = fs.readFileSync(path.join(root, 'Makefile'), 'utf8');
+		const target = makefile.match(/^repair-dependencies:.*\n(?:\t.*\n)+/m)?.[0];
+		expect(target).toContain('rm -rf vendor/ node_modules/');
+		expect(target).toContain('set -e;');
+		expect(target).toContain('ddev composer install');
+		expect(target).toContain('ddev exec -- npm ci $(NPM_INSTALL_FLAGS)');
+		expect(target).toContain('ddev exec -- npm install $(NPM_INSTALL_FLAGS)');
 	});
 
 	it('delegates Craft commands and generated asset paths through the active profile', () => {
