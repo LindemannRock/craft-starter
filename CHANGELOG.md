@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.15.1](https://github.com/LindemannRock/craft-starter/compare/v5.15.0...v5.15.1) (2026-08-20)
+
+
+### Fixed
+
+* **cli:** clarify working week choices ([16d55ee](https://github.com/LindemannRock/craft-starter/commit/16d55eed53560f5a4275acbbf0ddc72de5c68cf2))
+
 ## [5.15.0](https://github.com/LindemannRock/craft-starter/compare/v5.14.0...v5.15.0) - 2026-08-20
 
 
