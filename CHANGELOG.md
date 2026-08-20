@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.15.0](https://github.com/LindemannRock/craft-starter/compare/v5.14.0...v5.15.0) - 2026-08-20
+
+
+### Added
+
+* **cli:** add experimental Craft 6 scaffolding ([13a6a38](https://github.com/LindemannRock/craft-starter/commit/13a6a383cdb8e5340d3559346e4b43efd4da799d))
+* **cli:** simplify and harden project workflows ([9bc9fa2](https://github.com/LindemannRock/craft-starter/commit/9bc9fa22954ca22f8daa2176c3b59211353ee509))
+
+
+### Fixed
+
+* **cli:** clean cross-platform install artifacts ([2fd2c0a](https://github.com/LindemannRock/craft-starter/commit/2fd2c0a864275abfb100862919a09e24219b99dc))
+* **cli:** ignore Craft 6 runtime assets ([df0a229](https://github.com/LindemannRock/craft-starter/commit/df0a2291ed378adc888d7935d6de01416c3d3c40))
+* **cli:** restore Vite config during starter reset ([1c01da9](https://github.com/LindemannRock/craft-starter/commit/1c01da9fef6583ed13961d0bfe38ec022ca42422))
+* **cli:** support starter maintenance forks ([50722d9](https://github.com/LindemannRock/craft-starter/commit/50722d98327c4ef4d394fb0401a5dbc31cf5fecb))
+
 ## [5.14.0](https://github.com/LindemannRock/craft-starter/compare/v5.13.1...v5.14.0) - 2026-08-19
 
 
