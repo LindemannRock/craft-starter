@@ -25,7 +25,7 @@ return [
         // ========================================
         // Basic plugin configuration
 
-        'pluginName' => 'Translations',
+        'pluginName' => 'Translation Manager',
         'logLevel' => 'error',         // Log level: 'debug', 'info', 'warning', 'error'
 
 
@@ -36,8 +36,8 @@ return [
 
         // Site Translations
         'enableSiteTranslations' => true,
-        'translationCategory' => App::env('PRIMARY_TRANSLATION_CATEGORY') ?: 'site',
-        'sourceLanguage' => App::env('PRIMARY_SITE_LANGUAGE') ?: 'en',
+        'translationCategory' => App::env('PRIMARY_TRANSLATION_CATEGORY') ?: 'messages', // Set by the starter prompt
+        'sourceLanguage' => App::env('PRIMARY_SITE_LANGUAGE') ?: 'en', // Primary source language
 
         // Site Translation Skip Patterns
         // Text patterns to skip when capturing site translations (array of strings to skip)
@@ -52,19 +52,9 @@ return [
         'captureMissingTranslations' => false,  // Enable runtime capture of missing translations
         'captureMissingOnlyDevMode' => true,    // Only capture when Craft is in devMode (recommended)
 
-        // Formie Integration
+        // Form Integrations
         'enableFormieIntegration' => true,
-
-        // AI Translation Provider
-        // Controls provider selection for AI-assisted translation workflows
-        'enableAiTranslations' => false,
-        'aiProvider' => 'openai',      // Options: 'openai', 'gemini', 'anthropic', 'mock'
-        'openAiApiKey' => App::env('OPENAI_API_KEY'),
-        'openAiModel' => 'gpt-4o-mini',
-        'geminiApiKey' => App::env('GEMINI_API_KEY'),
-        'geminiModel' => 'gemini-2.0-flash',
-        'anthropicApiKey' => App::env('ANTHROPIC_API_KEY'),
-        'anthropicModel' => 'claude-3-haiku-20240307',
+        'enableFreeformIntegration' => true,
 
         // Form Exclusion Patterns
         // Forms with handles OR titles containing these patterns will be skipped entirely (case-insensitive)
@@ -83,7 +73,8 @@ return [
         // PHP translation file generation settings
 
         'autoGenerate' => true,          // Automatically generate translation files when translations are saved
-        'generationPath' => '@root/translations', // Path where PHP translation files should be generated
+        'runtimeTranslationSource' => 'php-files', // Options: php-files, database, hybrid
+        'generationPath' => '@translations', // Path where PHP translation files should be generated
 
 
         // ========================================
@@ -92,7 +83,7 @@ return [
         // Backup configuration and retention
 
         'backupEnabled' => true,
-        'backupSchedule' => 'manual',  // Options: 'manual', 'daily', 'weekly', 'monthly'
+        'backupSchedule' => 'disabled', // Options: 'disabled', 'daily', 'weekly', 'monthly'
         'backupRetentionDays' => 30,   // Number of days to keep automatic backups (0 = keep forever)
         'backupOnImport' => true,      // Automatically create backup before importing CSV files
         'backupPath' => '@storage/translation-manager/backups',
@@ -106,11 +97,9 @@ return [
 
         'itemsPerPage' => 100,         // Number of translations to show per page
         'requireApproval' => false,    // If true, translators save to draft and approvers publish as translated
-        'enableSuggestions' => false,  // Enable translation suggestions (future feature)
 
         // Auto-save Settings
         'autoSaveEnabled' => false,    // Automatically save each translation when you click outside the field
-        'autoSaveDelay' => 2,          // Delay in seconds before auto-save triggers
 
 
         // ========================================
@@ -132,17 +121,9 @@ return [
         // 'showSeconds' => false,    // Show seconds in time display
 
         /**
-         * Default date range for analytics, logs, and dashboard pages
-         * Options: 'today', 'yesterday', 'last7days', 'last30days', 'last90days',
-         *          'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'all'
-         * Default: 'last30days' (from base plugin)
-         */
-        // 'defaultDateRange' => 'last7days',
-
-        /**
          * Export format overrides
          * Enable/disable specific export formats for this plugin
-         * Default: all enabled (from base plugin)
+         * Default: CSV and Excel enabled, JSON disabled (developer format — from base plugin)
          */
         // 'exports' => [
         //     'csv' => true,
@@ -154,23 +135,22 @@ return [
     // Dev environment settings
     'dev' => [
         'logLevel' => 'debug',         // More detailed logging in development
-        'autoExport' => false,         // Manual export in dev
-        'backupSchedule' => 'manual',  // Manual backups in dev
-        'aiProvider' => 'mock',        // Use mock provider by default in local dev
+        'autoGenerate' => false,         // Manual generation in dev
+        'backupSchedule' => 'disabled', // Manual backups in dev
         // 'captureMissingTranslations' => true, // Uncomment to auto-capture in dev
     ],
 
     // Staging environment settings
     'staging' => [
         'logLevel' => 'info',          // Moderate logging in staging
-        'autoExport' => true,
+        'autoGenerate' => true,
         'backupSchedule' => 'weekly',
     ],
 
     // Production environment settings
     'production' => [
         'logLevel' => 'warning',       // Less verbose logging in production
-        'autoExport' => true,
+        'autoGenerate' => true,
         'backupEnabled' => true,
         'backupSchedule' => 'daily',
         // 'backupVolumeUid' => 'your-volume-uid-here', // Use asset volume in production

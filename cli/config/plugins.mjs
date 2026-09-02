@@ -95,7 +95,7 @@ export const LR_PLUGINS = [
 		version: '^5.18.0',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
-		config: null,
+		config: 'logging-library.php',
 	},
 	{
 		value: 'lindemannrock/craft-redirect-manager',

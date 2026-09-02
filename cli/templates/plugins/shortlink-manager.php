@@ -25,7 +25,7 @@ return [
         // ========================================
         // Basic plugin configuration and URL settings
 
-        'pluginName' => 'ShortLinks',
+        'pluginName' => 'ShortLink Manager',
 
         // IP Privacy Protection
         // Generate salt with: php craft shortlink-manager/security/generate-salt
@@ -71,7 +71,7 @@ return [
         'defaultQrBgColor' => '#FFFFFF', // Background color (default: white)
         'defaultQrMargin' => 4,        // White space around QR code (0-10 modules)
         'qrModuleStyle' => 'square',   // Module shape: 'square', 'rounded', 'dots'
-        'qrEyeStyle' => 'square',      // Eye shape: 'square', 'rounded', 'leaf'
+        'qrEyeStyle' => 'square',      // Eye shape: 'square', 'rounded', 'pointed'
         'qrEyeColor' => null,          // Eye color (null = use main color)
 
         // Logo Settings
@@ -112,8 +112,9 @@ return [
 
         // Default location for local development
         // Used when IP address is private/local (127.0.0.1, 192.168.x.x, etc.)
-        // 'defaultCountry' => App::env('SHORTLINK_MANAGER_DEFAULT_COUNTRY') ?: 'AE', // 2-letter country code (US, GB, AE, etc.)
-        // 'defaultCity' => App::env('SHORTLINK_MANAGER_DEFAULT_CITY') ?: 'Dubai', // Must match a city in the predefined locations list
+        // Both values must be configured explicitly; otherwise private/local IP geo fields stay empty.
+        // 'defaultCountry' => App::env('SHORTLINK_MANAGER_DEFAULT_COUNTRY'), // 2-letter country code (US, GB, AE, etc.)
+        // 'defaultCity' => App::env('SHORTLINK_MANAGER_DEFAULT_CITY'), // Must match a city in the predefined locations list
 
 
         // ========================================
@@ -139,7 +140,7 @@ return [
         'seomaticEventPrefix' => 'shortlink_manager', // Event prefix for GTM/GA events (lowercase, numbers, underscores only)
 
         // Redirect Manager Integration
-        'redirectManagerEvents' => ['slug-change', 'expire', 'delete'], // Which events create redirects
+        'redirectManagerEvents' => ['slug-change'], // Which events create redirects
 
 
         // ========================================
@@ -147,7 +148,7 @@ return [
         // ========================================
         // Control panel interface options
 
-        'itemsPerPage' => 50,          // Number of shortlinks per page (10-500)
+        'itemsPerPage' => 100,         // Number of shortlinks per page (10-500)
 
 
         // ========================================
@@ -156,8 +157,13 @@ return [
         // Performance and caching configuration
 
         // Cache Storage Method
-        // 'file' = File system (default, single server)
-        // 'redis' = Redis/Database (load-balanced, multi-server, cloud hosting)
+        // 'file' = Plugin-owned files on durable hosts (default). On ephemeral hosts,
+        //          ShortLink Manager attempts to use a suitable Craft application cache.
+        // 'craft' = Explicitly use Craft's suitable cross-request application cache.
+        // 'redis' = Backward-compatible token for the same application-cache selection;
+        //           it does not itself configure or guarantee Redis.
+        // If the selected application cache is unsuitable for cross-request persistence,
+        // persistent plugin caching is disabled rather than silently changing backends.
         'cacheStorageMethod' => 'file',
 
         // QR Code Caching
@@ -170,11 +176,18 @@ return [
 
 
         // ========================================
-        // BASE PLUGIN OVERRIDES
+        // BASE SETTINGS OVERRIDES
         // ========================================
-        // These settings override lindemannrock-base defaults for this plugin only.
-        // Global defaults: vendor/lindemannrock/craft-plugin-base/src/config.php
-        // To customize globally: copy to config/lindemannrock-base.php
+        // Optional per-plugin overrides for settings that normally cascade from
+        // the plugin Settings UI. When the UI value is "Use global default",
+        // the value cascades from config/lindemannrock-base.php.
+        //
+        // To customize globally, copy:
+        // vendor/lindemannrock/craft-plugin-base/src/config.php
+        // to:
+        // config/lindemannrock-base.php
+        //
+        // Uncomment a key here only when this plugin should override the global base value.
 
         /**
          * Date/time formatting overrides
@@ -189,8 +202,10 @@ return [
 
         /**
          * Default date range for analytics, logs, and dashboard pages
-         * Options: 'today', 'yesterday', 'last7days', 'last30days', 'last90days',
-         *          'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'all'
+         * Options: 'today', 'yesterday', 'thisWeek', 'lastWeek', 'last7days',
+         *          'last14days', 'last30days', 'last90days', 'thisMonth',
+         *          'lastMonth', 'thisQuarter', 'lastQuarter', 'thisYear',
+         *          'lastYear', 'last12months', 'all'
          * Default: 'last30days' (from base plugin)
          */
         // 'defaultDateRange' => 'last7days',
@@ -198,7 +213,7 @@ return [
         /**
          * Export format overrides
          * Enable/disable specific export formats for this plugin
-         * Default: all enabled (from base plugin)
+         * Default: CSV and Excel enabled, JSON disabled (developer format — from base plugin)
          */
         // 'exports' => [
         //     'csv' => true,
@@ -229,7 +244,7 @@ return [
     'production' => [
         'logLevel' => 'error',         // Only errors in production
         'analyticsRetention' => 365,   // Keep more data in production
-        'cacheStorageMethod' => 'redis', // Use Redis for production (Servd/AWS/Platform.sh)
+        'cacheStorageMethod' => 'craft', // Use Craft's configured suitable application cache
         'cacheDeviceDetection' => true,
         'deviceDetectionCacheDuration' => 7200, // 2 hours
         'qrCodeCacheDuration' => 604800, // 7 days - QR codes rarely change

@@ -11,7 +11,7 @@
  * Centralized settings for all LindemannRock plugins.
  * These settings affect display in templates, AJAX responses, and exports.
  *
- * @since 5.0.0
+ * @since 5.14.0
  */
 
 return [
@@ -51,7 +51,9 @@ return [
     // =========================================================================
 
     // Default date range for analytics, logs, dashboards, and any date-filtered pages
-    // Options: 'today', 'yesterday', 'last7days', 'last30days', 'last90days',
-    //          'thisMonth', 'lastMonth', 'thisYear', 'lastYear', 'all'
+    // Options: 'today', 'yesterday', 'thisWeek', 'lastWeek', 'last7days',
+    //          'last14days', 'last30days', 'last90days', 'thisMonth',
+    //          'lastMonth', 'thisQuarter', 'lastQuarter', 'thisYear',
+    //          'lastYear', 'last12months', 'all'
     'defaultDateRange' => 'last30days',
 ];

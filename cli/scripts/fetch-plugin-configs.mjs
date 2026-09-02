@@ -19,6 +19,11 @@ import { LR_PLUGINS, THIRD_PARTY_PLUGINS } from '../config/plugins.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates', 'plugins');
+const BASE_CONFIG = {
+	value: 'lindemannrock/craft-plugin-base',
+	label: 'LindemannRock Base',
+	config: 'lindemannrock-base.php',
+};
 
 async function getPackageSource(packageName) {
 	try {
@@ -55,10 +60,33 @@ async function fetchPluginConfig(sourceUrl, ref) {
 	return null;
 }
 
+function applyStarterOverrides(plugin, content) {
+	if (plugin.value === 'lindemannrock/craft-redirect-manager') {
+		return content.replace(
+			/'cacheStorageMethod' => 'redis',\s*\/\/[^\n]*/,
+			"'cacheStorageMethod' => 'craft',   // Use Craft's configured suitable application cache",
+		);
+	}
+	if (plugin.value === 'lindemannrock/craft-translation-manager') {
+		let updated = content.includes('use craft\\helpers\\App;')
+			? content
+			: content.replace(/(\*\/\n)\n?return \[/, '$1\nuse craft\\helpers\\App;\n\nreturn [');
+		updated = updated.replace(
+			/^\s*'translationCategory'\s*=>.*$/m,
+			"        'translationCategory' => App::env('PRIMARY_TRANSLATION_CATEGORY') ?: 'messages', // Set by the starter prompt",
+		);
+		return updated.replace(
+			/^\s*'sourceLanguage'\s*=>.*$/m,
+			"        'sourceLanguage' => App::env('PRIMARY_SITE_LANGUAGE') ?: 'en', // Primary source language",
+		);
+	}
+	return content;
+}
+
 p.intro(pc.bgCyan(pc.black(' Fetch Plugin Configs ')));
 
 // Only plugins with a config file
-const plugins = [...LR_PLUGINS, ...THIRD_PARTY_PLUGINS].filter((pl) => pl.config);
+const plugins = [BASE_CONFIG, ...LR_PLUGINS, ...THIRD_PARTY_PLUGINS].filter((pl) => pl.config);
 
 if (plugins.length === 0) {
 	p.outro('No plugins with config files in the registry.');
@@ -106,7 +134,8 @@ for (const pkgName of selected) {
 		continue;
 	}
 
-	const content = await fetchPluginConfig(details.source?.url, details.source?.reference);
+	const upstreamContent = await fetchPluginConfig(details.source?.url, details.source?.reference);
+	const content = upstreamContent ? applyStarterOverrides(plugin, upstreamContent) : null;
 	if (content) {
 		fs.writeFileSync(templatePath, content);
 		s.stop(`${plugin.label} — ${pc.green('fetched')} → ${plugin.config}`);
