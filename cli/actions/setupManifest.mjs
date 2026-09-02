@@ -75,6 +75,9 @@ export function buildSetupManifest(state, { status = 'pending' } = {}) {
 		plugins,
 		hosting: selectedHosting.value || 'none',
 		translationCategory: state.translationCategory || 'site',
+		geoFallback: state.geoFallback
+			? { country: state.geoFallback.country, city: state.geoFallback.city }
+			: null,
 		email: smtpCredentials
 			? {
 					type: 'smtp',

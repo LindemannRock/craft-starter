@@ -33,12 +33,3 @@ export function generateAppId() {
 export function generateIpSalt() {
 	return crypto.randomBytes(32).toString('hex');
 }
-
-/**
- * Generate a random API key with a prefix.
- * Format: {prefix}_{32 random hex chars}
- *
- */
-export function generateApiKey(prefix = 'sk') {
-	return `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
-}

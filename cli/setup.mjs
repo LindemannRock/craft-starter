@@ -23,6 +23,7 @@ import { promptServdCredentials } from './prompts/servd.mjs';
 import { promptHostingEmail } from './prompts/hosting-email.mjs';
 import { promptPostmarkToken } from './prompts/postmark.mjs';
 import { promptTranslationCategory } from './prompts/translation-manager.mjs';
+import { promptGeoFallback } from './prompts/geo-location.mjs';
 import { promptRedis } from './prompts/redis.mjs';
 import { promptCritical } from './prompts/critical.mjs';
 import { promptBuildFiles } from './prompts/build-files.mjs';
@@ -126,6 +127,7 @@ async function collectPlugins(state) {
 
 async function collectPluginConfig(state) {
 	state.translationCategory = null;
+	state.geoFallback = null;
 
 	const hasTranslationManager = [...state.selectedLr, ...state.selectedTp].some(
 		(pl) => pl.handle === 'translation-manager',
@@ -133,6 +135,8 @@ async function collectPluginConfig(state) {
 	if (hasTranslationManager) {
 		state.translationCategory = await promptTranslationCategory();
 	}
+
+	state.geoFallback = await promptGeoFallback([...state.selectedLr, ...state.selectedTp]);
 }
 
 async function collectHosting(state) {
@@ -340,6 +344,7 @@ async function main() {
 		postmarkToken,
 		smtpCredentials,
 		translationCategory,
+		geoFallback,
 		craftProfile,
 		craftReleaseChannel,
 	} = state;
@@ -425,6 +430,7 @@ async function main() {
 		selectedTp,
 		selectedHosting,
 		translationCategory,
+		geoFallback,
 		database,
 		craftProfile,
 	});
@@ -521,7 +527,12 @@ async function main() {
 	fs.rmSync(`${ROOT}/cli/tmp`, { recursive: true, force: true });
 
 	const hasPlaceholders = Boolean(servdCredentials?.placeholder);
-	outro({ project, useCritical, hasPlaceholders });
+	outro({
+		project,
+		useCritical,
+		hasPlaceholders,
+		hasFormieRestApi: selectedLr.some((plugin) => plugin.handle === 'formie-rest-api'),
+	});
 }
 
 main().catch((err) => {

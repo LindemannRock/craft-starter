@@ -7,7 +7,8 @@
  * - HOSTING_OPTIONS: user-selectable hosting provider
  *
  * To add a new plugin: add an entry here and (if it needs config) drop a PHP
- * file in cli/templates/plugins/{name}.php
+ * file in cli/templates/plugins/{name}.php. Plugins using `geoEnv` must also
+ * declare their exact supported locations in cli/config/geo-locations.mjs.
  *
  * @copyright 2026 LindemannRock
  * @license MIT
@@ -104,6 +105,10 @@ export const LR_PLUGINS = [
 		hint: 'Auto-redirects + analytics',
 		config: 'redirect-manager.php',
 		ipSaltEnv: 'REDIRECT_MANAGER_IP_SALT',
+		geoEnv: {
+			country: 'REDIRECT_MANAGER_DEFAULT_COUNTRY',
+			city: 'REDIRECT_MANAGER_DEFAULT_CITY',
+		},
 	},
 	{
 		value: 'lindemannrock/craft-report-manager',
@@ -121,6 +126,10 @@ export const LR_PLUGINS = [
 		hint: 'Search analytics + synonyms',
 		config: null,
 		ipSaltEnv: 'SEARCH_MANAGER_IP_SALT',
+		geoEnv: {
+			country: 'SEARCH_MANAGER_DEFAULT_COUNTRY',
+			city: 'SEARCH_MANAGER_DEFAULT_CITY',
+		},
 		editions: [
 			{ value: 'standard', label: 'Standard' },
 			{ value: 'pro', label: 'Pro' },
@@ -135,6 +144,10 @@ export const LR_PLUGINS = [
 		hint: 'Short links + QR codes',
 		config: 'shortlink-manager.php',
 		ipSaltEnv: 'SHORTLINK_MANAGER_IP_SALT',
+		geoEnv: {
+			country: 'SHORTLINK_MANAGER_DEFAULT_COUNTRY',
+			city: 'SHORTLINK_MANAGER_DEFAULT_CITY',
+		},
 	},
 	{
 		value: 'lindemannrock/craft-smartlink-manager',
@@ -144,6 +157,10 @@ export const LR_PLUGINS = [
 		hint: 'Device-aware smart links',
 		config: null,
 		ipSaltEnv: 'SMARTLINK_MANAGER_IP_SALT',
+		geoEnv: {
+			country: 'SMARTLINK_MANAGER_DEFAULT_COUNTRY',
+			city: 'SMARTLINK_MANAGER_DEFAULT_CITY',
+		},
 	},
 	{
 		value: 'lindemannrock/craft-sms-manager',

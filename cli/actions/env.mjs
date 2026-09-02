@@ -18,7 +18,8 @@ import path from 'path';
 import { ROOT } from '../paths.mjs';
 import { DEFAULT_DATABASE } from '../config/databases.mjs';
 import { craftProjectPath, resolveCraftProfile } from '../config/craft-profiles.mjs';
-import { generateSecurityKey, generateAppId, generateIpSalt, generateApiKey } from '../utils/crypto.mjs';
+import { isSupportedGeoFallback } from '../config/geo-locations.mjs';
+import { generateSecurityKey, generateAppId, generateIpSalt } from '../utils/crypto.mjs';
 
 // The template's first comment block is an internal note for LindemannRock
 // devs maintaining the starter — it should NOT appear in the generated .env.
@@ -42,6 +43,7 @@ export function generateEnvFile({
 	selectedTp = [],
 	selectedHosting = {},
 	translationCategory = 'site',
+	geoFallback = null,
 	database = DEFAULT_DATABASE,
 	craftProfile,
 	root = ROOT,
@@ -143,19 +145,21 @@ export function generateEnvFile({
 
 	// All selected plugins (LR + third-party) — used for salt generation and section cleanup
 	const allPlugins = [...selectedLr, ...selectedTp];
+	if (!isSupportedGeoFallback(allPlugins, geoFallback)) {
+		throw new Error(
+			`Unsupported local analytics fallback "${geoFallback.city}, ${geoFallback.country}" for the selected plugins.`,
+		);
+	}
 
 	// Generate IP salts for selected LR plugins that need them
 	for (const pl of allPlugins) {
 		if (pl.ipSaltEnv) {
 			content = setEnvKey(content, pl.ipSaltEnv, serializeEnvValue(generateIpSalt()));
 		}
-	}
-
-	// Generate Formie REST API keys if plugin is selected
-	if (allPlugins.some((pl) => pl.handle === 'formie-rest-api')) {
-		content = setEnvKey(content, 'FORMIE_API_KEY', serializeEnvValue(generateApiKey('sk_live')));
-		content = setEnvKey(content, 'FORMIE_API_KEY_LIMITED', serializeEnvValue(generateApiKey('sk_limited')));
-		content = setEnvKey(content, 'FORMIE_API_KEY_TEST', serializeEnvValue(generateApiKey('sk_test')));
+		if (pl.geoEnv) {
+			content = setEnvKey(content, pl.geoEnv.country, geoFallback ? geoFallback.country : '');
+			content = setEnvKey(content, pl.geoEnv.city, geoFallback ? serializeEnvValue(geoFallback.city) : '');
+		}
 	}
 
 	// Remove template site block — we dynamically append all site blocks below
@@ -197,9 +201,6 @@ export function generateEnvFile({
 		{ handle: 'search-manager', section: '# Search Manager' },
 		{ handle: 'shortlink-manager', section: '# Shortlink Manager' },
 		{ handle: 'smartlink-manager', section: '# Smartlink Manager' },
-		{ handle: 'translation-manager', section: '# Translation Manager' },
-		{ handle: 'formie-rest-api', section: '# Formie REST API' },
-		{ handle: 'formie-sap-integration', section: '# Formie SAP Integration' },
 		{ handle: 'cloudflare', section: '# Cloudflare' },
 		{ handle: 'cloudflare', section: '# Cloudflare Turnstile' },
 	];

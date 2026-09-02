@@ -25,6 +25,7 @@ export function showConfigurationSummary({
 	selectedLr,
 	selectedTp,
 	selectedHosting,
+	geoFallback,
 	craftProfile,
 	craftReleaseChannel,
 }) {
@@ -57,6 +58,12 @@ export function showConfigurationSummary({
 		['Plugins', selectedTp.length ? selectedTp.map(pluginSummary).join(', ') : 'None'],
 		['Hosting', selectedHosting.label],
 	];
+	if ([...selectedLr, ...selectedTp].some((plugin) => plugin.geoEnv)) {
+		rows.splice(rows.length - 1, 0, [
+			'Local analytics',
+			geoFallback ? `${geoFallback.city}, ${geoFallback.country}` : 'No location fallback',
+		]);
+	}
 
 	// Pad each label to the width of the longest so all values line up
 	const labelWidth = Math.max(...rows.map(([label]) => label.length));
@@ -132,7 +139,7 @@ function wrapValue(value, maxWidth, indent) {
 	return lines.join(`\n${indent}`);
 }
 
-export function outro({project, useCritical, hasPlaceholders}) {
+export function outro({project, useCritical, hasPlaceholders, hasFormieRestApi = false}) {
 	const siteUrl = `https://${project.name}.ddev.site`;
 	const cpUrl = `${siteUrl}/${project.cpTrigger || 'cms'}`;
 
@@ -142,6 +149,11 @@ export function outro({project, useCritical, hasPlaceholders}) {
 
 	const verifyLine = hasPlaceholders
 		? `  ${pc.bold('make verify')}    ${pc.yellow('Check .env for unfilled placeholders before deploy')}\n`
+		: '';
+
+	const formieRestLine = hasFormieRestApi
+		? `\n  ${pc.bold('Formie REST API')}  Create scoped API keys in the CP or with:\n` +
+			`  ${pc.bold('ddev craft formie-rest-api/help api-keys/create')}\n`
 		: '';
 
 	console.log('');
@@ -158,6 +170,7 @@ export function outro({project, useCritical, hasPlaceholders}) {
 			verifyLine +
 			`  ${pc.bold('make install')}   Re-sync project (idempotent)\n` +
 			`  ${pc.bold('make repair')}    Repair local dependencies or runtime\n` +
-			`  ${pc.bold('make help')}      See all available commands\n`,
+			`  ${pc.bold('make help')}      See all available commands\n` +
+			formieRestLine,
 	);
 }

@@ -31,6 +31,7 @@ An opinionated, interactive Craft CMS starter. Craft 5 is the production-ready d
 - **Interactive installer** — `make create` walks you through project name, timezone, language, admin credentials, plugin selection, hosting, and feature toggles with a modern TUI (review loop + per-section editing if you change your mind)
 - **Versioned application scaffolds** — choose stable Craft 5 or the experimental Craft 6 alpha/Laravel scaffold before project-specific questions
 - **Auto-generated credentials** — Craft security key, app ID, and LR plugin IP salts generated locally, never committed
+- **Safe local analytics defaults** — optional country → city fallback uses only locations supported by every selected LR analytics manager
 - **Multi-hosting ready** — Servd, Craft Cloud, or self-hosted with plugin-level conditionals
 - **Email transport configured automatically** — Postmark, SMTP (Servd SMTP, Mailgun, etc.), or Mailpit as a safe dev default; written to project config so the CP shows the right value and Servd's sendmail alert never fires
 - **Database choice** — MySQL 8.0 by default, with PostgreSQL 18 or 16 available during `make create`
@@ -324,7 +325,7 @@ Craft's built-in settings use `CRAFT_*` env vars (`CRAFT_DEV_MODE`, `CRAFT_TIMEZ
 
 The starter repository temporarily ignores its Craft 5 `config/project/` because it does not ship a fixed baseline. During `make create`, the CLI removes that starter-only rule before Craft generates the downstream project's configuration. Commit the generated project-config directory (`config/project/` on Craft 5, `config/craft/project/` on Craft 6) so schema changes are reproducible across environments.
 
-Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (Craft profile and release channel, hosting, PHP/database selection, sites, Redis, plugin packages and editions, and translation category). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
+Generated projects also commit `.craft-starter.json`. It contains only non-secret generator choices (Craft profile and release channel, hosting, PHP/database selection, sites, Redis, plugin packages and editions, translation category, and the optional local analytics fallback). Credentials remain exclusively in the ignored `.env`. The manifest makes interrupted installation resumable and lets a later full reset distinguish generator-owned integrations from project-owned files.
 
 Treat `.craft-starter.json` as generator-managed operational metadata, not as the primary place to configure the site. Several `make` commands use it to select framework-specific commands and paths, restore interrupted setup, activate the recorded plugin/hosting plan, and determine which generated files they own. Manual edits can therefore change later install, repair, update, or `make reset` behavior; an incorrect Craft profile is especially risky. Use `.env` for environment values, Craft Project Config for CMS configuration, and the starter prompts or maintenance commands for supported workflow changes. If an experienced maintainer intentionally edits the manifest, review and commit the change like `composer.json`. Git already records the exact file content and history, so the starter does not maintain a separate checksum or byte-size marker.
 
@@ -359,7 +360,20 @@ The installer tailors the project to your selections so you don't end up with de
 
 - Prompts for a **translation category** (default `messages`) and writes it to `PRIMARY_TRANSLATION_CATEGORY`
 - The Translation Manager config and Twig globals read that env value; `PRIMARY_SITE_LANGUAGE` supplies the exact primary language ID
-- AI API keys (OpenAI, Gemini, Anthropic) read via `App::env()` — kept out of hard-coded config
+- AI providers and their environment-variable references are configured in Translation Manager after installation
+
+### LR analytics location fallback
+
+- Redirect Manager, Search Manager, ShortLink Manager, and SmartLink Manager receive unique 64-character IP salts automatically
+- When any of those plugins is selected, one optional prompt can assign private/local IP analytics to a known country and city
+- The country list is selection-aware: only locations implemented by every selected manager are offered; Search Manager's additional Netherlands, Sweden, Denmark, and Norway options appear when Search is the only selected manager
+- Declining leaves both location variables empty. Public visitor geolocation is unaffected
+
+### Formie REST API
+
+- API credentials are scoped, database-backed records—not static `.env` keys
+- Create one key per consumer after installation under **Formie REST API → API Keys**; run `ddev craft formie-rest-api/help api-keys/create` for headless provisioning options
+- The plaintext key and signing secret are shown once; the starter does not create or print an unscoped credential during installation
 
 ### Redis
 

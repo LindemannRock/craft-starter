@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateSecurityKey, generateAppId, generateIpSalt, generateApiKey } from '../utils/crypto.mjs';
+import { generateSecurityKey, generateAppId, generateIpSalt } from '../utils/crypto.mjs';
 
 describe('generateSecurityKey', () => {
 	it('returns a base64 string of 44 chars (32 bytes encoded)', () => {
@@ -30,15 +30,5 @@ describe('generateIpSalt', () => {
 	it('returns a 64-char hex string', () => {
 		const salt = generateIpSalt();
 		expect(salt).toMatch(/^[0-9a-f]{64}$/);
-	});
-});
-
-describe('generateApiKey', () => {
-	it('uses default prefix sk', () => {
-		expect(generateApiKey()).toMatch(/^sk_[0-9a-f]{32}$/);
-	});
-
-	it('uses custom prefix', () => {
-		expect(generateApiKey('sk_live')).toMatch(/^sk_live_[0-9a-f]{32}$/);
 	});
 });
