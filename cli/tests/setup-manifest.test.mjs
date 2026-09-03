@@ -43,6 +43,7 @@ describe('setup manifest', () => {
 		useRedisCache: true,
 		useRedisSession: true,
 		translationCategory: 'messages',
+		geoFallback: { country: 'AE', city: 'Dubai' },
 		smtpCredentials: {
 			host: 'smtp.example.com',
 			username: 'secret-user',
@@ -59,6 +60,7 @@ describe('setup manifest', () => {
 		expect(manifest.craft).toEqual({ profile: 'craft5', major: 5, channel: 'stable' });
 		expect(manifest.plugins[0]).toMatchObject({ handle: 'search-manager', edition: 'pro' });
 		expect(manifest.sites[0].language).toBe('en-US');
+		expect(manifest.geoFallback).toEqual({ country: 'AE', city: 'Dubai' });
 		expect(serialized).not.toContain('never-store-me');
 		expect(serialized).not.toContain('secret-user');
 		expect(serialized).not.toContain('secret-pass');
