@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.15.2](https://github.com/LindemannRock/craft-starter/compare/v5.15.1...v5.15.2) (2026-09-07)
+
+
+### Fixed
+
+* **cli:** align plugin environment handling ([183d580](https://github.com/LindemannRock/craft-starter/commit/183d580e72c362e54a182754ecfd84f5f9af22a1))
+* **cli:** sync LindemannRock plugin configs ([b7ee109](https://github.com/LindemannRock/craft-starter/commit/b7ee10942ceb66021363b2071c5c4cc3c8111eca))
+
 ## [5.15.1](https://github.com/LindemannRock/craft-starter/compare/v5.15.0...v5.15.1) - 2026-08-20
 
 
