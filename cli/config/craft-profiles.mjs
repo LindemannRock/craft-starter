@@ -29,7 +29,7 @@ export const CRAFT_PROFILES = Object.freeze({
 			channels: Object.freeze({
 				stable: Object.freeze({
 					label: 'Stable',
-					composerRequire: Object.freeze({'craftcms/cms': '^5.10.13'}),
+					composerRequire: Object.freeze({'craftcms/cms': '^5.11.0'}),
 				}),
 			}),
 		}),

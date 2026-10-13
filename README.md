@@ -1,6 +1,6 @@
 # Craft CMS Starter by LindemannRock
 
-[![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.10%2B-orange.svg)](https://craftcms.com/)
+[![Craft CMS](https://img.shields.io/badge/Craft%20CMS-5.11%2B-orange.svg)](https://craftcms.com/)
 [![PHP](https://img.shields.io/badge/PHP-8.2--8.5-blue.svg)](https://php.net/)
 [![Node](https://img.shields.io/badge/Node-22%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
@@ -240,7 +240,7 @@ craft-starter/
 
 ## Stack
 
-- **[Craft CMS 5.10+](https://craftcms.com)** — Content management system
+- **[Craft CMS 5.11+](https://craftcms.com)** — Content management system
 - **[DDEV](https://ddev.com)** — Local development environment (nginx-fpm, PHP 8.3 by default with 8.2–8.5 available, MySQL 8.0 or PostgreSQL 18/16)
 - **[Vite 8](https://vitejs.dev)** — Rolldown-powered frontend build tool with HMR
 - **[Tailwind CSS 4](https://tailwindcss.com)** — Utility-first CSS (CSS-first, no config file)
