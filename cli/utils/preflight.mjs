@@ -20,6 +20,7 @@ import { execSync } from 'child_process';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { ROOT } from '../paths.mjs';
+import { isDdevProjectReady } from './ddev.mjs';
 
 const MIN_NODE_MAJOR = 22;
 
@@ -129,9 +130,7 @@ export function requireProject() {
 		process.exit(0);
 	}
 
-	try {
-		execSync('ddev describe', { cwd: ROOT, stdio: 'ignore' });
-	} catch {
+	if (!isDdevProjectReady({ cwd: ROOT })) {
 		p.log.error('DDEV is not running. Run ' + pc.bold('make start') + ' or ' + pc.bold('ddev start') + ' first.');
 		process.exit(0);
 	}

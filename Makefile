@@ -53,7 +53,7 @@ define require_project
 if [ ! -f .env ]; then \
   echo "No .env file found. Run 'make create' first."; \
   exit 1; \
-elif ! ddev describe >/dev/null 2>&1; then \
+elif ! node cli/scripts/check-ddev-ready.mjs >/dev/null 2>&1; then \
   echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
   exit 1; \
 else \
@@ -248,7 +248,7 @@ db-pull:
 
 db-export:
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
-	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
+	elif ! node cli/scripts/check-ddev-ready.mjs >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
 	else \
 		target="$${file:-db.sql.gz}"; \
 		echo "Exporting database to $$target..."; \
@@ -258,7 +258,7 @@ db-export:
 
 db-import:
 	@if [ ! -f .env ]; then echo "No .env file found. Run 'make create' first."; \
-	elif ! ddev describe >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
+	elif ! node cli/scripts/check-ddev-ready.mjs >/dev/null 2>&1; then echo "DDEV is not running. Run 'make start' or 'ddev start' first."; \
 	else \
 		target="$${file:-db.sql.gz}"; \
 		if [ ! -f "$$target" ]; then \
