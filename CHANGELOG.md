@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.15.3](https://github.com/LindemannRock/craft-starter/compare/v5.15.2...v5.15.3) (2026-10-13)
+
+
+### Fixed
+
+* **cli:** detect running DDEV projects reliably ([2f97b36](https://github.com/LindemannRock/craft-starter/commit/2f97b36250b393b5d51bf775abf08714a96138ca))
+* **deps:** require Craft CMS 5.11 ([814f93c](https://github.com/LindemannRock/craft-starter/commit/814f93c4b285f2c3e17b6e43dc4aeea98c790a89))
+
 ## [5.15.2](https://github.com/LindemannRock/craft-starter/compare/v5.15.1...v5.15.2) - 2026-09-07
 
 
