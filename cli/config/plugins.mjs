@@ -52,7 +52,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-paragraph-field',
 		handle: 'formie-paragraph-field',
-		version: '^3.5.2',
+		version: '^3.6.0',
 		label: 'Formie Paragraph',
 		hint: 'Multi-line paragraph field for Formie',
 		config: null,
@@ -60,7 +60,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-rating-field',
 		handle: 'formie-rating-field',
-		version: '^3.22.1',
+		version: '^3.23.0',
 		label: 'Formie Rating',
 		hint: 'Star/emoji/numeric rating for Formie',
 		config: null,
@@ -68,7 +68,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-rest-api',
 		handle: 'formie-rest-api',
-		version: '^3.10.2',
+		version: '^3.11.0',
 		label: 'Formie REST API',
 		hint: 'REST + GraphQL API for Formie',
 		config: null,
@@ -76,7 +76,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-formie-sms',
 		handle: 'formie-sms',
-		version: '^3.11.1',
+		version: '^3.11.2',
 		label: 'Formie SMS',
 		hint: 'SMS notifications for Formie',
 		config: null,
@@ -92,7 +92,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-logging-library',
 		handle: 'logging-library',
-		version: '^5.18.2',
+		version: '^5.20.0',
 		label: 'Logging Library',
 		hint: 'Centralized logging',
 		config: 'logging-library.php',
@@ -100,7 +100,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-redirect-manager',
 		handle: 'redirect-manager',
-		version: '^5.41.1',
+		version: '^5.41.2',
 		label: 'Redirect Manager',
 		hint: 'Auto-redirects + analytics',
 		config: 'redirect-manager.php',
@@ -113,7 +113,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-report-manager',
 		handle: 'report-manager',
-		version: '^5.6.0',
+		version: '^5.6.4',
 		label: 'Report Manager',
 		hint: 'Report generation + analytics',
 		config: null,
@@ -121,7 +121,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-search-manager',
 		handle: 'search-manager',
-		version: '^5.55.2',
+		version: '^5.56.0',
 		label: 'Search Manager',
 		hint: 'Search analytics + synonyms',
 		config: null,
@@ -139,7 +139,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-shortlink-manager',
 		handle: 'shortlink-manager',
-		version: '^5.28.4',
+		version: '^5.29.0',
 		label: 'Shortlink Manager',
 		hint: 'Short links + QR codes',
 		config: 'shortlink-manager.php',
@@ -152,7 +152,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-smartlink-manager',
 		handle: 'smartlink-manager',
-		version: '^5.37.4',
+		version: '^5.38.0',
 		label: 'Smartlink Manager',
 		hint: 'Device-aware smart links',
 		config: null,
@@ -165,7 +165,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-sms-manager',
 		handle: 'sms-manager',
-		version: '^5.15.0',
+		version: '^5.17.0',
 		label: 'SMS Manager',
 		hint: 'SMS gateway (multi-provider)',
 		config: null,
@@ -173,7 +173,7 @@ export const LR_PLUGINS = [
 	{
 		value: 'lindemannrock/craft-translation-manager',
 		handle: 'translation-manager',
-		version: '^5.35.0',
+		version: '^5.35.1',
 		label: 'Translation Manager',
 		hint: 'Translation management',
 		config: 'translation-manager.php',
@@ -188,7 +188,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'putyourlightson/craft-cloudflare',
 		handle: 'cloudflare',
-		version: '^3.1.2',
+		version: '^3.1.3',
 		label: 'Cloudflare',
 		hint: 'Purge Cloudflare cache from Craft',
 		config: null,
@@ -196,7 +196,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'craftcms/commerce',
 		handle: 'commerce',
-		version: '^5.7.1',
+		version: '^5.7.6',
 		label: 'Commerce',
 		hint: 'E-commerce platform',
 		config: null,
@@ -217,7 +217,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'putyourlightson/craft-datastar',
 		handle: 'datastar',
-		version: '^1.0.2',
+		version: '^1.0.4',
 		label: 'Datastar',
 		hint: 'A reactive hypermedia framework for Craft.',
 		config: null,
@@ -225,7 +225,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/expanded-singles',
 		handle: 'expanded-singles',
-		version: '^3.0.3',
+		version: '^3.0.9',
 		label: 'Expanded Singles',
 		hint: 'Singles as sidebar links',
 		config: null,
@@ -233,7 +233,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'verbb/formie',
 		handle: 'formie',
-		version: '^3.1.34',
+		version: '^3.1.47',
 		label: 'Formie',
 		hint: 'Form builder',
 		config: 'formie.php',
@@ -241,7 +241,7 @@ export const THIRD_PARTY_PLUGINS = [
 	{
 		value: 'solspace/craft-freeform',
 		handle: 'freeform',
-		version: '^5.15.22',
+		version: '^5.16.6',
 		label: 'Freeform',
 		hint: 'Form builder',
 		config: null,
@@ -316,13 +316,13 @@ export const HOSTING_OPTIONS = [
 		value: 'servd',
 		label: 'Servd',
 		hint: 'Craft CMS hosting',
-		packages: [{ name: 'servd/craft-asset-storage', version: '^4.2.6', handle: 'servd-asset-storage' }],
+		packages: [{ name: 'servd/craft-asset-storage', version: '^4.2.9', handle: 'servd-asset-storage' }],
 	},
 	{
 		value: 'craft-cloud',
 		label: 'Craft Cloud',
 		hint: 'Official Craft hosting',
-		packages: [{ name: 'craftcms/cloud', version: '^3.11.0', handle: null }],
+		packages: [{ name: 'craftcms/cloud', version: '^3.12.0', handle: null }],
 	},
 	{
 		value: 'none',

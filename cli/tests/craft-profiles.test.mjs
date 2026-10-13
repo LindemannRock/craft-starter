@@ -35,7 +35,7 @@ describe('Craft platform profiles', () => {
 			projectConfigurator: ['php', 'cli/scripts/configure-project.php'],
 		});
 		expect(craftProjectPath('/project', 'build', profile)).toBe('/project/web/dist');
-		expect(composerConfigForCraftProfile(profile).require['craftcms/cms']).toBe('^5.11.0');
+		expect(composerConfigForCraftProfile(profile).require['craftcms/cms']).toBe('^5.11.5');
 	});
 
 	it('keeps release channels independent from project architecture', () => {

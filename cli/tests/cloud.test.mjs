@@ -24,7 +24,7 @@ describe('Craft Cloud scaffolding', () => {
 
 	it('uses a stable Cloud extension constraint without treating it as a Craft plugin', () => {
 		const cloud = HOSTING_OPTIONS.find((option) => option.value === 'craft-cloud');
-		expect(cloud.packages).toEqual([{name: 'craftcms/cloud', version: '^3.11.0', handle: null}]);
+		expect(cloud.packages).toEqual([{name: 'craftcms/cloud', version: '^3.12.0', handle: null}]);
 	});
 
 	it('disables Nginx SSI critical CSS and committed build output on Cloud', () => {

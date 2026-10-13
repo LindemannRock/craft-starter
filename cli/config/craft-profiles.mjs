@@ -29,7 +29,7 @@ export const CRAFT_PROFILES = Object.freeze({
 			channels: Object.freeze({
 				stable: Object.freeze({
 					label: 'Stable',
-					composerRequire: Object.freeze({'craftcms/cms': '^5.11.0'}),
+					composerRequire: Object.freeze({'craftcms/cms': '^5.11.5'}),
 				}),
 			}),
 		}),
@@ -163,9 +163,9 @@ export const CRAFT_PROFILES = Object.freeze({
 		}),
 		composer: Object.freeze({
 			require: Object.freeze({
-				'craftcms/ckeditor': '^5.6.1',
+				'craftcms/ckeditor': '^5.9.0',
 				'nystudio107/craft-vite': '^5.0.2',
-				'vlucas/phpdotenv': '^5.6.4',
+				'vlucas/phpdotenv': '^5.7.0',
 			}),
 			requireDev: Object.freeze({
 				'craftcms/generator': '^2.2.0',
